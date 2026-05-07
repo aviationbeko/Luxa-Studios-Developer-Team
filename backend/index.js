@@ -78,9 +78,18 @@ app.post('/api/sync', async (req, res) => {
 
 // Individual Upserts
 app.post('/api/users', async (req, res) => {
-    const { data, error } = await supabase.from('users').upsert(req.body, { onConflict: 'username' });
-    if (error) return res.status(500).json({ error: error.message });
-    res.json({ success: true, data });
+    console.log("Adding user:", req.body);
+    try {
+        const { data, error } = await supabase.from('users').upsert(req.body, { onConflict: 'username' });
+        if (error) {
+            console.error("Supabase Error:", error);
+            return res.status(500).json({ error: error.message, details: error });
+        }
+        res.json({ success: true, data });
+    } catch (err) {
+        console.error("Server Error:", err);
+        res.status(500).json({ error: err.message });
+    }
 });
 
 app.post('/api/tasks', async (req, res) => {

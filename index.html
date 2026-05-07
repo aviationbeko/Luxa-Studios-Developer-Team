@@ -67,8 +67,8 @@
         .modal.active { display: flex !important; }
         .modal-content { background: #1a0b2e; width: 92%; max-width: 450px; padding: 35px; border-radius: 40px; border: 1px solid rgba(255,255,255,0.1); }
         
-        .toast { position: fixed; top: 30px; left: 50%; transform: translateX(-50%) translateY(-200%); background: var(--p-grad); color: white; padding: 18px 35px; border-radius: 25px; font-weight: 900; z-index: 3000; }
-        .del-btn { position: absolute; top: 20px; right: 20px; color: var(--red); opacity: 0.5; cursor: pointer; font-size: 1.2rem; transition: 0.3s; }
+        .toast { position: fixed; top: 30px; left: 50%; transform: translateX(-50%) translateY(-200%); background: var(--p-grad); color: white; padding: 18px 35px; border-radius: 25px; font-weight: 900; z-index: 3000; max-width: 80%; text-align: center; }
+        .del-btn { position: absolute; top: 20px; right: 20px; color: var(--red); opacity: 0.5; cursor: pointer; font-size: 1.2rem; }
 
         .setup-step { display: none; text-align: center; width: 100%; max-width: 400px; padding: 20px; }
         .setup-step.active { display: block; animation: fadeInUp 0.5s ease; }
@@ -241,7 +241,7 @@
                 e.preventDefault();
                 const u = document.getElementById('l-user').value, p = document.getElementById('l-pass').value, rem = document.getElementById('l-rem').checked;
                 const f = (app.db.users || []).find(x => x.username === u && x.password === p);
-                if(f) { if(rem) localStorage.setItem('lsdt_rem', JSON.stringify(f)); app.loginAs(f); } else app.toast('Hatalı!', true);
+                if(f) { if(rem) localStorage.setItem('lsdt_rem', JSON.stringify(f)); app.loginAs(f); } else app.toast('Hatalı Giriş!', true);
             },
 
             loginAs(u) {
@@ -287,14 +287,14 @@
                 } else if(p === 'set') {
                     c.innerHTML = `<div class="card" style="text-align:center;"><h2>${app.user.name}</h2><p>${app.user.category}</p></div>`;
                     if(app.user.role === 'admin') (app.db.users || []).forEach(u => {
-                        if(u.username !== app.user.username) c.innerHTML += `<div class="card" style="display:flex; justify-content:space-between; align-items:center;"><span>${u.name}</span><i class="fas fa-trash del-btn" style="position:static;" onclick="app.delUser('${u.id}')"></i></div>`;
+                        if(u.username !== app.user.username) c.innerHTML += `<div class="card" style="display:flex; justify-content:space-between; align-items:center;"><span>${u.name} (${u.username})</span><i class="fas fa-trash del-btn" style="position:static;" onclick="app.delUser('${u.id}')"></i></div>`;
                     });
                 }
             },
 
             openTaskModal() {
                 const w = document.getElementById('t-to-wrap'); if(!w) return; w.innerHTML = '';
-                (app.db.users || []).filter(u => u.role === 'dev').forEach(d => {
+                (app.db.users || []).forEach(d => {
                     const o = document.createElement('div'); o.className = 'p-opt' + (d.username === app.sel.tTo ? ' active':'');
                     o.innerText = d.name; o.onclick = () => { app.sel.tTo = d.username; app.openTaskModal(); }; w.appendChild(o);
                 }); app.open('modal-task');
@@ -302,7 +302,7 @@
 
             openLeaveModal() {
                 const w = document.getElementById('l-to-wrap'); if(!w) return; w.innerHTML = '';
-                (app.db.users || []).filter(u => u.role === 'dev').forEach(d => {
+                (app.db.users || []).forEach(d => {
                     const o = document.createElement('div'); o.className = 'p-opt' + (d.username === app.sel.lTo ? ' active':'');
                     o.innerText = d.name; o.onclick = () => { app.sel.lTo = d.username; app.openLeaveModal(); }; w.appendChild(o);
                 }); app.open('modal-leave');
@@ -310,9 +310,13 @@
 
             async handleNewDev(e) {
                 e.preventDefault();
-                const newUser = {id: Date.now().toString(), name:document.getElementById('d-name').value, username:document.getElementById('d-user').value, password:document.getElementById('d-pass').value, role:app.sel.dCat === 'Admin' ? 'admin' : 'dev', category:app.sel.dCat};
-                const r = await fetch(`${RENDER_URL}/api/users`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(newUser)});
-                if(r.ok) { app.toast('Üye Eklendi'); app.close(); await app.sync(); app.nav('set'); } else app.toast('Hata Oluştu!', true);
+                const newUser = {id: Math.floor(Math.random() * 1000000), name:document.getElementById('d-name').value, username:document.getElementById('d-user').value, password:document.getElementById('d-pass').value, role:app.sel.dCat === 'Admin' ? 'admin' : 'dev', category:app.sel.dCat};
+                try {
+                    const r = await fetch(`${RENDER_URL}/api/users`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(newUser)});
+                    const res = await r.json();
+                    if(r.ok) { app.toast('Üye Eklendi'); app.close(); await app.sync(); app.nav('set'); } 
+                    else { app.toast('Hata: ' + (res.error || 'Bilinmiyor'), true); }
+                } catch(err) { app.toast('Sunucuya bağlanılamadı!', true); }
             },
 
             async handleNewTask(e) {
