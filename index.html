@@ -303,9 +303,7 @@
                     new Notification("LSDT v11.0", { body: "Bildirimler Başarıyla Açıldı!", icon: "https://img.icons8.com/fluency/48/lightning-bolt.png" });
                     app.toast('Bildirimler Aktif!');
                     app.setupStep(3);
-                } else {
-                    app.toast('Lütfen bildirim izni verin!', true);
-                }
+                } else app.toast('Lütfen bildirim izni verin!', true);
             },
             
             finishSetup() { localStorage.setItem('lsdt_setup', 'true'); app.show('login-screen'); },
@@ -403,7 +401,13 @@
                                         <h4>GELEN RAPOR</h4>
                                         <p>${rData.report}</p>
                                         ${rData.bug ? `<h4>BUG BİLDİRİMİ</h4><p style="color:var(--red); font-weight:700;">${rData.bug}</p>` : ''}
-                                        ${rData.imgs && rData.imgs.length > 0 ? `<div class="img-grid">${rData.imgs.map(img => `<img src="${img}" class="img-item" onclick="window.open(this.src)">`).join('')}</div>` : ''}
+                                        
+                                        ${rData.imgs && rData.imgs.length > 0 ? `
+                                            <button class="btn-mini" style="background:var(--p); color:#000; margin-top:10px; width:100%;" id="btn-imgs-${t.id}" onclick="app.toggleImgs('${t.id}')">FOTOĞRAFLARI İNCELE</button>
+                                            <div id="imgs-${t.id}" class="img-grid" style="display:none; margin-top:10px;">
+                                                ${rData.imgs.map(img => `<img src="${img}" class="img-item" onclick="window.open(this.src)">`).join('')}
+                                            </div>
+                                        ` : ''}
                                         
                                         ${app.user.role === 'admin' && t.status === 'İnceleniyor' ? `
                                             <div style="display:flex; gap:10px; margin-top:15px;">
@@ -449,6 +453,16 @@
                             if(u.username !== app.user.username) c.innerHTML += `<div class="card" style="display:flex; justify-content:space-between; align-items:center;"><span>${u.name} (${u.username})</span><i class="fas fa-trash del-btn" style="position:static;" onclick="app.delUser('${u.id}')"></i></div>`;
                         });
                     }
+                }
+            },
+
+            toggleImgs(tid) {
+                const wrap = document.getElementById(`imgs-${tid}`);
+                const btn = document.getElementById(`btn-imgs-${tid}`);
+                if(wrap.style.display === 'none') {
+                    wrap.style.display = 'grid'; btn.innerText = 'FOTOĞRAFLARI KAPAT';
+                } else {
+                    wrap.style.display = 'none'; btn.innerText = 'FOTOĞRAFLARI İNCELE';
                 }
             },
 
@@ -499,20 +513,12 @@
             async confirmReject() {
                 const reason = document.getElementById('rej-reason').value;
                 if(!reason) return app.toast('Sebep yazmalısın!', true);
-                
                 const task = app.db.tasks.find(t => t.id === app.sel.rejId);
                 const cleanDesc = task.description.split('[REPORT_START]')[0].split('[REJECT_REASON]')[0];
                 const finalDesc = cleanDesc + `\n\n[REJECT_REASON]${reason}[END_REASON]`;
-
-                const updatedTask = { 
-                    id: app.sel.rejId, 
-                    status: 'Reddedildi',
-                    description: finalDesc
-                };
-
+                const updatedTask = { id: app.sel.rejId, status: 'Reddedildi', description: finalDesc };
                 const r = await fetch(`${RENDER_URL}/api/tasks`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(updatedTask) });
-                if(r.ok) { app.toast('Görev Reddedildi'); app.close(); await app.sync(); app.nav('tasks'); } 
-                else { const ed = await r.json(); app.toast('HATA: ' + (ed.error || 'Bilinmiyor'), true); }
+                if(r.ok) { app.toast('Görev Reddedildi'); app.close(); await app.sync(); app.nav('tasks'); } else app.toast('Hata!', true);
             },
 
             genUUID() {
@@ -526,7 +532,7 @@
                 e.preventDefault();
                 const newUser = { id: app.genUUID(), name: document.getElementById('d-name').value, username: document.getElementById('d-user').value, password: document.getElementById('d-pass').value, role: app.sel.dCat === 'Admin' ? 'admin' : 'dev', category: app.sel.dCat };
                 const r = await fetch(`${RENDER_URL}/api/users`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(newUser)});
-                if(r.ok) { app.toast('Üye Eklendi!'); app.close(); await app.sync(); app.nav('set'); } else { const ed = await r.json(); app.toast('HATA: ' + (ed.error || 'Bilinmiyor'), true); }
+                if(r.ok) { app.toast('Üye Eklendi!'); app.close(); await app.sync(); app.nav('set'); } else app.toast('Hata!', true);
             },
 
             async handleNewTask(e) {
@@ -534,7 +540,7 @@
                 const descWithAdmin = document.getElementById('t-desc').value + `\n\n[ADMIN: ${app.user.name}]`;
                 const nt = { id: app.genUUID(), assignee: app.sel.tTo, title: document.getElementById('t-title').value, description: descWithAdmin, status: 'Aktif', date: new Date().toISOString() };
                 const r = await fetch(`${RENDER_URL}/api/tasks`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(nt)});
-                if(r.ok) { app.toast('Görev Verildi'); app.close(); await app.sync(); app.nav('tasks'); } else { const ed = await r.json(); app.toast('HATA: ' + (ed.error || 'Bilinmiyor'), true); }
+                if(r.ok) { app.toast('Görev Verildi'); app.close(); await app.sync(); app.nav('tasks'); } else app.toast('Hata!', true);
             },
 
             async handleNewLeave(e) {
@@ -542,7 +548,7 @@
                 const leaveDesc = `${document.getElementById('l-days').value} Gün İzin. Gerekçe: ${document.getElementById('l-reason').value}\n\n[ADMIN: ${app.user.name}]`;
                 const nl = { id: app.genUUID(), assignee: app.sel.lTo, title: 'İZİN', description: leaveDesc, status: 'İzinde', date: new Date().toISOString() };
                 const r = await fetch(`${RENDER_URL}/api/tasks`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(nl)});
-                if(r.ok) { app.toast('İzin İşlendi'); app.close(); await app.sync(); app.nav('tasks'); } else { const ed = await r.json(); app.toast('HATA: ' + (ed.error || 'Bilinmiyor'), true); }
+                if(r.ok) { app.toast('İzin İşlendi'); app.close(); await app.sync(); app.nav('tasks'); } else app.toast('Hata!', true);
             },
 
             async handleNewReport(e) {
@@ -554,24 +560,21 @@
                 const finalDesc = cleanDesc + `\n\n[REPORT_START]${JSON.stringify(reportData)}[REPORT_END]`;
                 const updatedTask = { id: tid, status: 'İnceleniyor', description: finalDesc };
                 const r = await fetch(`${RENDER_URL}/api/tasks`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(updatedTask) });
-                if(r.ok) { app.toast('Rapor Gönderildi!'); app.close(); await app.sync(); app.nav('dash'); } 
-                else { const ed = await r.json(); app.toast('HATA: ' + (ed.error || 'Bilinmiyor'), true); }
+                if(r.ok) { app.toast('Rapor Gönderildi!'); app.close(); await app.sync(); app.nav('dash'); } else app.toast('Hata!', true);
             },
 
             async updateTaskStatus(tid, status) {
                 const updatedTask = { id: tid, status: status };
                 const r = await fetch(`${RENDER_URL}/api/tasks`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(updatedTask) });
-                if(r.ok) { app.toast(status === 'Onaylandı' ? 'Onaylandı!' : 'Reddedildi!'); await app.sync(); app.nav('tasks'); } 
-                else { const ed = await r.json(); app.toast('HATA: ' + (ed.error || 'Bilinmiyor'), true); }
+                if(r.ok) { app.toast(status === 'Onaylandı' ? 'Onaylandı!' : 'Reddedildi!'); await app.sync(); app.nav('tasks'); } else app.toast('Hata!', true);
             },
 
             async handleNewAnn() {
-                const title = document.getElementById('an-title').value;
-                const text = document.getElementById('an-text').value;
+                const title = document.getElementById('an-title').value, text = document.getElementById('an-text').value;
                 if(!title || !text) return app.toast('Boş bırakmayın!', true);
                 const na = { id: app.genUUID(), title: title, text: text };
                 const r = await fetch(`${RENDER_URL}/api/announcements`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(na)});
-                if(r.ok) { app.toast('Yayınlandı'); await app.sync(); app.nav('ann'); } else { const ed = await r.json(); app.toast('HATA: ' + (ed.error || 'Bilinmiyor'), true); }
+                if(r.ok) { app.toast('Yayınlandı'); await app.sync(); app.nav('ann'); } else app.toast('Hata!', true);
             },
 
             async delTask(id) { if(confirm('Sil?')) { await fetch(`${RENDER_URL}/api/tasks/${id}`, {method:'DELETE'}); await app.sync(); app.nav('tasks'); } },

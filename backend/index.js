@@ -109,13 +109,7 @@ app.post('/api/tasks', async (req, res) => {
         const taskData = { ...req.body };
         const taskId = taskData.id;
         
-        let result;
-        if (taskId) { // Eğer bir ID gelmişse bu bir güncellemedir (Rapor, Onay, Red vb.)
-            delete taskData.id;
-            result = await supabase.from('tasks').update(taskData).eq('id', taskId);
-        } else { // ID yoksa bu yeni bir görev veya izindir
-            result = await supabase.from('tasks').insert([taskData]);
-        }
+        let result = await supabase.from('tasks').upsert([taskData]);
 
         if (result.error) throw result.error;
         res.json({ success: true });
