@@ -3,160 +3,250 @@
 <head>
     <meta charset="UTF-8">
     <link rel="icon" type="image/png" href="https://img.icons8.com/fluency/48/lightning-bolt.png" />
+    <link rel="shortcut icon" type="image/png" href="https://img.icons8.com/fluency/48/lightning-bolt.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>LSDT - Cloud Edition</title>
+    <title>LSDT - Premium Edition</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <style>
-        :root { --primary: #6c5ce7; --bg: #0f051d; --card: rgba(255,255,255,0.05); --text: #fff; --danger: #ff7675; }
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Outfit', sans-serif; }
-        body { background: var(--bg); color: var(--text); overflow: hidden; height: 100vh; }
-        .screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: none; background: var(--bg); z-index: 10; }
-        .screen.active { display: flex; flex-direction: column; }
+        :root { 
+            --p: #a29bfe; 
+            --p-dark: #6c5ce7;
+            --bg: radial-gradient(circle at top right, #2d1454, #0f051d); 
+            --bg-dark: #0f051d;
+            --card: rgba(255, 255, 255, 0.03); 
+            --text: #ffffff; 
+            --sub: #d1d8e0; 
+            --red: #ff7675; 
+            --green: #55efc4; 
+            --glass: rgba(162, 155, 254, 0.15);
+            --p-grad: linear-gradient(135deg, #6c5ce7, #a29bfe);
+            --gold-grad: linear-gradient(135deg, #f1c40f, #e67e22);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Outfit', sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background: var(--bg-dark); color: var(--text); height: 100vh; width: 100vw; overflow: hidden; }
+        .screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: none; flex-direction: column; z-index: 10; background: var(--bg); }
+        .screen.active { display: flex !important; }
+
+        /* LOADING */
+        #loading-screen { justify-content: center; align-items: center; z-index: 9999; background: #05020a; }
+        .load-container { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; position: relative; width: 100%; }
+        #l-cube { width: 40px; height: 40px; background: var(--p-grad); border-radius: 12px; box-shadow: 0 0 40px rgba(108,92,231,0.8); position: absolute; }
+        #l-code { font-family: monospace; color: var(--green); font-size: 1.2rem; font-weight: 600; opacity: 0; white-space: nowrap; overflow: hidden; position: absolute; }
+        #l-text { font-size: 4.5rem; font-weight: 900; background: var(--p-grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; opacity: 0; position: absolute; letter-spacing: 5px; }
+
+        /* UI ELEMENTS */
+        .glass-card { background: rgba(255,255,255,0.08); backdrop-filter: blur(40px); border: 1px solid rgba(255,255,255,0.15); padding: 40px 30px; border-radius: 45px; width: 92%; max-width: 400px; text-align: center; box-shadow: 0 40px 100px rgba(0,0,0,0.5); transition: transform 0.3s ease, box-shadow 0.3s ease; }
+        .input-p { width: 100%; padding: 18px; margin-bottom: 15px; background: rgba(255,255,255,0.1); border: 2px solid transparent; border-radius: 25px; color: white; font-size: 1rem; outline: none; transition: 0.3s; }
+        .input-p:focus { border-color: var(--p); background: rgba(255,255,255,0.15); box-shadow: 0 0 20px rgba(162,155,254,0.2); }
+        .btn-p { width: 100%; padding: 18px; background: var(--p-grad); color: white; border: none; border-radius: 25px; font-weight: 900; cursor: pointer; transition: transform 0.3s, box-shadow 0.3s; font-size: 1.1rem; box-shadow: 0 10px 30px rgba(108,92,231,0.3); }
+        .btn-p:hover { transform: translateY(-3px); box-shadow: 0 15px 35px rgba(108,92,231,0.5); }
         
-        #loading-screen { justify-content: center; align-items: center; z-index: 1000; }
-        .cube { width: 50px; height: 50px; background: var(--primary); border-radius: 12px; animation: rotate 2s infinite ease-in-out; }
-        @keyframes rotate { 0% { transform: rotate(0deg); } 50% { transform: rotate(180deg) scale(1.2); } 100% { transform: rotate(360deg); } }
-
-        .login-card { background: var(--card); padding: 40px; border-radius: 30px; border: 1px solid rgba(255,255,255,0.1); width: 90%; max-width: 400px; text-align: center; margin: auto; }
-        input, select, textarea { width: 100%; padding: 15px; margin-bottom: 15px; background: rgba(255,255,255,0.1); border: 1px solid transparent; border-radius: 15px; color: #fff; outline: none; }
-        input:focus { border-color: var(--primary); }
-        .btn-primary { width: 100%; padding: 15px; background: var(--primary); border: none; border-radius: 15px; color: #fff; font-weight: 700; cursor: pointer; transition: 0.3s; }
-        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(108,92,231,0.3); }
-        .btn-danger { width: 100%; padding: 15px; background: var(--danger); border: none; border-radius: 15px; color: #fff; font-weight: 700; cursor: pointer; }
-
-        .top-nav { padding: 20px; display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.03); }
-        .avatar { width: 45px; height: 45px; background: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; }
-        .bottom-nav { position: fixed; bottom: 0; width: 100%; height: 70px; background: rgba(255,255,255,0.03); backdrop-filter: blur(10px); display: flex; justify-content: space-around; align-items: center; }
-        .nav-item { opacity: 0.5; cursor: pointer; text-align: center; font-size: 0.8rem; }
-        .nav-item.active { opacity: 1; color: var(--primary); }
-        .nav-item i { font-size: 1.2rem; display: block; margin-bottom: 4px; }
-
-        #page-container { flex: 1; padding: 20px; overflow-y: auto; padding-bottom: 90px; }
-        .card { background: var(--card); padding: 20px; border-radius: 20px; margin-bottom: 15px; }
-        .tag { display: inline-block; padding: 4px 10px; background: rgba(108,92,231,0.2); color: var(--primary); border-radius: 8px; font-size: 0.7rem; font-weight: 700; }
-
-        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; justify-content: center; align-items: center; z-index: 2000; }
-        .modal.active { display: flex; }
-        .modal-content { background: #1a1a2e; padding: 30px; border-radius: 25px; width: 90%; max-width: 450px; }
-        .modal-header { display: flex; justify-content: space-between; margin-bottom: 20px; }
+        .top-nav { padding: 20px; display: flex; justify-content: space-between; align-items: center; background: transparent; z-index: 50; }
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; height: 90px; background: rgba(15,5,29,0.7); backdrop-filter: blur(25px); display: flex; justify-content: space-around; align-items: center; border-top: 1px solid rgba(255,255,255,0.05); padding-bottom: 20px; z-index: 100; }
+        .nav-item { color: rgba(255,255,255,0.8); font-size: 0.8rem; text-align: center; cursor: pointer; display: flex; flex-direction: column; align-items: center; transition: 0.4s; font-weight: 700; }
+        .nav-item.active { color: var(--p); transform: translateY(-8px); }
         
-        #toast-container { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 3000; }
-        .toast { background: var(--primary); padding: 12px 25px; border-radius: 50px; margin-bottom: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        #page-content { flex: 1; padding: 20px; overflow-y: auto; padding-bottom: 120px; }
+        .card { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15); padding: 25px; border-radius: 35px; margin-bottom: 20px; transition: 0.3s; }
+        .badge { display: inline-block; padding: 6px 14px; border-radius: 12px; font-size: 0.7rem; font-weight: 900; background: var(--glass); color: var(--p); text-transform: uppercase; }
+
+        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: none; justify-content: center; align-items: center; z-index: 2000; backdrop-filter: blur(20px); }
+        .modal.active { display: flex !important; }
+        .modal-content { background: #1a0b2e; width: 90%; max-width: 450px; padding: 35px; border-radius: 40px; border: 1px solid rgba(255,255,255,0.1); }
         
-        .preview-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 10px; }
-        .preview-img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 10px; }
+        .toast { position: fixed; top: 30px; left: 50%; transform: translateX(-50%) translateY(-200%); background: var(--p-grad); color: white; padding: 18px 35px; border-radius: 25px; font-weight: 900; z-index: 3000; }
+        
+        .setup-step { display: none; text-align: center; width: 100%; max-width: 400px; padding: 20px; }
+        .setup-step.active { display: block; animation: fadeInUp 0.5s ease; }
+        .setup-card { background: rgba(255,255,255,0.05); padding: 40px 30px; border-radius: 40px; border: 1px solid rgba(255,255,255,0.1); }
+        
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
 
-    <div id="toast-container"></div>
+    <div id="toast" class="toast"><i class="fas fa-info-circle"></i> <span id="toast-msg">Mesaj</span></div>
 
+    <!-- LOADING SCREEN -->
     <div id="loading-screen" class="screen active">
-        <div style="text-align:center;">
-            <div class="cube"></div>
-            <h1 style="margin-top:20px;">LSDT</h1>
+        <div class="load-container">
+            <div id="l-cube"></div>
+            <div id="l-code">&gt;_ init lsdt...</div>
+            <div id="l-text">LSDT</div>
         </div>
     </div>
 
-    <div id="login-screen" class="screen">
-        <div class="login-card">
-            <h1 style="font-size:2.5rem; margin-bottom:10px;">LSDT</h1>
-            <p style="color:#aaa; margin-bottom:30px;">Developer Management</p>
-            <form id="login-form">
-                <input type="text" id="username" placeholder="Kullanıcı Adı" required>
-                <input type="password" id="password" placeholder="Şifre" required>
-                <button type="submit" class="btn-primary">GİRİŞ YAP</button>
-            </form>
-        </div>
-    </div>
-
-    <div id="main-app-screen" class="screen">
-        <nav class="top-nav">
-            <div style="display:flex; gap:10px; align-items:center;">
-                <div id="user-avatar" class="avatar">L</div>
-                <div>
-                    <div id="nav-user-name" style="font-weight:700;">Yükleniyor...</div>
-                    <div id="nav-user-rank" style="font-size:0.7rem; color:#aaa;">Rank</div>
+    <!-- SETUP SCREEN -->
+    <div id="setup-screen" class="screen" style="justify-content:center; align-items:center; background: #05020a;">
+        <div id="setup-1" class="setup-step active">
+            <div class="setup-card">
+                <i class="fas fa-id-card fa-3x" style="color:var(--p); margin-bottom:20px;"></i>
+                <h2 style="font-size:1.8rem; margin-bottom:20px;">LSDT Üyesi misiniz?</h2>
+                <p style="color:var(--sub); margin-bottom:30px;">Bu panel sadece yetkili Luxa Studios geliştiricileri içindir.</p>
+                <div style="display:flex; gap:15px;">
+                    <button class="btn-p" onclick="app.setupStep(2)">EVET</button>
+                    <button class="btn-p" style="background:rgba(255,255,255,0.1);" onclick="app.toast('Lütfen adminler ile iletişime geçin!', true)">HAYIR</button>
                 </div>
             </div>
-            <div style="font-weight:700; color:var(--primary);"><i class="fas fa-bolt"></i> <span id="user-points">0</span> XP</div>
+        </div>
+        <div id="setup-2" class="setup-step">
+            <div class="setup-card">
+                <i class="fas fa-shield-alt fa-3x" style="color:var(--p); margin-bottom:20px;"></i>
+                <h2 style="font-size:1.8rem; margin-bottom:20px;">LSDT Sözleşmesi</h2>
+                <p style="color:var(--sub); margin-bottom:30px;">Bize Scam atmayacağınıza ve çalıntı ürünler kullanmayacağınıza söz veriyor musunuz?</p>
+                <button class="btn-p" onclick="app.requestNotif()">SÖZ VERİYORUM</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- LOGIN SCREEN -->
+    <div id="login-screen" class="screen">
+        <div style="height:100%; display:flex; justify-content:center; align-items:center;">
+            <div class="glass-card">
+                <h1 style="color:white; font-size:3.5rem; font-weight:900; letter-spacing:-3px;">LSDT</h1>
+                <p style="color:var(--p); font-weight:800; margin-bottom:40px; text-transform:uppercase;">Luxa Studios Developer Team</p>
+                <form onsubmit="app.handleLogin(event)">
+                    <input type="text" id="l-user" class="input-p" placeholder="Kullanıcı Adı" required>
+                    <input type="password" id="l-pass" class="input-p" placeholder="Şifre" required>
+                    <button type="submit" class="btn-p">GİRİŞ YAP <i class="fas fa-arrow-right"></i></button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- WELCOME ANIMATION -->
+    <div id="welcome-screen" class="screen" style="z-index: 1500; background: var(--bg); justify-content: center; align-items: center;">
+        <div id="w-content" style="text-align: center; transform: scale(0.9); opacity: 0;">
+            <div id="w-avatar" style="width:120px; height:120px; background:var(--p-grad); color:white; border-radius:50%; display:flex; justify-content:center; align-items:center; font-weight:900; font-size:4rem; margin: 0 auto 30px;">L</div>
+            <h1 id="w-title" style="font-size: 3rem; font-weight: 900; margin-bottom: 10px; color: white;"></h1>
+            <p id="w-sub" style="color: var(--p); font-size: 1.2rem; font-weight: 700; text-transform: uppercase;"></p>
+        </div>
+    </div>
+
+    <!-- MAIN APP SCREEN -->
+    <div id="main-app" class="screen">
+        <nav class="top-nav">
+            <div style="display:flex; gap:15px; align-items:center;">
+                <div id="avatar" style="width:50px; height:50px; background:var(--p-grad); color:white; border-radius:50%; display:flex; justify-content:center; align-items:center; font-weight:900;">L</div>
+                <div><div id="u-name" style="font-weight:900; color:var(--p);">Geliştirici</div><div id="u-role" style="font-size:0.7rem; color:var(--sub);">ADMIN</div></div>
+            </div>
+            <div onclick="location.reload()" style="color:var(--red); cursor:pointer;"><i class="fas fa-power-off fa-lg"></i></div>
         </nav>
-        <main id="page-container"></main>
+        <main id="page-content"></main>
         <nav class="bottom-nav">
-            <div class="nav-item active" onclick="switchPage('dashboard')"><i class="fas fa-home"></i>Panel</div>
-            <div class="nav-item" onclick="switchPage('tasks')"><i class="fas fa-list"></i>Görevler</div>
-            <div class="nav-item" onclick="switchPage('announcements')"><i class="fas fa-bell"></i>Duyurular</div>
-            <div class="nav-item" onclick="switchPage('settings')"><i class="fas fa-user"></i>Profil</div>
+            <div id="nav-dash" class="nav-item active" onclick="app.nav('dash')"><i class="fas fa-home"></i><span>Panel</span></div>
+            <div id="nav-tasks" class="nav-item" onclick="app.nav('tasks')"><i class="fas fa-tasks"></i><span>Görevler</span></div>
+            <div id="nav-ann" class="nav-item" onclick="app.nav('ann')"><i class="fas fa-bullhorn"></i><span>Duyuru</span></div>
+            <div id="nav-set" class="nav-item" onclick="app.nav('set')"><i class="fas fa-user-circle"></i><span>Profil</span></div>
         </nav>
     </div>
 
-    <div id="create-dev-modal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header"><h3>Üye Ekle</h3><i class="fas fa-times close-modal" style="cursor:pointer;"></i></div>
-            <form id="create-dev-form">
-                <input type="text" id="new-dev-name" placeholder="Ad Soyad" required>
-                <input type="text" id="new-dev-username" placeholder="Kullanıcı Adı" required>
-                <input type="password" id="new-dev-password" placeholder="Şifre" required>
-                <select id="new-dev-category">
-                    <option value="Script">Script</option>
-                    <option value="Modelleme">Modelleme</option>
-                    <option value="UI Tasarım">UI Tasarım</option>
-                </select>
-                <button type="submit" class="btn-primary">KAYDET</button>
-            </form>
-        </div>
-    </div>
+    <script>
+        const RENDER_URL = "https://lsdt.onrender.com";
+        
+        const app = {
+            db: { users: [], tasks: [], anns: [] },
+            user: null,
+            
+            async init() {
+                const tl = gsap.timeline();
+                tl.fromTo("#l-cube", { y: -100, rotation: 0, opacity: 0 }, { y: 0, rotation: 180, opacity: 1, duration: 1, ease: "bounce.out" })
+                .to("#l-cube", { rotation: "+=360", scale: 0.5, opacity: 0, duration: 0.8, delay: 0.5 })
+                .to("#l-code", { opacity: 1, duration: 0.1 }).to("#l-code", { width: "180px", duration: 1, ease: "steps(14)" })
+                .to("#l-code", { opacity: 0, duration: 0.5, delay: 0.5 })
+                .to("#l-text", { opacity: 1, scale: 1, duration: 1, ease: "elastic.out(1, 0.5)" })
+                .to("#loading-screen", { opacity: 0, duration: 0.8, onComplete: async () => {
+                    await app.sync();
+                    const setupDone = localStorage.getItem('lsdt_setup');
+                    if(!setupDone) app.show('setup-screen');
+                    else app.show('login-screen');
+                }});
+                
+                setInterval(() => app.sync(), 15000);
+            },
 
-    <div id="assign-task-modal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header"><h3>Görev Ver</h3><i class="fas fa-times close-modal" style="cursor:pointer;"></i></div>
-            <form id="assign-task-form">
-                <select id="task-assignee" required></select>
-                <input type="text" id="task-title" placeholder="Başlık" required>
-                <textarea id="task-desc" placeholder="Detaylar" required></textarea>
-                <select id="task-type"><option value="Günlük">Günlük</option><option value="Haftalık">Haftalık</option></select>
-                <select id="task-priority"><option value="low">Düşük</option><option value="medium">Orta</option><option value="high">Yüksek</option></select>
-                <button type="submit" class="btn-primary">GÖNDER</button>
-            </form>
-        </div>
-    </div>
+            async sync() {
+                try {
+                    const res = await fetch(`${RENDER_URL}/api/state`);
+                    const data = await res.json();
+                    app.db = data;
+                    console.log("Cloud Sync OK");
+                } catch(e) { console.error("Sync Error:", e); }
+            },
 
-    <div id="announcement-modal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header"><h3>Duyuru</h3><i class="fas fa-times close-modal" style="cursor:pointer;"></i></div>
-            <form id="announcement-form">
-                <input type="text" id="ann-title" placeholder="Başlık" required>
-                <textarea id="announcement-text" placeholder="Mesaj" required></textarea>
-                <button type="submit" class="btn-primary">YAYINLA</button>
-            </form>
-        </div>
-    </div>
+            show(id) { 
+                document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+                document.getElementById(id).classList.add('active');
+            },
 
-    <div id="complete-task-modal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header"><h3>Raporla</h3><i class="fas fa-times close-modal" style="cursor:pointer;"></i></div>
-            <form id="complete-task-form">
-                <textarea id="task-report" placeholder="Neler yaptın?" required></textarea>
-                <textarea id="task-bugs" placeholder="Hatalar"></textarea>
-                <input type="file" id="task-images" multiple accept="image/*">
-                <div id="image-preview-container" class="preview-grid"></div>
-                <button type="submit" class="btn-primary">GÖNDER</button>
-            </form>
-        </div>
-    </div>
+            setupStep(n) {
+                document.querySelectorAll('.setup-step').forEach(s => s.classList.remove('active'));
+                document.getElementById('setup-' + n).classList.add('active');
+            },
 
-    <div id="reject-modal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header"><h3>Reddet</h3><i class="fas fa-times close-modal" style="cursor:pointer;"></i></div>
-            <form id="reject-form">
-                <textarea id="reject-reason" placeholder="Sebep" required></textarea>
-                <button type="submit" class="btn-danger">REDDET</button>
-            </form>
-        </div>
-    </div>
+            requestNotif() {
+                localStorage.setItem('lsdt_setup', 'true');
+                app.show('login-screen');
+            },
 
-    <script type="module" src="/main.js"></script>
+            async handleLogin(e) {
+                e.preventDefault();
+                const u = document.getElementById('l-user').value;
+                const p = document.getElementById('l-pass').value;
+                const found = app.db.users.find(x => x.username === u && x.password === p);
+                if(found) app.loginAs(found);
+                else app.toast('Hatalı Giriş!', true);
+            },
+
+            loginAs(u) {
+                app.user = u;
+                document.getElementById('w-title').innerText = `Hoşgeldin, ${u.name.split(' ')[0]}`;
+                document.getElementById('w-sub').innerText = u.category;
+                app.show('welcome-screen');
+                gsap.to("#w-content", { scale: 1, opacity: 1, duration: 1, ease: "back.out" });
+                setTimeout(() => {
+                    document.getElementById('u-name').innerText = u.name;
+                    document.getElementById('u-role').innerText = u.category;
+                    app.show('main-app'); app.nav('dash');
+                }, 3000);
+            },
+
+            nav(p) {
+                const c = document.getElementById('page-content');
+                document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+                document.getElementById('nav-'+p).classList.add('active');
+                
+                if(p === 'dash') {
+                    c.innerHTML = `<div class="card" style="background:var(--p-grad);"><h1 style="color:white;">Selam, ${app.user.name.split(' ')[0]}</h1><p>${app.user.category}</p></div>`;
+                    c.innerHTML += `<div class="card"><h3>Duyurular</h3>${app.db.anns.slice(-1).map(a => `<p>${a.text}</p>`).join('') || '<p>Yeni duyuru yok.</p>'}</div>`;
+                } else if(p === 'tasks') {
+                    c.innerHTML = `<h2>Görevlerin</h2>`;
+                    const myTasks = app.db.tasks.filter(t => t.assignee === app.user.username);
+                    myTasks.forEach(t => {
+                        c.innerHTML += `<div class="card"><div class="badge">${t.status}</div><h3>${t.title}</h3><p>${t.description}</p></div>`;
+                    });
+                } else if(p === 'ann') {
+                    c.innerHTML = `<h2>Duyurular</h2>`;
+                    app.db.anns.forEach(a => {
+                        c.innerHTML += `<div class="card"><h3>${a.title}</h3><p>${a.text}</p></div>`;
+                    });
+                } else if(p === 'set') {
+                    c.innerHTML = `<div class="card" style="text-align:center;"><h2>${app.user.name}</h2><p>${app.user.category}</p><br><button class="btn-p" onclick="location.reload()">Çıkış Yap</button></div>`;
+                }
+            },
+
+            toast(m, bad=false) {
+                const el = document.getElementById('toast');
+                document.getElementById('toast-msg').innerText = m;
+                el.style.background = bad ? 'var(--red)' : 'var(--p-grad)';
+                gsap.fromTo(el, {y:-100, opacity:0}, {y:0, opacity:1, duration:0.5});
+                setTimeout(() => gsap.to(el, {y:-100, opacity:0}), 3000);
+            }
+        };
+
+        window.onload = () => app.init();
+    </script>
 </body>
 </html>
