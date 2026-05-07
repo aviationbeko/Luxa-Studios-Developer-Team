@@ -403,10 +403,20 @@
                 if(r.ok) { app.toast('Üye Eklendi!'); app.close(); await app.sync(); app.nav('set'); } else app.toast('Hata!', true);
             },
 
+            // Gerçek UUID Oluşturucu (Veritabanı uyumluluğu için)
+            genUUID() {
+                if (typeof crypto.randomUUID === 'function') return crypto.randomUUID();
+                return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+                    var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+                    return v.toString(16);
+                });
+            },
+
             async handleNewTask(e) {
                 e.preventDefault(); if(!app.sel.tTo) return app.toast('Kişi Seç!', true);
                 const descWithAdmin = document.getElementById('t-desc').value + `\n\n[ADMIN: ${app.user.name}]`;
                 const nt = { 
+                    id: app.genUUID(),
                     assignee: app.sel.tTo, 
                     title: document.getElementById('t-title').value, 
                     description: descWithAdmin, 
@@ -421,6 +431,7 @@
                 e.preventDefault(); if(!app.sel.lTo) return app.toast('Kişi Seç!', true);
                 const leaveDesc = `${document.getElementById('l-days').value} Gün İzin Talebi. Gerekçe: ${document.getElementById('l-reason').value}\n\n[ADMIN: ${app.user.name}]`;
                 const nl = { 
+                    id: app.genUUID(),
                     assignee: app.sel.lTo, 
                     title: 'İZİN TALEBİ', 
                     description: leaveDesc, 
@@ -444,7 +455,7 @@
                 const title = document.getElementById('an-title').value;
                 const text = document.getElementById('an-text').value;
                 if(!title || !text) return app.toast('Boş bırakmayın!', true);
-                const na = { title: title, text: text };
+                const na = { id: app.genUUID(), title: title, text: text };
                 const r = await fetch(`${RENDER_URL}/api/announcements`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(na)});
                 if(r.ok) { app.toast('Yayınlandı'); await app.sync(); app.nav('ann'); } 
                 else { const errData = await r.json(); app.toast('HATA: ' + (errData.error || 'Bilinmiyor'), true); }

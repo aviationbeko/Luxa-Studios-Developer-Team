@@ -110,11 +110,10 @@ app.post('/api/tasks', async (req, res) => {
         const taskId = taskData.id;
         
         let result;
-        if (taskId && taskId.length > 20) { // Eğer gelen ID bir UUID ise güncelle
+        if (taskId && req.body.status === 'İnceleniyor') { // Eğer güncelleme ise (Rapor)
             delete taskData.id;
             result = await supabase.from('tasks').update(taskData).eq('id', taskId);
-        } else { // Yeni görev
-            delete taskData.id;
+        } else { // Yeni görev veya izin
             result = await supabase.from('tasks').insert([taskData]);
         }
 
@@ -128,9 +127,7 @@ app.post('/api/tasks', async (req, res) => {
 
 app.post('/api/announcements', async (req, res) => {
     try {
-        const annData = { ...req.body };
-        delete annData.id;
-        const { error } = await supabase.from('announcements').insert([annData]);
+        const { error } = await supabase.from('announcements').insert([req.body]);
         if (error) throw error;
         res.json({ success: true });
     } catch (error) {
