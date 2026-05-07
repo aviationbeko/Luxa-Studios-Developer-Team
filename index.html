@@ -5,7 +5,7 @@
     <link rel="icon" type="image/png" href="https://img.icons8.com/fluency/48/lightning-bolt.png" />
     <link rel="shortcut icon" type="image/png" href="https://img.icons8.com/fluency/48/lightning-bolt.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>LSDT - Ultra Premium Edition</title>
+    <title>LSDT v11.0 Ultra Premium</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
@@ -14,60 +14,65 @@
             --p: #a29bfe; --p-dark: #6c5ce7;
             --bg: radial-gradient(circle at top right, #2d1454, #0f051d); 
             --bg-dark: #0f051d;
-            --card: rgba(255, 255, 255, 0.05); 
+            --card: rgba(255, 255, 255, 0.03); 
             --text: #ffffff; --sub: #d1d8e0; 
-            --red: #ff7675; --green: #55efc4; --gold: #f1c40f;
+            --red: #ff7675; --green: #55efc4; 
+            --glass: rgba(162, 155, 254, 0.15);
             --p-grad: linear-gradient(135deg, #6c5ce7, #a29bfe);
             --gold-grad: linear-gradient(135deg, #f1c40f, #e67e22);
         }
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Outfit', sans-serif; }
-        body { background: var(--bg-dark); color: var(--text); height: 100vh; overflow: hidden; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Outfit', sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background: var(--bg-dark); color: var(--text); height: 100vh; width: 100vw; overflow: hidden; }
         .screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: none; flex-direction: column; z-index: 10; background: var(--bg); }
         .screen.active { display: flex !important; }
 
         /* LOADING */
         #loading-screen { justify-content: center; align-items: center; z-index: 9999; background: #05020a; }
-        .cube { width: 40px; height: 40px; background: var(--p-grad); border-radius: 12px; box-shadow: 0 0 40px rgba(108,92,231,0.8); }
-        
-        /* DASHBOARD ACTION GRID */
-        .action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
-        .action-card { background: var(--card); border: 1px solid rgba(255,255,255,0.1); border-radius: 30px; padding: 25px 15px; text-align: center; cursor: pointer; transition: 0.3s; position: relative; overflow: hidden; }
-        .action-card i { font-size: 2.2rem; display: block; margin-bottom: 12px; }
-        .action-card span { font-weight: 800; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; }
-        .action-card:hover { transform: translateY(-5px); background: rgba(255,255,255,0.1); border-color: var(--p); }
-        .action-card.gold { color: var(--gold); }
-        .action-card.gold:hover { border-color: var(--gold); }
+        .load-container { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; position: relative; width: 100%; }
+        #l-cube { width: 40px; height: 40px; background: var(--p-grad); border-radius: 12px; box-shadow: 0 0 40px rgba(108,92,231,0.8); position: absolute; }
+        #l-code { font-family: monospace; color: var(--green); font-size: 1.2rem; font-weight: 600; opacity: 0; white-space: nowrap; overflow: hidden; position: absolute; }
+        #l-text { font-size: 4.5rem; font-weight: 900; background: var(--p-grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; opacity: 0; position: absolute; letter-spacing: 5px; }
 
         /* UI ELEMENTS */
         .glass-card { background: rgba(255,255,255,0.08); backdrop-filter: blur(40px); border: 1px solid rgba(255,255,255,0.15); padding: 40px 30px; border-radius: 45px; width: 92%; max-width: 400px; text-align: center; box-shadow: 0 40px 100px rgba(0,0,0,0.5); }
-        .input-p { width: 100%; padding: 18px; margin-bottom: 15px; background: rgba(255,255,255,0.1); border: 2px solid transparent; border-radius: 25px; color: white; outline: none; transition: 0.3s; }
-        .input-p:focus { border-color: var(--p); background: rgba(255,255,255,0.15); }
+        .input-p { width: 100%; padding: 18px; margin-bottom: 15px; background: rgba(255,255,255,0.1); border: 2px solid transparent; border-radius: 25px; color: white; font-size: 1rem; outline: none; transition: 0.3s; }
+        .input-p:focus { border-color: var(--p); background: rgba(255,255,255,0.15); box-shadow: 0 0 20px rgba(162,155,254,0.2); }
+        
+        .p-opt { padding: 10px 18px; border-radius: 30px; background: rgba(108,92,231,0.1); border: 1px solid rgba(108,92,231,0.3); color: white; cursor: pointer; font-size: 0.8rem; font-weight: 700; transition: 0.3s; margin: 5px; display: inline-block; }
+        .p-opt.active { background: var(--p-grad); border-color: transparent; box-shadow: 0 5px 15px rgba(108,92,231,0.4); }
+
         .btn-p { width: 100%; padding: 18px; background: var(--p-grad); color: white; border: none; border-radius: 25px; font-weight: 900; cursor: pointer; transition: 0.3s; font-size: 1.1rem; box-shadow: 0 10px 30px rgba(108,92,231,0.3); }
         .btn-p:hover { transform: translateY(-3px); box-shadow: 0 15px 35px rgba(108,92,231,0.5); }
-
-        .top-nav { padding: 20px; display: flex; justify-content: space-between; align-items: center; }
-        .bottom-nav { position: fixed; bottom: 0; width: 100%; height: 90px; background: rgba(15,5,29,0.8); backdrop-filter: blur(25px); display: flex; justify-content: space-around; align-items: center; border-top: 1px solid rgba(255,255,255,0.05); padding-bottom: 15px; z-index: 100; }
-        .nav-item { color: rgba(255,255,255,0.6); font-size: 0.75rem; text-align: center; cursor: pointer; font-weight: 700; }
-        .nav-item.active { color: var(--p); transform: translateY(-5px); }
-        .nav-item i { font-size: 1.6rem; display: block; margin-bottom: 5px; }
-
-        #page-content { flex: 1; padding: 20px; overflow-y: auto; padding-bottom: 120px; }
-        .card { background: var(--card); border: 1px solid rgba(255,255,255,0.1); padding: 25px; border-radius: 35px; margin-bottom: 20px; position: relative; }
-        .card h3 { color: var(--p); margin-bottom: 10px; font-weight: 900; }
-        .badge { display: inline-block; padding: 6px 12px; border-radius: 10px; font-size: 0.7rem; font-weight: 900; margin-bottom: 12px; text-transform: uppercase; background: var(--glass); color: var(--p); }
-
-        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: none; justify-content: center; align-items: center; z-index: 2000; backdrop-filter: blur(15px); }
-        .modal.active { display: flex !important; }
-        .modal-content { background: #1a0b2e; width: 92%; max-width: 450px; padding: 35px; border-radius: 40px; border: 1px solid rgba(255,255,255,0.1); max-height: 85vh; overflow-y: auto; }
         
-        .toast { position: fixed; top: 30px; left: 50%; transform: translateX(-50%) translateY(-200%); background: var(--p-grad); color: white; padding: 18px 30px; border-radius: 20px; font-weight: 900; z-index: 3000; }
-        .del-btn { position: absolute; top: 20px; right: 20px; color: var(--red); opacity: 0.5; cursor: pointer; transition: 0.3s; }
-        .del-btn:hover { opacity: 1; transform: scale(1.2); }
+        .top-nav { padding: 20px; display: flex; justify-content: space-between; align-items: center; background: transparent; z-index: 50; }
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; height: 90px; background: rgba(15,5,29,0.7); backdrop-filter: blur(25px); display: flex; justify-content: space-around; align-items: center; border-top: 1px solid rgba(255,255,255,0.05); padding-bottom: 20px; z-index: 100; }
+        .nav-item { color: rgba(255,255,255,0.8); font-size: 0.8rem; text-align: center; cursor: pointer; display: flex; flex-direction: column; align-items: center; transition: 0.4s; font-weight: 700; }
+        .nav-item.active { color: var(--p); transform: translateY(-8px); }
+        .nav-item i { font-size: 1.8rem; margin-bottom: 6px; }
+        
+        #page-content { flex: 1; padding: 20px; overflow-y: auto; padding-bottom: 120px; }
+        .card { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15); padding: 25px; border-radius: 35px; margin-bottom: 20px; position: relative; }
+        .card h3 { color: var(--p); margin-bottom: 10px; font-weight: 900; }
+        .badge { display: inline-block; padding: 6px 14px; border-radius: 12px; font-size: 0.7rem; font-weight: 900; margin-bottom: 12px; text-transform: uppercase; background: var(--glass); color: var(--p); }
+
+        .action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
+        .action-card { background: var(--card); border: 1px solid rgba(255,255,255,0.1); border-radius: 30px; padding: 25px 15px; text-align: center; cursor: pointer; transition: 0.3s; }
+        .action-card i { font-size: 2.2rem; display: block; margin-bottom: 12px; }
+        .action-card span { font-weight: 800; font-size: 0.8rem; text-transform: uppercase; }
+        .action-card:hover { transform: translateY(-5px); background: rgba(255,255,255,0.1); border-color: var(--p); }
+        .action-card.gold { color: #f1c40f; }
+
+        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: none; justify-content: center; align-items: center; z-index: 2000; backdrop-filter: blur(20px); }
+        .modal.active { display: flex !important; }
+        .modal-content { background: #1a0b2e; width: 92%; max-width: 450px; padding: 35px; border-radius: 40px; border: 1px solid rgba(255,255,255,0.1); }
+        
+        .toast { position: fixed; top: 30px; left: 50%; transform: translateX(-50%) translateY(-200%); background: var(--p-grad); color: white; padding: 18px 35px; border-radius: 25px; font-weight: 900; z-index: 3000; }
+        .del-btn { position: absolute; top: 20px; right: 20px; color: var(--red); opacity: 0.5; cursor: pointer; }
 
         .setup-step { display: none; text-align: center; width: 100%; max-width: 400px; padding: 20px; }
         .setup-step.active { display: block; animation: fadeInUp 0.5s ease; }
-        .setup-card { background: var(--card); padding: 40px 30px; border-radius: 40px; border: 1px solid rgba(255,255,255,0.1); }
-        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .setup-card { background: rgba(255,255,255,0.05); padding: 40px 30px; border-radius: 40px; border: 1px solid rgba(255,255,255,0.1); }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
@@ -76,9 +81,10 @@
 
     <!-- LOADING SCREEN -->
     <div id="loading-screen" class="screen active">
-        <div style="text-align:center;">
-            <div id="l-cube" class="cube" style="margin: 0 auto;"></div>
-            <h1 id="l-text" style="font-size:4rem; font-weight:900; margin-top:30px; opacity:0; letter-spacing:10px;">LSDT</h1>
+        <div class="load-container">
+            <div id="l-cube"></div>
+            <div id="l-code">&gt;_ init lsdt...</div>
+            <div id="l-text">LSDT</div>
         </div>
     </div>
 
@@ -98,7 +104,7 @@
         <div id="setup-2" class="setup-step">
             <div class="setup-card">
                 <i class="fas fa-key fa-3x" style="color:var(--p); margin-bottom:20px;"></i>
-                <h2 style="font-size:1.8rem; margin-bottom:20px;">Bilgileriniz Hazır mı?</h2>
+                <h2 style="font-size:1.8rem; margin-bottom:20px;">Bilgileriniz Tam mı?</h2>
                 <p style="color:var(--sub); margin-bottom:30px;">Adminlerden giriş bilgilerinizi aldınız mı?</p>
                 <button class="btn-p" onclick="app.setupStep(3)">ALDIM</button>
             </div>
@@ -106,8 +112,8 @@
         <div id="setup-3" class="setup-step">
             <div class="setup-card">
                 <i class="fas fa-shield-alt fa-3x" style="color:var(--p); margin-bottom:20px;"></i>
-                <h2 style="font-size:1.8rem; margin-bottom:20px;">Sözleşme</h2>
-                <p style="color:var(--sub); margin-bottom:30px;">Bize Scam atmayacağınıza ve çalmayacağınıza söz veriyor musunuz?</p>
+                <h2 style="font-size:1.8rem; margin-bottom:20px;">LSDT Sözleşmesi</h2>
+                <p style="color:var(--sub); margin-bottom:30px;">Bize Scam atmayacağınıza ve çalıntı ürünler kullanmayacağınıza söz veriyor musunuz?</p>
                 <button class="btn-p" onclick="app.setupStep(4)">SÖZ VERİYORUM</button>
             </div>
         </div>
@@ -115,7 +121,7 @@
             <div class="setup-card">
                 <i class="fas fa-bell fa-3x" style="color:var(--p); margin-bottom:20px;"></i>
                 <h2 style="font-size:1.8rem; margin-bottom:20px;">Hazırsınız!</h2>
-                <p style="color:var(--sub); margin-bottom:30px;">Yeni görevlerden haberdar olmak için her şey hazır.</p>
+                <p style="color:var(--sub); margin-bottom:30px;">Yeni görevler ve duyurular için bildirimler her zaman açık kalsın.</p>
                 <button class="btn-p" onclick="app.requestNotif()">BAŞLAYALIM</button>
             </div>
         </div>
@@ -126,25 +132,25 @@
         <div style="height:100%; display:flex; justify-content:center; align-items:center;">
             <div class="glass-card">
                 <h1 style="color:white; font-size:3.5rem; font-weight:900; letter-spacing:-3px;">LSDT</h1>
-                <p style="color:var(--p); font-weight:800; margin-bottom:40px;">DEVELOPER TEAM</p>
+                <p style="color:var(--p); font-weight:800; margin-bottom:40px; text-transform:uppercase;">Luxa Studios Developer Team</p>
                 <form onsubmit="app.handleLogin(event)">
                     <input type="text" id="l-user" class="input-p" placeholder="Kullanıcı Adı" required>
                     <input type="password" id="l-pass" class="input-p" placeholder="Şifre" required>
-                    <div style="margin:15px 0; color:var(--sub); font-size:0.9rem; display:flex; align-items:center; justify-content:center; gap:10px;">
+                    <div style="margin-bottom:15px; color:var(--sub); font-size:0.9rem; display:flex; align-items:center; justify-content:center; gap:10px;">
                         <input type="checkbox" id="l-rem" style="width:18px; height:18px; accent-color:var(--p);"> Beni Hatırla
                     </div>
-                    <button type="submit" class="btn-p">GİRİŞ YAP</button>
+                    <button type="submit" class="btn-p">GİRİŞ YAP <i class="fas fa-arrow-right"></i></button>
                 </form>
             </div>
         </div>
     </div>
 
-    <!-- MAIN APP -->
+    <!-- MAIN APP SCREEN -->
     <div id="main-app" class="screen">
         <nav class="top-nav">
             <div style="display:flex; gap:15px; align-items:center;">
-                <div id="avatar" style="width:50px; height:50px; background:var(--p-grad); color:white; border-radius:50%; display:flex; justify-content:center; align-items:center; font-weight:900; font-size:1.5rem;">L</div>
-                <div><div id="u-name" style="font-weight:900; color:var(--p); font-size:1.1rem;">Yükleniyor</div><div id="u-role" style="font-size:0.7rem; color:var(--sub); font-weight:800;">ADMIN</div></div>
+                <div id="avatar" style="width:50px; height:50px; background:var(--p-grad); color:white; border-radius:50%; display:flex; justify-content:center; align-items:center; font-weight:900;">L</div>
+                <div><div id="u-name" style="font-weight:900; color:var(--p);">Geliştirici</div><div id="u-role" style="font-size:0.7rem; color:var(--sub);">ADMIN</div></div>
             </div>
             <div onclick="location.reload()" style="color:var(--red); cursor:pointer;"><i class="fas fa-power-off fa-lg"></i></div>
         </nav>
@@ -159,41 +165,36 @@
 
     <!-- MODALS -->
     <div id="modal-dev" class="modal"><div class="modal-content">
-        <h2 style="margin-bottom:20px;">Yeni Üye Ekle</h2>
+        <h2 style="margin-bottom:20px;">Üye Ekle</h2>
         <form onsubmit="app.handleNewDev(event)">
             <input type="text" id="d-name" class="input-p" placeholder="Ad Soyad" required>
             <input type="text" id="d-user" class="input-p" placeholder="Kullanıcı Adı" required>
             <input type="password" id="d-pass" class="input-p" placeholder="Şifre" required>
-            <select id="d-cat" class="input-p" style="appearance:none;">
-                <option value="Script">Script</option>
-                <option value="Modelleme">Modelleme</option>
-                <option value="UI Tasarım">UI Tasarım</option>
-                <option value="Admin">Admin</option>
-            </select>
+            <select id="d-cat" class="input-p"><option value="Script">Script</option><option value="Modelleme">Modelleme</option><option value="UI Tasarım">UI Tasarım</option><option value="Admin">Admin</option></select>
             <button type="submit" class="btn-p">KAYDET</button>
-            <button type="button" class="btn-p" style="background:none; box-shadow:none; margin-top:10px;" onclick="app.close()">VAZGEÇ</button>
+            <button type="button" class="btn-p" style="background:none; margin-top:10px;" onclick="app.close()">VAZGEÇ</button>
         </form>
     </div></div>
 
     <div id="modal-task" class="modal"><div class="modal-content">
-        <h2 style="margin-bottom:20px;">Görev Ata</h2>
+        <h2 style="margin-bottom:20px;">Görev Ver</h2>
         <form onsubmit="app.handleNewTask(event)">
             <select id="t-to" class="input-p"></select>
             <input type="text" id="t-title" class="input-p" placeholder="Başlık" required>
             <textarea id="t-desc" class="input-p" placeholder="Detaylar" style="height:100px;" required></textarea>
             <button type="submit" class="btn-p">GÖNDER</button>
-            <button type="button" class="btn-p" style="background:none; box-shadow:none; margin-top:10px;" onclick="app.close()">VAZGEÇ</button>
+            <button type="button" class="btn-p" style="background:none; margin-top:10px;" onclick="app.close()">VAZGEÇ</button>
         </form>
     </div></div>
 
     <div id="modal-leave" class="modal"><div class="modal-content">
-        <h2 style="color:var(--gold); margin-bottom:20px;">İzin Tanımla</h2>
+        <h2 style="color:#f1c40f; margin-bottom:20px;">İzin Ver</h2>
         <form onsubmit="app.handleNewLeave(event)">
             <select id="l-to" class="input-p"></select>
             <input type="number" id="l-days" class="input-p" placeholder="Kaç Gün?" required min="1">
-            <textarea id="l-reason" class="input-p" placeholder="İzin Sebebi" style="height:80px;"></textarea>
-            <button type="submit" class="btn-p" style="background:var(--gold-grad);">İZİN VER</button>
-            <button type="button" class="btn-p" style="background:none; box-shadow:none; margin-top:10px;" onclick="app.close()">VAZGEÇ</button>
+            <textarea id="l-reason" class="input-p" placeholder="Sebep" style="height:80px;"></textarea>
+            <button type="submit" class="btn-p" style="background:var(--gold-grad);">ONAYLA</button>
+            <button type="button" class="btn-p" style="background:none; margin-top:10px;" onclick="app.close()">VAZGEÇ</button>
         </form>
     </div></div>
 
@@ -205,8 +206,11 @@
 
             async init() {
                 const tl = gsap.timeline();
-                tl.fromTo("#l-cube", { y: -50, rotation: 0, opacity: 0 }, { y: 0, rotation: 180, opacity: 1, duration: 1, ease: "bounce.out" })
-                  .to("#l-text", { opacity: 1, letterSpacing: "5px", duration: 1 })
+                tl.fromTo("#l-cube", { y: -100, rotation: 0, opacity: 0 }, { y: 0, rotation: 180, opacity: 1, duration: 1, ease: "bounce.out" })
+                  .to("#l-cube", { rotation: "+=360", scale: 0.5, opacity: 0, duration: 0.8, delay: 0.5 })
+                  .to("#l-code", { opacity: 1, duration: 0.1 }).to("#l-code", { width: "180px", duration: 1, ease: "steps(14)" })
+                  .to("#l-code", { opacity: 0, duration: 0.5, delay: 0.5 })
+                  .to("#l-text", { opacity: 1, scale: 1, duration: 1, ease: "elastic.out(1, 0.5)" })
                   .to("#loading-screen", { opacity: 0, duration: 0.8, delay: 1, onComplete: async () => {
                       await app.sync();
                       const setup = localStorage.getItem('lsdt_setup');
@@ -243,7 +247,7 @@
                 if(found) {
                     if(rem) localStorage.setItem('lsdt_rem', JSON.stringify(found));
                     app.loginAs(found);
-                } else app.toast('Hatalı Giriş!', true);
+                } else app.toast('Bilgiler Hatalı!', true);
             },
 
             loginAs(u) {
@@ -261,7 +265,7 @@
                 
                 if(p === 'dash') {
                     c.innerHTML = `
-                        <div class="card" style="background:var(--p-grad);"><h1 style="color:white; font-size:2rem;">Selam, ${app.user.name.split(' ')[0]}</h1><p>${app.user.category}</p></div>
+                        <div class="card" style="background:var(--p-grad);"><h1 style="color:white;">Selam, ${app.user.name.split(' ')[0]}</h1><p>${app.user.category}</p></div>
                         ${app.user.role === 'admin' ? `
                             <div class="action-grid">
                                 <div class="action-card" onclick="app.open('modal-dev')"><i class="fas fa-user-plus"></i><span>Üye Ekle</span></div>
@@ -269,26 +273,29 @@
                                 <div class="action-card gold" onclick="app.openLeaveModal()"><i class="fas fa-plane-departure"></i><span>İzin Ver</span></div>
                                 <div class="action-card" onclick="app.nav('ann')"><i class="fas fa-bullhorn"></i><span>Duyuru</span></div>
                             </div>
-                            <h3 style="margin-top:25px;">Onay Bekleyen Raporlar</h3>
-                            <div id="review-list"></div>
                         ` : `
-                            <div class="card"><h3>Güncel Durum</h3><p>Şu an aktif bir görevin bulunmuyor.</p></div>
+                            <div class="card"><h3>Durum</h3><p>Şu an aktif bir görevin yok.</p></div>
                         `}
                     `;
                 } else if(p === 'tasks') {
-                    c.innerHTML = `<h2>Görev GUI</h2>`;
+                    c.innerHTML = `<h2>Görevler</h2>`;
                     app.db.tasks.slice().reverse().forEach(t => {
                         if(app.user.role === 'admin' || t.assignee === app.user.username) {
-                            c.innerHTML += `<div class="card"><div class="badge">${t.status}</div><h3>${t.title}</h3><p style="font-size:0.9rem; color:var(--sub);">${t.description}</p>${app.user.role === 'admin' ? `<i class="fas fa-trash del-btn" onclick="app.delTask('${t.id}')"></i>` : ''}</div>`;
+                            c.innerHTML += `<div class="card"><div class="badge">${t.status}</div><h3>${t.title}</h3><p>${t.description}</p>${app.user.role === 'admin' ? `<i class="fas fa-trash del-btn" onclick="app.delTask('${t.id}')"></i>` : ''}</div>`;
                         }
                     });
                 } else if(p === 'ann') {
-                    c.innerHTML = `<h2>Duyurular</h2>${app.user.role === 'admin' ? `<div class="card"><input type="text" id="an-title" class="input-p" placeholder="Başlık"><textarea id="an-text" class="input-p" placeholder="Mesaj"></textarea><button class="btn-p" onclick="app.postAnn()">YAYINLA</button></div>` : ''}`;
+                    c.innerHTML = `<h2>Duyurular</h2>${app.user.role === 'admin' ? `<div class="card"><input type="text" id="an-title" class="input-p" placeholder="Başlık"><textarea id="an-text" class="input-p" placeholder="Mesaj"></textarea><button class="btn-p" onclick="app.handleNewAnn()">YAYINLA</button></div>` : ''}`;
                     app.db.anns.slice().reverse().forEach(a => {
                         c.innerHTML += `<div class="card"><h3>${a.title}</h3><p>${a.text}</p>${app.user.role === 'admin' ? `<i class="fas fa-trash del-btn" onclick="app.delAnn('${a.id}')"></i>` : ''}</div>`;
                     });
                 } else if(p === 'set') {
-                    c.innerHTML = `<div class="card" style="text-align:center;"><h2>${app.user.name}</h2><p>${app.user.category}</p><br><button class="btn-p" onclick="localStorage.removeItem('lsdt_rem'); location.reload()">Girişi Kapat</button></div>`;
+                    c.innerHTML = `<div class="card" style="text-align:center;"><h2>${app.user.name}</h2><p>${app.user.category}</p></div><button class="btn-p" onclick="localStorage.removeItem('lsdt_rem'); location.reload()">ÇIKIŞ YAP</button>`;
+                    if(app.user.role === 'admin') {
+                        app.db.users.forEach(u => {
+                            if(u.username !== app.user.username) c.innerHTML += `<div class="card">${u.name} <i class="fas fa-trash del-btn" onclick="app.delUser('${u.id}')"></i></div>`;
+                        });
+                    }
                 }
             },
 
@@ -306,32 +313,34 @@
 
             async handleNewDev(e) {
                 e.preventDefault();
-                const res = await fetch(`${RENDER_URL}/api/users`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({name:document.getElementById('d-name').value, username:document.getElementById('d-user').value, password:document.getElementById('d-pass').value, role:document.getElementById('d-cat').value === 'Admin' ? 'admin' : 'dev', category:document.getElementById('d-cat').value})});
-                if(res.ok) { app.toast('Üye Ekleme Başarılı!'); app.close(); app.sync(); }
+                await fetch(`${RENDER_URL}/api/users`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({name:document.getElementById('d-name').value, username:document.getElementById('d-user').value, password:document.getElementById('d-pass').value, role:document.getElementById('d-cat').value === 'Admin' ? 'admin' : 'dev', category:document.getElementById('d-cat').value})});
+                app.toast('Üye Eklendi'); app.close(); app.sync();
             },
 
             async handleNewTask(e) {
                 e.preventDefault();
-                const res = await fetch(`${RENDER_URL}/api/tasks`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({id:Date.now().toString(), assignee:document.getElementById('t-to').value, title:document.getElementById('t-title').value, description:document.getElementById('t-desc').value, status:'Aktif'})});
-                if(res.ok) { app.toast('Görev Atandı!'); app.close(); app.sync(); app.nav('tasks'); }
+                await fetch(`${RENDER_URL}/api/tasks`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({id:Date.now().toString(), assignee:document.getElementById('t-to').value, title:document.getElementById('t-title').value, description:document.getElementById('t-desc').value, status:'Aktif'})});
+                app.toast('Görev Verildi'); app.close(); app.sync(); app.nav('tasks');
+            },
+
+            async handleNewAnn() {
+                await fetch(`${RENDER_URL}/api/announcements`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({title:document.getElementById('an-title').value, text:document.getElementById('an-text').value})});
+                app.toast('Duyuru Yayınlandı'); app.sync(); app.nav('ann');
             },
 
             async handleNewLeave(e) {
                 e.preventDefault();
-                const res = await fetch(`${RENDER_URL}/api/tasks`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({id:'L'+Date.now(), assignee:document.getElementById('l-to').value, title:'İZİN: ' + document.getElementById('l-days').value + ' Gün', description:document.getElementById('l-reason').value, status:'İzinde'})});
-                if(res.ok) { app.toast('İzin Tanımlandı!'); app.close(); app.sync(); app.nav('dash'); }
+                await fetch(`${RENDER_URL}/api/tasks`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({id:'L'+Date.now(), assignee:document.getElementById('l-to').value, title:'İZİN', description:document.getElementById('l-reason').value, status:'İzinde'})});
+                app.toast('İzin Verildi'); app.close(); app.sync();
             },
 
-            async postAnn() {
-                await fetch(`${RENDER_URL}/api/announcements`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({title:document.getElementById('an-title').value, text:document.getElementById('an-text').value})});
-                app.toast('Duyuru Yayınlandı!'); app.sync(); app.nav('ann');
-            },
-
-            async delTask(id) { if(confirm('Silinsin mi?')) { await fetch(`${RENDER_URL}/api/tasks/${id}`, {method:'DELETE'}); app.sync(); app.nav('tasks'); } },
-            async delAnn(id) { if(confirm('Silinsin mi?')) { await fetch(`${RENDER_URL}/api/announcements/${id}`, {method:'DELETE'}); app.sync(); app.nav('ann'); } },
+            async delTask(id) { if(confirm('Sil?')) { await fetch(`${RENDER_URL}/api/tasks/${id}`, {method:'DELETE'}); app.sync(); app.nav('tasks'); } },
+            async delAnn(id) { if(confirm('Sil?')) { await fetch(`${RENDER_URL}/api/announcements/${id}`, {method:'DELETE'}); app.sync(); app.nav('ann'); } },
+            async delUser(id) { if(confirm('Sil?')) { await fetch(`${RENDER_URL}/api/users/${id}`, {method:'DELETE'}); app.sync(); app.nav('set'); } },
 
             toast(m, bad=false) {
-                const el = document.getElementById('toast'); el.innerText = m;
+                const el = document.getElementById('toast'); el.querySelector('span') || (el.innerHTML = `<span></span>`);
+                el.querySelector('span').innerText = m;
                 el.style.background = bad ? 'var(--red)' : 'var(--p-grad)';
                 gsap.fromTo(el, {y:-100, opacity:0}, {y:0, opacity:1, duration:0.5});
                 setTimeout(() => gsap.to(el, {y:-100, opacity:0}), 3000);
