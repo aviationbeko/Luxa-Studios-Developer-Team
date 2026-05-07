@@ -45,7 +45,7 @@
         .btn-p { width: 100%; padding: 18px; background: var(--p-grad); color: white; border: none; border-radius: 25px; font-weight: 900; cursor: pointer; transition: 0.3s; font-size: 1.1rem; box-shadow: 0 10px 30px rgba(108,92,231,0.3); }
         .btn-p:hover { transform: translateY(-3px); box-shadow: 0 15px 35px rgba(108,92,231,0.5); }
         
-        .top-nav { padding: 20px; display: flex; justify-content: space-between; align-items: center; background: transparent; z-index: 50; }
+        .top-nav { padding: 25px 20px; display: flex; justify-content: space-between; align-items: center; background: transparent; z-index: 50; }
         .bottom-nav { position: fixed; bottom: 0; width: 100%; height: 90px; background: rgba(15,5,29,0.7); backdrop-filter: blur(25px); display: flex; justify-content: space-around; align-items: center; border-top: 1px solid rgba(255,255,255,0.05); padding-bottom: 20px; z-index: 100; }
         .nav-item { color: rgba(255,255,255,0.8); font-size: 0.8rem; text-align: center; cursor: pointer; display: flex; flex-direction: column; align-items: center; transition: 0.4s; font-weight: 700; }
         .nav-item.active { color: var(--p); transform: translateY(-8px); }
@@ -55,6 +55,8 @@
         .card { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15); padding: 25px; border-radius: 35px; margin-bottom: 20px; position: relative; }
         .card h3 { color: var(--p); margin-bottom: 10px; font-weight: 900; }
         .badge { display: inline-block; padding: 6px 14px; border-radius: 12px; font-size: 0.7rem; font-weight: 900; margin-bottom: 12px; text-transform: uppercase; background: var(--glass); color: var(--p); }
+        .info-row { font-size: 0.75rem; color: var(--sub); margin-top: 10px; display: flex; flex-direction: column; gap: 4px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px; }
+        .info-row b { color: var(--p); }
 
         .action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
         .action-card { background: var(--card); border: 1px solid rgba(255,255,255,0.1); border-radius: 30px; padding: 25px 15px; text-align: center; cursor: pointer; transition: 0.3s; }
@@ -65,15 +67,16 @@
 
         .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: none; justify-content: center; align-items: center; z-index: 2000; backdrop-filter: blur(20px); }
         .modal.active { display: flex !important; }
-        .modal-content { background: #1a0b2e; width: 92%; max-width: 450px; padding: 35px; border-radius: 40px; border: 1px solid rgba(255,255,255,0.1); }
+        .modal-content { background: #1a0b2e; width: 92%; max-width: 450px; padding: 35px; border-radius: 40px; border: 1px solid rgba(255,255,255,0.1); max-height: 90vh; overflow-y: auto; }
         
         .toast { position: fixed; top: 30px; left: 50%; transform: translateX(-50%) translateY(-200%); background: var(--p-grad); color: white; padding: 18px 35px; border-radius: 25px; font-weight: 900; z-index: 3000; max-width: 80%; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.5); transition: 0.5s; }
-        .del-btn { position: absolute; top: 20px; right: 20px; color: var(--red); opacity: 0.5; cursor: pointer; font-size: 1.2rem; }
+        .del-btn { position: absolute; top: 20px; right: 20px; color: var(--red); opacity: 0.5; cursor: pointer; font-size: 1.2rem; transition: 0.3s; }
+        .del-btn:hover { opacity: 1; transform: scale(1.1); }
 
-        .setup-step { display: none; text-align: center; width: 100%; max-width: 450px; padding: 20px; }
+        .setup-step { display: none; text-align: center; width: 100%; max-width: 500px; padding: 20px; }
         .setup-step.active { display: block; animation: fadeInUp 0.5s ease; }
         .setup-card { background: rgba(255,255,255,0.05); padding: 50px 40px; border-radius: 45px; border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(20px); }
-        .setup-card p { color: var(--sub); line-height: 1.6; margin: 20px 0 30px; font-size: 1.1rem; }
+        .setup-card p { color: var(--sub); line-height: 1.6; margin: 20px 0 30px; font-size: 1rem; text-align: justify; }
         @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
@@ -95,34 +98,39 @@
         <div id="setup-1" class="setup-step active">
             <div class="setup-card">
                 <i class="fas fa-rocket fa-4x" style="color:var(--p); margin-bottom:20px;"></i>
-                <h2>Hoş Geldiniz</h2>
-                <p>Luxa Studios Developer Team (LSDT) yönetim paneline hoş geldiniz. Bu uygulama, ekibimizin tüm projelerini ve görevlerini merkezi bir sistem üzerinden yönetmek için tasarlanmıştır.</p>
-                <button class="btn-p" onclick="app.setupStep(2)">DEVAM ET</button>
+                <h2>LSDT v11.0 Giriş</h2>
+                <p>Luxa Studios Developer Team (LSDT) yönetim sistemine hoş geldiniz. Bu platform, projelerimizin gizliliğini ve ekibimizin verimliliğini korumak için tasarlanmıştır. Devam ederek sistem kurallarını kabul etmiş sayılırsınız.</p>
+                <button class="btn-p" onclick="app.setupStep(2)">KURULUMA BAŞLA</button>
             </div>
         </div>
         <div id="setup-2" class="setup-step">
             <div class="setup-card">
                 <i class="fas fa-bell fa-4x" style="color:var(--gold); margin-bottom:20px;"></i>
                 <h2>Anlık Bildirimler</h2>
-                <p>Yeni bir görev atandığında veya duyuru yapıldığında anında haberdar olmak için bildirimleri açmanız şiddetle tavsiye edilir. Hazır mısınız?</p>
-                <button class="btn-p" onclick="app.enableNotif()">BİLDİRİMLERİ AÇ</button>
-                <button class="btn-p" style="background:none; margin-top:10px;" onclick="app.setupStep(3)">DAHA SONRA</button>
+                <p>Yeni bir görev atandığında, raporunuz onaylandığında veya acil bir duyuru yapıldığında anında haberdar olmak için sistem bildirimlerini aktif etmeniz GEREKLİDİR.</p>
+                <button class="btn-p" onclick="app.enableNotif()">BİLDİRİMLERİ ŞİMDİ AÇ</button>
+                <button class="btn-p" style="background:none; margin-top:10px;" onclick="app.setupStep(3)">BELKİ SONRA</button>
             </div>
         </div>
         <div id="setup-3" class="setup-step">
             <div class="setup-card">
-                <i class="fas fa-shield-halved fa-4x" style="color:var(--green); margin-bottom:20px;"></i>
-                <h2>Gizlilik ve Güvenlik</h2>
-                <p>Tüm verileriniz uçtan uca şifrelenmiş Supabase sunucularında saklanır. Şifrenizi kimseyle paylaşmayınız ve iş bitiminde oturumu kapatmayı unutmayınız.</p>
-                <button class="btn-p" onclick="app.setupStep(4)">ANLADIM</button>
+                <i class="fas fa-file-contract fa-4x" style="color:var(--red); margin-bottom:20px;"></i>
+                <h2>Ekip Sözleşmesi</h2>
+                <p style="font-size:0.85rem;">
+                    1. LSDT bünyesinde geliştirilen tüm yazılımlar ve materyaller DMCA hakları ile korunmaktadır. İzinsiz paylaşım yasaktır.<br>
+                    2. Ekip içinde ve dışında "Scam" (Dolandırıcılık) faaliyetlerinde bulunmak, kullanıcıları yanıltmak kalıcı ihraç sebebidir.<br>
+                    3. Atanan görevlerin raporlanmaması veya yanlış raporlanması disiplin suçu sayılır.<br>
+                    4. Gizlilik ihlali durumunda hukuki süreç başlatma hakkı saklıdır.
+                </p>
+                <button class="btn-p" onclick="app.setupStep(4)">SÖZLEŞMEYİ ONAYLIYORUM</button>
             </div>
         </div>
         <div id="setup-4" class="setup-step">
             <div class="setup-card">
                 <i class="fas fa-check-circle fa-4x" style="color:var(--p); margin-bottom:20px;"></i>
-                <h2>Her Şey Hazır!</h2>
-                <p>LSDT v11.0 Ultra Premium sürümü ile en yüksek performansı ve kullanıcı deneyimini yaşamaya hazırsınız. Başlayalım!</p>
-                <button class="btn-p" onclick="app.finishSetup()">BAŞLAYALIM</button>
+                <h2>Kurulum Tamamlandı</h2>
+                <p>Tüm adımları başarıyla tamamladınız. LSDT Ultra Premium deneyimi artık parmaklarınızın ucunda. Ekibe katkılarınız için teşekkürler.</p>
+                <button class="btn-p" onclick="app.finishSetup()">PANELİ AÇ</button>
             </div>
         </div>
     </div>
@@ -161,7 +169,6 @@
                 <div id="avatar" style="width:50px; height:50px; background:var(--p-grad); color:white; border-radius:50%; display:flex; justify-content:center; align-items:center; font-weight:900;">L</div>
                 <div><div id="u-name" style="font-weight:900; color:var(--p);">Geliştirici</div><div id="u-role" style="font-size:0.75rem; color:var(--sub); font-weight:800;">ADMIN</div></div>
             </div>
-            <div onclick="location.reload()" style="color:var(--red); cursor:pointer;"><i class="fas fa-power-off fa-lg"></i></div>
         </nav>
         <main id="page-content"></main>
         <nav class="bottom-nav">
@@ -189,20 +196,25 @@
         <h2>Görev Ver</h2>
         <form onsubmit="app.handleNewTask(event)">
             <div id="t-to-wrap" class="p-select"></div>
-            <input type="text" id="t-title" class="input-p" placeholder="Başlık" required>
+            <input type="text" id="t-title" class="input-p" placeholder="Görev Başlığı" required>
             <textarea id="t-desc" class="input-p" placeholder="Detaylar" style="height:100px;" required></textarea>
-            <button type="submit" class="btn-p">GÖNDER</button>
+            <button type="submit" class="btn-p">GÖREVİ GÖNDER</button>
             <button type="button" class="btn-p" style="background:none; margin-top:10px;" onclick="app.close()">VAZGEÇ</button>
         </form>
     </div></div>
 
     <div id="modal-report" class="modal"><div class="modal-content">
-        <h2>Rapor Gönder</h2>
+        <h2>Gelişmiş Rapor</h2>
         <form onsubmit="app.handleNewReport(event)">
             <input type="hidden" id="r-task-id">
             <h3 id="r-task-title" style="margin-bottom:15px; color:var(--p);"></h3>
-            <textarea id="r-text" class="input-p" placeholder="Yapılan işlemler, karşılaşılan sorunlar..." style="height:150px;" required></textarea>
-            <button type="submit" class="btn-p">RAPORU TAMAMLA</button>
+            <textarea id="r-text" class="input-p" placeholder="Yapılan işlemler..." style="height:120px;" required></textarea>
+            <textarea id="r-bug" class="input-p" placeholder="Varsa karşılaşılan Bug/Sorunlar..." style="height:80px;"></textarea>
+            <div style="margin-bottom:15px; text-align:left;">
+                <label style="font-size:0.8rem; color:var(--sub); display:block; margin-bottom:8px;">Kanıt/Resim Yükle:</label>
+                <input type="file" id="r-img" class="input-p" style="padding:10px; font-size:0.8rem;">
+            </div>
+            <button type="submit" class="btn-p">RAPORU SİSTEME İŞLE</button>
             <button type="button" class="btn-p" style="background:none; margin-top:10px;" onclick="app.close()">VAZGEÇ</button>
         </form>
     </div></div>
@@ -247,7 +259,15 @@
             open(id) { document.getElementById(id).classList.add('active'); },
             close() { document.querySelectorAll('.modal').forEach(m => m.classList.remove('active')); },
             setupStep(n) { document.querySelectorAll('.setup-step').forEach(s => s.classList.remove('active')); document.getElementById('setup-' + n).classList.add('active'); },
-            async enableNotif() { if("Notification" in window) { await Notification.requestPermission(); } app.setupStep(3); },
+            
+            async enableNotif() { 
+                if("Notification" in window) { 
+                    const p = await Notification.requestPermission(); 
+                    if(p === 'granted') app.toast('Bildirimler Aktif!');
+                } 
+                app.setupStep(3); 
+            },
+            
             finishSetup() { localStorage.setItem('lsdt_setup', 'true'); app.show('login-screen'); },
 
             renderCats() {
@@ -304,15 +324,25 @@
                             myTasks.forEach(t => {
                                 c.innerHTML += `<div class="card"><h3>${t.title}</h3><p>${t.description}</p><button class="btn-p" style="margin-top:15px; padding:12px; font-size:0.9rem;" onclick="app.openReportModal('${t.id}', '${t.title}')">RAPOR GÖNDER</button></div>`;
                             });
-                        } else {
-                            c.innerHTML += `<div class="card"><p>Şu an atanmış aktif bir görevin bulunmuyor.</p></div>`;
-                        }
+                        } else { c.innerHTML += `<div class="card"><p>Şu an aktif bir görevin bulunmuyor.</p></div>`; }
                     }
                 } else if(p === 'tasks') {
-                    c.innerHTML = `<h2>Tüm Görevler</h2>`;
+                    c.innerHTML = `<h2>${app.user.role === 'admin' ? 'Tüm Denetimler' : 'Görevlerin'}</h2>`;
                     (app.db.tasks || []).slice().reverse().forEach(t => {
-                        if(app.user.role === 'admin' || t.assignee === app.user.username)
-                            c.innerHTML += `<div class="card"><div class="badge">${t.status}</div><h3>${t.title}</h3><p>${t.description}</p>${app.user.role === 'admin' ? `<i class="fas fa-trash del-btn" onclick="app.delTask('${t.id}')"></i>` : ''}</div>`;
+                        if(app.user.role === 'admin' || t.assignee === app.user.username) {
+                            const date = t.date ? new Date(t.date).toLocaleString('tr-TR') : 'Bilinmiyor';
+                            c.innerHTML += `<div class="card">
+                                <div class="badge" style="background:${t.status === 'İnceleniyor' ? 'var(--gold)' : t.status === 'Onaylandı' ? 'var(--green)' : 'var(--glass)'}">${t.status}</div>
+                                <h3>${t.title}</h3>
+                                <p>${t.description}</p>
+                                <div class="info-row">
+                                    <span><b>Sorumlu:</b> ${t.assignee_name || t.assignee}</span>
+                                    <span><b>Veren Admin:</b> ${t.given_by || 'Sistem'}</span>
+                                    <span><b>Tarih:</b> ${date}</span>
+                                </div>
+                                ${app.user.role === 'admin' ? `<i class="fas fa-trash del-btn" onclick="app.delTask('${t.id}')"></i>` : ''}
+                            </div>`;
+                        }
                     });
                 } else if(p === 'ann') {
                     c.innerHTML = `<h2>Duyurular</h2>${app.user.role === 'admin' ? `<div class="card"><input type="text" id="an-title" class="input-p" placeholder="Başlık"><textarea id="an-text" class="input-p" placeholder="Mesaj"></textarea><button class="btn-p" onclick="app.handleNewAnn()">YAYINLA</button></div>` : ''}`;
@@ -320,10 +350,14 @@
                         c.innerHTML += `<div class="card"><h3>${a.title}</h3><p>${a.text}</p>${app.user.role === 'admin' ? `<i class="fas fa-trash del-btn" onclick="app.delAnn('${a.id}')"></i>` : ''}</div>`;
                     });
                 } else if(p === 'set') {
-                    c.innerHTML = `<div class="card" style="text-align:center;"><h2>${app.user.name}</h2><p>${app.user.category}</p></div>`;
-                    if(app.user.role === 'admin') (app.db.users || []).forEach(u => {
-                        if(u.username !== app.user.username) c.innerHTML += `<div class="card" style="display:flex; justify-content:space-between; align-items:center;"><span>${u.name} (${u.username})</span><i class="fas fa-trash del-btn" style="position:static;" onclick="app.delUser('${u.id}')"></i></div>`;
-                    });
+                    c.innerHTML = `<div class="card" style="text-align:center;"><h2>${app.user.name}</h2><p>${app.user.category}</p></div>
+                    <button class="btn-p" style="background:var(--red); margin-bottom:20px;" onclick="app.logout()"><i class="fas fa-sign-out-alt"></i> ÇIKIŞ YAP</button>`;
+                    if(app.user.role === 'admin') {
+                        c.innerHTML += `<h3>Ekip Üyeleri</h3>`;
+                        (app.db.users || []).forEach(u => {
+                            if(u.username !== app.user.username) c.innerHTML += `<div class="card" style="display:flex; justify-content:space-between; align-items:center;"><span>${u.name} (${u.username})</span><i class="fas fa-trash del-btn" style="position:static;" onclick="app.delUser('${u.id}')"></i></div>`;
+                        });
+                    }
                 }
             },
 
@@ -352,18 +386,33 @@
             async handleNewDev(e) {
                 e.preventDefault();
                 const newUser = { name: document.getElementById('d-name').value, username: document.getElementById('d-user').value, password: document.getElementById('d-pass').value, role: app.sel.dCat === 'Admin' ? 'admin' : 'dev', category: app.sel.dCat };
-                try {
-                    const r = await fetch(`${RENDER_URL}/api/users`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(newUser)});
-                    if(r.ok) { app.toast('Üye Eklendi!'); app.close(); await app.sync(); app.nav('set'); } 
-                    else { const res = await r.json(); app.toast('HATA: ' + (res.error || 'Veritabanı hatası'), true); }
-                } catch(err) { app.toast('Sunucu Hatası!', true); }
+                const r = await fetch(`${RENDER_URL}/api/users`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(newUser)});
+                if(r.ok) { app.toast('Üye Eklendi!'); app.close(); await app.sync(); app.nav('set'); } else app.toast('Hata!', true);
             },
 
             async handleNewTask(e) {
                 e.preventDefault(); if(!app.sel.tTo) return app.toast('Kişi Seç!', true);
-                const nt = {id: Date.now().toString(), assignee:app.sel.tTo, title:document.getElementById('t-title').value, description:document.getElementById('t-desc').value, status:'Aktif'};
+                const target = app.db.users.find(u => u.username === app.sel.tTo);
+                const nt = {id: Date.now().toString(), assignee:app.sel.tTo, assignee_name: target.name, given_by: app.user.name, title:document.getElementById('t-title').value, description:document.getElementById('t-desc').value, status:'Aktif', date: new Date().toISOString()};
                 await fetch(`${RENDER_URL}/api/tasks`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(nt)});
                 app.toast('Görev Verildi'); app.close(); await app.sync(); app.nav('tasks');
+            },
+
+            async handleNewLeave(e) {
+                e.preventDefault(); if(!app.sel.lTo) return app.toast('Kişi Seç!', true);
+                const target = app.db.users.find(u => u.username === app.sel.lTo);
+                const nl = {id: 'L'+Date.now(), assignee:app.sel.lTo, assignee_name: target.name, given_by: app.user.name, title:'İZİN TALEBİ', description: document.getElementById('l-days').value + ' Gün İzin: ' + document.getElementById('l-reason').value, status:'İzinde', date: new Date().toISOString()};
+                await fetch(`${RENDER_URL}/api/tasks`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(nl)});
+                app.toast('İzin İşlendi'); app.close(); await app.sync(); app.nav('tasks');
+            },
+
+            async handleNewReport(e) {
+                e.preventDefault();
+                const tid = document.getElementById('r-task-id').value;
+                const task = app.db.tasks.find(t => t.id === tid);
+                const updatedTask = { ...task, status: 'İnceleniyor', report_text: document.getElementById('r-text').value, bug_text: document.getElementById('r-bug').value };
+                await fetch(`${RENDER_URL}/api/tasks`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(updatedTask) });
+                app.toast('Rapor Sisteme İletildi!'); app.close(); await app.sync(); app.nav('dash');
             },
 
             async handleNewAnn() {
@@ -372,33 +421,11 @@
                 app.toast('Yayınlandı'); await app.sync(); app.nav('ann');
             },
 
-            async handleNewReport(e) {
-                e.preventDefault();
-                const tid = document.getElementById('r-task-id').value;
-                const text = document.getElementById('r-text').value;
-                const report = { id: Date.now().toString(), task_id: tid, sender: app.user.username, text: text, date: new Date().toISOString() };
-                
-                // Raporu gönder ve görevi 'Tamamlandı' yap
-                await fetch(`${RENDER_URL}/api/tasks`, { 
-                    method:'POST', 
-                    headers:{'Content-Type':'application/json'}, 
-                    body:JSON.stringify({ id: tid, status: 'İnceleniyor' }) 
-                });
-                
-                app.toast('Rapor Gönderildi!');
-                app.close(); await app.sync(); app.nav('dash');
-            },
-
-            async handleNewLeave(e) {
-                e.preventDefault(); if(!app.sel.lTo) return app.toast('Kişi Seç!', true);
-                const nl = {id: 'L'+Date.now(), assignee:app.sel.lTo, title:'İZİN', description:document.getElementById('l-reason').value, status:'İzinde'};
-                await fetch(`${RENDER_URL}/api/tasks`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(nl)});
-                app.toast('İzin Verildi'); app.close(); await app.sync(); app.nav('dash');
-            },
-
             async delTask(id) { if(confirm('Sil?')) { await fetch(`${RENDER_URL}/api/tasks/${id}`, {method:'DELETE'}); await app.sync(); app.nav('tasks'); } },
             async delAnn(id) { if(confirm('Sil?')) { await fetch(`${RENDER_URL}/api/announcements/${id}`, {method:'DELETE'}); await app.sync(); app.nav('ann'); } },
             async delUser(id) { if(confirm('Sil?')) { await fetch(`${RENDER_URL}/api/users/${id}`, {method:'DELETE'}); await app.sync(); app.nav('set'); } },
+
+            logout() { localStorage.removeItem('lsdt_rem'); location.reload(); },
 
             toast(m, bad=false) {
                 const el = document.getElementById('toast'); 
