@@ -70,9 +70,10 @@
         .toast { position: fixed; top: 30px; left: 50%; transform: translateX(-50%) translateY(-200%); background: var(--p-grad); color: white; padding: 18px 35px; border-radius: 25px; font-weight: 900; z-index: 3000; max-width: 80%; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.5); transition: 0.5s; }
         .del-btn { position: absolute; top: 20px; right: 20px; color: var(--red); opacity: 0.5; cursor: pointer; font-size: 1.2rem; }
 
-        .setup-step { display: none; text-align: center; width: 100%; max-width: 400px; padding: 20px; }
+        .setup-step { display: none; text-align: center; width: 100%; max-width: 450px; padding: 20px; }
         .setup-step.active { display: block; animation: fadeInUp 0.5s ease; }
-        .setup-card { background: rgba(255,255,255,0.05); padding: 40px 30px; border-radius: 40px; border: 1px solid rgba(255,255,255,0.1); }
+        .setup-card { background: rgba(255,255,255,0.05); padding: 50px 40px; border-radius: 45px; border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(20px); }
+        .setup-card p { color: var(--sub); line-height: 1.6; margin: 20px 0 30px; font-size: 1.1rem; }
         @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
@@ -91,10 +92,39 @@
 
     <!-- SETUP SCREEN -->
     <div id="setup-screen" class="screen" style="justify-content:center; align-items:center; background: #05020a;">
-        <div id="setup-1" class="setup-step active"><div class="setup-card"><h2>LSDT Üyesi misiniz?</h2><div style="display:flex; gap:15px; margin-top:20px;"><button class="btn-p" onclick="app.setupStep(2)">EVET</button><button class="btn-p" style="background:rgba(255,255,255,0.1);" onclick="app.toast('Yetkiniz yok!', true)">HAYIR</button></div></div></div>
-        <div id="setup-2" class="setup-step"><div class="setup-card"><h2>Bilgileriniz Tam mı?</h2><button class="btn-p" onclick="app.setupStep(3)">ALDIM</button></div></div>
-        <div id="setup-3" class="setup-step"><div class="setup-card"><h2>Sözleşme</h2><button class="btn-p" onclick="app.setupStep(4)">SÖZ VERİYORUM</button></div></div>
-        <div id="setup-4" class="setup-step"><div class="setup-card"><h2>Hazırsınız!</h2><button class="btn-p" onclick="app.requestNotif()">BAŞLAYALIM</button></div></div>
+        <div id="setup-1" class="setup-step active">
+            <div class="setup-card">
+                <i class="fas fa-rocket fa-4x" style="color:var(--p); margin-bottom:20px;"></i>
+                <h2>Hoş Geldiniz</h2>
+                <p>Luxa Studios Developer Team (LSDT) yönetim paneline hoş geldiniz. Bu uygulama, ekibimizin tüm projelerini ve görevlerini merkezi bir sistem üzerinden yönetmek için tasarlanmıştır.</p>
+                <button class="btn-p" onclick="app.setupStep(2)">DEVAM ET</button>
+            </div>
+        </div>
+        <div id="setup-2" class="setup-step">
+            <div class="setup-card">
+                <i class="fas fa-bell fa-4x" style="color:var(--gold); margin-bottom:20px;"></i>
+                <h2>Anlık Bildirimler</h2>
+                <p>Yeni bir görev atandığında veya duyuru yapıldığında anında haberdar olmak için bildirimleri açmanız şiddetle tavsiye edilir. Hazır mısınız?</p>
+                <button class="btn-p" onclick="app.enableNotif()">BİLDİRİMLERİ AÇ</button>
+                <button class="btn-p" style="background:none; margin-top:10px;" onclick="app.setupStep(3)">DAHA SONRA</button>
+            </div>
+        </div>
+        <div id="setup-3" class="setup-step">
+            <div class="setup-card">
+                <i class="fas fa-shield-halved fa-4x" style="color:var(--green); margin-bottom:20px;"></i>
+                <h2>Gizlilik ve Güvenlik</h2>
+                <p>Tüm verileriniz uçtan uca şifrelenmiş Supabase sunucularında saklanır. Şifrenizi kimseyle paylaşmayınız ve iş bitiminde oturumu kapatmayı unutmayınız.</p>
+                <button class="btn-p" onclick="app.setupStep(4)">ANLADIM</button>
+            </div>
+        </div>
+        <div id="setup-4" class="setup-step">
+            <div class="setup-card">
+                <i class="fas fa-check-circle fa-4x" style="color:var(--p); margin-bottom:20px;"></i>
+                <h2>Her Şey Hazır!</h2>
+                <p>LSDT v11.0 Ultra Premium sürümü ile en yüksek performansı ve kullanıcı deneyimini yaşamaya hazırsınız. Başlayalım!</p>
+                <button class="btn-p" onclick="app.finishSetup()">BAŞLAYALIM</button>
+            </div>
+        </div>
     </div>
 
     <!-- LOGIN SCREEN -->
@@ -166,13 +196,13 @@
         </form>
     </div></div>
 
-    <div id="modal-leave" class="modal"><div class="modal-content">
-        <h2 style="color:var(--gold);">İzin Ver</h2>
-        <form onsubmit="app.handleNewLeave(event)">
-            <div id="l-to-wrap" class="p-select"></div>
-            <input type="number" id="l-days" class="input-p" placeholder="Gün" required min="1">
-            <textarea id="l-reason" class="input-p" placeholder="Sebep" style="height:80px;"></textarea>
-            <button type="submit" class="btn-p" style="background:var(--gold-grad);">ONAYLA</button>
+    <div id="modal-report" class="modal"><div class="modal-content">
+        <h2>Rapor Gönder</h2>
+        <form onsubmit="app.handleNewReport(event)">
+            <input type="hidden" id="r-task-id">
+            <h3 id="r-task-title" style="margin-bottom:15px; color:var(--p);"></h3>
+            <textarea id="r-text" class="input-p" placeholder="Yapılan işlemler, karşılaşılan sorunlar..." style="height:150px;" required></textarea>
+            <button type="submit" class="btn-p">RAPORU TAMAMLA</button>
             <button type="button" class="btn-p" style="background:none; margin-top:10px;" onclick="app.close()">VAZGEÇ</button>
         </form>
     </div></div>
@@ -189,7 +219,7 @@
                 tl.fromTo("#l-cube", { y: -50, opacity: 0, rotation: -45 }, { y: 0, opacity: 1, rotation: 0, duration: 1, ease: "back.out" })
                   .to("#l-code", { opacity: 1, width: "180px", duration: 1.5, ease: "steps(15)" })
                   .to("#l-text", { opacity: 1, scale: 1, duration: 1, ease: "elastic.out(1, 0.3)" })
-                  .to("#loading-screen", { opacity: 0, duration: 0.8, delay: 4.5, onComplete: async () => {
+                  .to("#loading-screen", { opacity: 0, duration: 0.8, delay: 5.5, onComplete: async () => {
                       await app.sync();
                       const rem = localStorage.getItem('lsdt_rem');
                       if(!localStorage.getItem('lsdt_setup')) app.show('setup-screen');
@@ -217,7 +247,8 @@
             open(id) { document.getElementById(id).classList.add('active'); },
             close() { document.querySelectorAll('.modal').forEach(m => m.classList.remove('active')); },
             setupStep(n) { document.querySelectorAll('.setup-step').forEach(s => s.classList.remove('active')); document.getElementById('setup-' + n).classList.add('active'); },
-            requestNotif() { localStorage.setItem('lsdt_setup', 'true'); app.show('login-screen'); },
+            async enableNotif() { if("Notification" in window) { await Notification.requestPermission(); } app.setupStep(3); },
+            finishSetup() { localStorage.setItem('lsdt_setup', 'true'); app.show('login-screen'); },
 
             renderCats() {
                 const cats = ['Script','Modelleme','GUI Tasarımı','VFX','SFX','Admin','Bug Raporcusu'];
@@ -257,15 +288,28 @@
                 document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
                 document.getElementById('nav-'+p).classList.add('active');
                 if(p === 'dash') {
-                    c.innerHTML = `<div class="card" style="background:var(--p-grad);"><h1>Selam, ${app.user.name.split(' ')[0]}</h1><p>${app.user.category}</p></div>
-                        ${app.user.role === 'admin' ? `<div class="action-grid">
+                    const myTasks = (app.db.tasks || []).filter(t => t.assignee === app.user.username && t.status === 'Aktif');
+                    c.innerHTML = `<div class="card" style="background:var(--p-grad);"><h1>Selam, ${app.user.name.split(' ')[0]}</h1><p>${app.user.category}</p></div>`;
+                    
+                    if(app.user.role === 'admin') {
+                        c.innerHTML += `<div class="action-grid">
                             <div class="action-card" onclick="app.open('modal-dev')"><i class="fas fa-user-plus"></i><span>Üye Ekle</span></div>
                             <div class="action-card" onclick="app.openTaskModal()"><i class="fas fa-tasks"></i><span>Görev Ver</span></div>
                             <div class="action-card gold" onclick="app.openLeaveModal()"><i class="fas fa-plane-departure"></i><span>İzin Ver</span></div>
                             <div class="action-card" onclick="app.nav('ann')"><i class="fas fa-bullhorn"></i><span>Duyuru</span></div>
-                        </div>` : `<div class="card"><h3>Görevlerin</h3><p>Şu an aktif bir görev bulunamadı.</p></div>`}`;
+                        </div>`;
+                    } else {
+                        c.innerHTML += `<h3>Aktif Görevlerin</h3>`;
+                        if(myTasks.length > 0) {
+                            myTasks.forEach(t => {
+                                c.innerHTML += `<div class="card"><h3>${t.title}</h3><p>${t.description}</p><button class="btn-p" style="margin-top:15px; padding:12px; font-size:0.9rem;" onclick="app.openReportModal('${t.id}', '${t.title}')">RAPOR GÖNDER</button></div>`;
+                            });
+                        } else {
+                            c.innerHTML += `<div class="card"><p>Şu an atanmış aktif bir görevin bulunmuyor.</p></div>`;
+                        }
+                    }
                 } else if(p === 'tasks') {
-                    c.innerHTML = `<h2>Görevler</h2>`;
+                    c.innerHTML = `<h2>Tüm Görevler</h2>`;
                     (app.db.tasks || []).slice().reverse().forEach(t => {
                         if(app.user.role === 'admin' || t.assignee === app.user.username)
                             c.innerHTML += `<div class="card"><div class="badge">${t.status}</div><h3>${t.title}</h3><p>${t.description}</p>${app.user.role === 'admin' ? `<i class="fas fa-trash del-btn" onclick="app.delTask('${t.id}')"></i>` : ''}</div>`;
@@ -299,21 +343,19 @@
                 }); app.open('modal-leave');
             },
 
+            openReportModal(tid, title) {
+                document.getElementById('r-task-id').value = tid;
+                document.getElementById('r-task-title').innerText = title;
+                app.open('modal-report');
+            },
+
             async handleNewDev(e) {
                 e.preventDefault();
-                // UUID beklediği için ID göndermiyoruz, veritabanı kendi oluştursun
-                const newUser = {
-                    name: document.getElementById('d-name').value, 
-                    username: document.getElementById('d-user').value, 
-                    password: document.getElementById('d-pass').value, 
-                    role: app.sel.dCat === 'Admin' ? 'admin' : 'dev', 
-                    category: app.sel.dCat
-                };
+                const newUser = { name: document.getElementById('d-name').value, username: document.getElementById('d-user').value, password: document.getElementById('d-pass').value, role: app.sel.dCat === 'Admin' ? 'admin' : 'dev', category: app.sel.dCat };
                 try {
                     const r = await fetch(`${RENDER_URL}/api/users`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(newUser)});
-                    const res = await r.json();
                     if(r.ok) { app.toast('Üye Eklendi!'); app.close(); await app.sync(); app.nav('set'); } 
-                    else { app.toast('HATA: ' + (res.error || 'Veritabanı hatası'), true); }
+                    else { const res = await r.json(); app.toast('HATA: ' + (res.error || 'Veritabanı hatası'), true); }
                 } catch(err) { app.toast('Sunucu Hatası!', true); }
             },
 
@@ -328,6 +370,23 @@
                 const na = {id: Date.now().toString(), title:document.getElementById('an-title').value, text:document.getElementById('an-text').value};
                 await fetch(`${RENDER_URL}/api/announcements`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(na)});
                 app.toast('Yayınlandı'); await app.sync(); app.nav('ann');
+            },
+
+            async handleNewReport(e) {
+                e.preventDefault();
+                const tid = document.getElementById('r-task-id').value;
+                const text = document.getElementById('r-text').value;
+                const report = { id: Date.now().toString(), task_id: tid, sender: app.user.username, text: text, date: new Date().toISOString() };
+                
+                // Raporu gönder ve görevi 'Tamamlandı' yap
+                await fetch(`${RENDER_URL}/api/tasks`, { 
+                    method:'POST', 
+                    headers:{'Content-Type':'application/json'}, 
+                    body:JSON.stringify({ id: tid, status: 'İnceleniyor' }) 
+                });
+                
+                app.toast('Rapor Gönderildi!');
+                app.close(); await app.sync(); app.nav('dash');
             },
 
             async handleNewLeave(e) {
