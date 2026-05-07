@@ -1,0 +1,27 @@
+name: Build Android APK (PURE CORDOVA)
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-java@v3
+        with:
+          java-version: '11'
+          distribution: 'temurin'
+      - name: Install Cordova
+        run: npm install -g cordova
+      - name: Create App
+        run: |
+          cordova create app com.lsdt.management LSDT
+          cd app
+          cordova platform add android@10
+          echo '<script>window.location.href="https://lsdt-management.onrender.com";</script>' > www/index.html
+          cordova build android --debug
+      - name: Upload APK
+        uses: actions/upload-artifact@v3
+        with:
+          name: LSDT-APK
+          path: app/platforms/android/app/build/outputs/apk/debug/app-debug.apk

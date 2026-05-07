@@ -1,0 +1,17 @@
+{
+  "name": "LSDT Management",
+  "short_name": "LSDT",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#05020a",
+  "theme_color": "#6c5ce7",
+  "description": "Luxa Studios Developer Team Management Dashboard",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/7161/7161108.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

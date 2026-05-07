@@ -1,0 +1,18 @@
+{
+  "fallbackHost": "lsdt-management.onrender.com",
+  "appId": "com.lsdt.management",
+  "name": "LSDT Management",
+  "launcherName": "LSDT",
+  "orientation": "portrait",
+  "displayMode": "standalone",
+  "themeColor": "#0d0d1a",
+  "backgroundColor": "#0d0d1a",
+  "startUrl": "/",
+  "iconUrl": "https://lsdt-management.onrender.com/assets/favicon-Bs_r76O8.svg",
+  "maskableIconUrl": "https://lsdt-management.onrender.com/assets/favicon-Bs_r76O8.svg",
+  "packageId": "com.lsdt.management",
+  "signingKey": {
+    "path": "./lsdt.keystore",
+    "alias": "lsdt"
+  }
+}
