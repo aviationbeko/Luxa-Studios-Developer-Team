@@ -24,6 +24,8 @@
         body { background: var(--bg-dark); color: var(--text); height: 100vh; width: 100vw; overflow: hidden; }
         .screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: none; flex-direction: column; z-index: 10; background: var(--bg); }
         .screen.active { display: flex !important; }
+        .setup-step { display: none; width: 100%; height: 100%; justify-content: center; align-items: center; flex-direction: column; }
+        .setup-step.active { display: flex !important; }
 
         #loading-screen { justify-content: center; align-items: center; z-index: 9999; background: #05020a; }
         .load-container { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; width: 100%; gap: 40px; }
@@ -89,11 +91,41 @@
 
     <!-- SETUP SCREEN -->
     <div id="setup-screen" class="screen" style="justify-content:center; align-items:center; background: #05020a;">
-        <div id="setup-1" class="setup-step active" style="text-align:center;">
+        <div id="setup-1" class="setup-step active">
             <div class="glass-card" style="width:100%;">
                 <i class="fas fa-rocket fa-4x" style="color:var(--p); margin-bottom:20px;"></i>
-                <h2>LSDT v11.0</h2>
-                <button class="btn-p" style="margin-top:20px;" onclick="app.finishSetup()">BAŞLAT</button>
+                <h2>LSDT v11.0 Başlatılıyor</h2>
+                <p style="color:var(--sub); margin:20px 0; font-size:0.9rem;">Luxa Studios Developer Team yönetim paneline hoş geldiniz. Panel kurulumunu tamamlamak için ilerleyin.</p>
+                <button class="btn-p" onclick="app.setupStep(2)">KURULUMA BAŞLA</button>
+            </div>
+        </div>
+        <div id="setup-2" class="setup-step">
+            <div class="glass-card" style="width:100%;">
+                <i class="fas fa-bell fa-4x" style="color:var(--gold); margin-bottom:20px;"></i>
+                <h2>Bildirimleri Aç</h2>
+                <p style="color:var(--sub); margin:20px 0; font-size:0.9rem;">Yeni görevler ve duyurular için tarayıcı bildirimlerini aktif edin. Bu adım gerçek tarayıcı izni gerektirir.</p>
+                <button class="btn-p" onclick="app.enableNotif()">İZİN İSTE VE AKTİF ET</button>
+                <button class="btn-p" style="background:none; margin-top:10px;" onclick="app.setupStep(3)">BELKİ SONRA</button>
+            </div>
+        </div>
+        <div id="setup-3" class="setup-step">
+            <div class="glass-card" style="width:100%;">
+                <i class="fas fa-file-contract fa-4x" style="color:var(--red); margin-bottom:20px;"></i>
+                <h2>Gizlilik Sözleşmesi</h2>
+                <p style="color:var(--sub); margin:20px 0; font-size:0.8rem; text-align:left;">
+                    1. LSDT materyalleri gizlidir. İzinsiz paylaşılamaz.<br>
+                    2. Scam/Fraud faaliyetleri ihraç sebebidir.<br>
+                    3. Görev raporlamaları zamanında yapılmalıdır.
+                </p>
+                <button class="btn-p" onclick="app.setupStep(4)">SÖZLEŞMEYİ ONAYLIYORUM</button>
+            </div>
+        </div>
+        <div id="setup-4" class="setup-step">
+            <div class="glass-card" style="width:100%;">
+                <i class="fas fa-check-circle fa-4x" style="color:var(--green); margin-bottom:20px;"></i>
+                <h2>Kurulum Hazır</h2>
+                <p style="color:var(--sub); margin:20px 0; font-size:0.9rem;">Tüm adımlar tamamlandı. Artık giriş yapabilirsiniz.</p>
+                <button class="btn-p" onclick="app.finishSetup()">PANELİ AÇ</button>
             </div>
         </div>
     </div>
@@ -225,7 +257,7 @@
                       } else app.show('login-screen');
                   }});
                 app.renderCats();
-                setInterval(() => app.sync(), 15000);
+                setInterval(() => app.sync(), 20000);
             },
 
             async sync() {
@@ -239,6 +271,23 @@
             show(id) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.getElementById(id).classList.add('active'); },
             open(id) { document.getElementById(id).classList.add('active'); },
             close() { document.querySelectorAll('.modal').forEach(m => m.classList.remove('active')); app.tempImages = []; document.getElementById('r-preview').innerHTML = ''; },
+            
+            setupStep(n) {
+                document.querySelectorAll('.setup-step').forEach(s => s.classList.remove('active'));
+                document.getElementById('setup-' + n).classList.add('active');
+            },
+
+            async enableNotif() {
+                const permission = await Notification.requestPermission();
+                if (permission === 'granted') {
+                    new Notification("LSDT v11.0", { body: "Bildirimler başarıyla aktif edildi!", icon: "https://img.icons8.com/fluency/48/lightning-bolt.png" });
+                    app.toast('Bildirimler Aktif!');
+                    app.setupStep(3);
+                } else {
+                    app.toast('Lütfen bildirim izni verin!', true);
+                }
+            },
+
             finishSetup() { localStorage.setItem('lsdt_setup', 'true'); app.show('login-screen'); },
 
             renderCats() {

@@ -99,22 +99,24 @@ app.post('/api/announcements', async (req, res) => {
     }
 });
 
-// SİL endpoint'leri (Hem Number hem String denemesi yapar)
+// SİL endpoint'leri
 app.delete('/api/:table/:id', async (req, res) => {
     const { table, id } = req.params;
     try {
-        let query = supabase.from(table).delete();
-        
-        // Önce sayı olarak dene, olmazsa yazı olarak dene
+        if (table === 'users') {
+            // Kullanıcı siliniyorsa önce görevlerini temizle (Foreign Key)
+            const { data: user } = await supabase.from('users').select('username').eq('id', id).single();
+            if (user) await supabase.from('tasks').delete().eq('assignee', user.username);
+        }
+
         const numId = Number(id);
         if (!isNaN(numId)) {
-            const { error, count } = await supabase.from(table).delete().eq('id', numId);
+            const { error } = await supabase.from(table).delete().eq('id', numId);
             if (error) throw error;
         } else {
             const { error } = await supabase.from(table).delete().eq('id', id);
             if (error) throw error;
         }
-        
         res.json({ success: true });
     } catch (error) {
         res.status(500).json({ error: error.message });
