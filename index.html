@@ -448,9 +448,9 @@
 
             async confirmReject() {
                 const reason = document.getElementById('rej-reason').value; if(!reason) return app.toast('Sebep yaz!', true);
-                const task = app.db.tasks.find(t => t.id === app.sel.rejId);
+                const task = app.db.tasks.find(t => t.id == app.sel.rejId);
                 const cleanDesc = task.description.split('[REPORT_START]')[0].split('[REJECT_REASON]')[0];
-                const updatedTask = { id: app.sel.rejId, status: 'Reddedildi', description: cleanDesc + `\n\n[REJECT_REASON]${reason}[END_REASON]` };
+                const updatedTask = { id: Number(app.sel.rejId), status: 'Reddedildi', description: cleanDesc + `\n\n[REJECT_REASON]${reason}[END_REASON]` };
                 const r = await fetch(`${RENDER_URL}/api/tasks`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(updatedTask) });
                 if(r.ok) { app.toast('Reddedildi'); app.close(); await app.sync(); app.nav('tasks'); } else app.toast('Hata!', true);
             },
@@ -481,13 +481,13 @@
                 const tid = document.getElementById('r-task-id').value, task = app.db.tasks.find(t => t.id == tid);
                 const reportData = { report: document.getElementById('r-text').value, bug: document.getElementById('r-bug').value, imgs: app.tempImages };
                 const cleanDesc = task.description.split('[REPORT_START]')[0].split('[REJECT_REASON]')[0];
-                const updatedTask = { id: tid, status: 'İnceleniyor', description: cleanDesc + `\n\n[REPORT_START]${JSON.stringify(reportData)}[REPORT_END]` };
+                const updatedTask = { id: Number(tid), status: 'İnceleniyor', description: cleanDesc + `\n\n[REPORT_START]${JSON.stringify(reportData)}[REPORT_END]` };
                 const r = await fetch(`${RENDER_URL}/api/tasks`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(updatedTask) });
                 if(r.ok) { app.toast('Gönderildi!'); app.close(); await app.sync(); app.nav('dash'); } else app.toast('Hata!', true);
             },
 
             async updateTaskStatus(tid, status) {
-                const r = await fetch(`${RENDER_URL}/api/tasks`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ id: tid, status: status }) });
+                const r = await fetch(`${RENDER_URL}/api/tasks`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ id: Number(tid), status: status }) });
                 if(r.ok) { app.toast('Güncellendi'); await app.sync(); app.nav('tasks'); } else app.toast('Hata!', true);
             },
 
@@ -498,9 +498,9 @@
                 if(r.ok) { app.toast('Yayınlandı'); await app.sync(); app.nav('ann'); } else app.toast('Hata!', true);
             },
 
-            async delTask(id) { if(confirm('Sil?')) { await fetch(`${RENDER_URL}/api/tasks/${id}`, {method:'DELETE'}); await app.sync(); app.nav('tasks'); } },
-            async delAnn(id) { if(confirm('Sil?')) { await fetch(`${RENDER_URL}/api/announcements/${id}`, {method:'DELETE'}); await app.sync(); app.nav('ann'); } },
-            async delUser(id) { if(confirm('Sil?')) { await fetch(`${RENDER_URL}/api/users/${id}`, {method:'DELETE'}); await app.sync(); app.nav('set'); } },
+            async delTask(id) { if(confirm('Sil?')) { await fetch(`${RENDER_URL}/api/tasks/${Number(id)}`, {method:'DELETE'}); await app.sync(); app.nav('tasks'); } },
+            async delAnn(id) { if(confirm('Sil?')) { await fetch(`${RENDER_URL}/api/announcements/${Number(id)}`, {method:'DELETE'}); await app.sync(); app.nav('ann'); } },
+            async delUser(id) { if(confirm('Sil?')) { await fetch(`${RENDER_URL}/api/users/${Number(id)}`, {method:'DELETE'}); await app.sync(); app.nav('set'); } },
             logout() { localStorage.removeItem('lsdt_rem'); location.reload(); },
             toast(m, bad=false) {
                 const el = document.getElementById('toast'); document.getElementById('toast-msg').innerText = m;
