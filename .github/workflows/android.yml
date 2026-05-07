@@ -22,7 +22,9 @@ jobs:
 
       - name: Setup Android Project
         run: |
-          npx cap add android || true
+          rm -rf android
+          npx cap add android
+          npx cap copy android
           npx cap sync android
 
       - name: Set up Java 17
