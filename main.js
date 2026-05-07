@@ -507,5 +507,29 @@ const toBase64 = file => new Promise((resolve, reject) => {
     reader.onerror = error => reject(error);
 });
 
+async function init() {
+    console.log('LSDT Başlatılıyor...');
+    setupEventListeners();
+    
+    // Sunucudan veri çekmeyi dene (Maksimum 5 saniye bekle)
+    const fetchPromise = fetchState();
+    const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Bağlantı zaman aşımına uğradı')), 5000)
+    );
+
+    try {
+        await Promise.race([fetchPromise, timeoutPromise]);
+        console.log('Veriler başarıyla yüklendi.');
+    } catch (error) {
+        console.error('Başlatma hatası:', error);
+        showToast('Sunucuya bağlanılamadı, yerel modda devam ediliyor.', 'error');
+    } finally {
+        // Ne olursa olsun 3 saniye sonra yükleme ekranını kapat ve giriş ekranını aç
+        setTimeout(() => {
+            showScreen('login');
+        }, 3000);
+    }
+}
+
 init();
 
