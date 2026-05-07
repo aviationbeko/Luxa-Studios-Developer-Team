@@ -105,13 +105,17 @@ app.post('/api/users', async (req, res) => {
 });
 
 app.post('/api/tasks', async (req, res) => {
-    const { data, error } = await supabase.from('tasks').upsert(req.body, { onConflict: 'id' });
+    const taskData = { ...req.body };
+    delete taskData.id; 
+    const { data, error } = await supabase.from('tasks').upsert(taskData);
     if (error) return res.status(500).json({ error: error.message });
     res.json({ success: true, data });
 });
 
 app.post('/api/announcements', async (req, res) => {
-    const { data, error } = await supabase.from('announcements').upsert(req.body);
+    const annData = { ...req.body };
+    delete annData.id;
+    const { data, error } = await supabase.from('announcements').upsert(annData);
     if (error) return res.status(500).json({ error: error.message });
     res.json({ success: true, data });
 });

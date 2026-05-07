@@ -203,6 +203,17 @@
         </form>
     </div></div>
 
+    <div id="modal-leave" class="modal"><div class="modal-content">
+        <h2>İzin Tanımla</h2>
+        <form onsubmit="app.handleNewLeave(event)">
+            <div id="l-to-wrap" class="p-select"></div>
+            <input type="number" id="l-days" class="input-p" placeholder="Kaç Gün?" required>
+            <textarea id="l-reason" class="input-p" placeholder="İzin Gerekçesi" style="height:100px;" required></textarea>
+            <button type="submit" class="btn-p">İZNİ ONAYLA</button>
+            <button type="button" class="btn-p" style="background:none; margin-top:10px;" onclick="app.close()">VAZGEÇ</button>
+        </form>
+    </div></div>
+
     <div id="modal-report" class="modal"><div class="modal-content">
         <h2>Gelişmiş Rapor</h2>
         <form onsubmit="app.handleNewReport(event)">
