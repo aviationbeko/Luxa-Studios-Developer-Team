@@ -1,0 +1,17 @@
+{
+  "name": "LSDT Management",
+  "short_name": "LSDT",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#0f051d",
+  "theme_color": "#6c5ce7",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "lsdt_app_icon_1778182861405.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
