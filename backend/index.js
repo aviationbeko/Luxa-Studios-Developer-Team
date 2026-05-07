@@ -105,19 +105,37 @@ app.post('/api/users', async (req, res) => {
 });
 
 app.post('/api/tasks', async (req, res) => {
-    const taskData = { ...req.body };
-    delete taskData.id; 
-    const { data, error } = await supabase.from('tasks').upsert(taskData);
-    if (error) return res.status(500).json({ error: error.message });
-    res.json({ success: true, data });
+    try {
+        const taskData = { ...req.body };
+        const taskId = taskData.id;
+        
+        let result;
+        if (taskId && taskId.length > 20) { // Eğer gelen ID bir UUID ise güncelle
+            delete taskData.id;
+            result = await supabase.from('tasks').update(taskData).eq('id', taskId);
+        } else { // Yeni görev
+            delete taskData.id;
+            result = await supabase.from('tasks').insert([taskData]);
+        }
+
+        if (result.error) throw result.error;
+        res.json({ success: true });
+    } catch (error) {
+        console.error("Task Error:", error);
+        res.status(500).json({ error: error.message });
+    }
 });
 
 app.post('/api/announcements', async (req, res) => {
-    const annData = { ...req.body };
-    delete annData.id;
-    const { data, error } = await supabase.from('announcements').upsert(annData);
-    if (error) return res.status(500).json({ error: error.message });
-    res.json({ success: true, data });
+    try {
+        const annData = { ...req.body };
+        delete annData.id;
+        const { error } = await supabase.from('announcements').insert([annData]);
+        if (error) throw error;
+        res.json({ success: true });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
 });
 
 // --- DELETE Endpoints ---
