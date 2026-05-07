@@ -16,7 +16,7 @@
             --bg-dark: #0f051d;
             --card: rgba(255, 255, 255, 0.03); 
             --text: #ffffff; --sub: #d1d8e0; 
-            --red: #ff7675; --green: #55efc4; 
+            --red: #ff7675; --green: #55efc4; --gold: #f1c40f;
             --glass: rgba(162, 155, 254, 0.15);
             --p-grad: linear-gradient(135deg, #6c5ce7, #a29bfe);
             --gold-grad: linear-gradient(135deg, #f1c40f, #e67e22);
@@ -38,8 +38,10 @@
         .input-p { width: 100%; padding: 18px; margin-bottom: 15px; background: rgba(255,255,255,0.1); border: 2px solid transparent; border-radius: 25px; color: white; font-size: 1rem; outline: none; transition: 0.3s; }
         .input-p:focus { border-color: var(--p); background: rgba(255,255,255,0.15); box-shadow: 0 0 20px rgba(162,155,254,0.2); }
         
-        .p-opt { padding: 10px 18px; border-radius: 30px; background: rgba(108,92,231,0.1); border: 1px solid rgba(108,92,231,0.3); color: white; cursor: pointer; font-size: 0.8rem; font-weight: 700; transition: 0.3s; margin: 5px; display: inline-block; }
-        .p-opt.active { background: var(--p-grad); border-color: transparent; box-shadow: 0 5px 15px rgba(108,92,231,0.4); }
+        /* Orijinal Mor Yuvarlak Seçenekler */
+        .p-select { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; justify-content: center; }
+        .p-opt { padding: 10px 18px; border-radius: 30px; background: rgba(108,92,231,0.1); border: 1px solid rgba(108,92,231,0.3); color: white; cursor: pointer; font-size: 0.8rem; font-weight: 700; transition: 0.3s; }
+        .p-opt.active { background: var(--p-grad); border-color: transparent; box-shadow: 0 5px 15px rgba(108,92,231,0.4); transform: translateY(-2px); }
 
         .btn-p { width: 100%; padding: 18px; background: var(--p-grad); color: white; border: none; border-radius: 25px; font-weight: 900; cursor: pointer; transition: 0.3s; font-size: 1.1rem; box-shadow: 0 10px 30px rgba(108,92,231,0.3); }
         .btn-p:hover { transform: translateY(-3px); box-shadow: 0 15px 35px rgba(108,92,231,0.5); }
@@ -60,14 +62,15 @@
         .action-card i { font-size: 2.2rem; display: block; margin-bottom: 12px; }
         .action-card span { font-weight: 800; font-size: 0.8rem; text-transform: uppercase; }
         .action-card:hover { transform: translateY(-5px); background: rgba(255,255,255,0.1); border-color: var(--p); }
-        .action-card.gold { color: #f1c40f; }
+        .action-card.gold { color: var(--gold); }
 
         .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: none; justify-content: center; align-items: center; z-index: 2000; backdrop-filter: blur(20px); }
         .modal.active { display: flex !important; }
         .modal-content { background: #1a0b2e; width: 92%; max-width: 450px; padding: 35px; border-radius: 40px; border: 1px solid rgba(255,255,255,0.1); }
         
         .toast { position: fixed; top: 30px; left: 50%; transform: translateX(-50%) translateY(-200%); background: var(--p-grad); color: white; padding: 18px 35px; border-radius: 25px; font-weight: 900; z-index: 3000; }
-        .del-btn { position: absolute; top: 20px; right: 20px; color: var(--red); opacity: 0.5; cursor: pointer; }
+        .del-btn { position: absolute; top: 20px; right: 20px; color: var(--red); opacity: 0.5; cursor: pointer; font-size: 1.2rem; transition: 0.3s; }
+        .del-btn:hover { opacity: 1; transform: scale(1.2); }
 
         .setup-step { display: none; text-align: center; width: 100%; max-width: 400px; padding: 20px; }
         .setup-step.active { display: block; animation: fadeInUp 0.5s ease; }
@@ -113,7 +116,7 @@
             <div class="setup-card">
                 <i class="fas fa-shield-alt fa-3x" style="color:var(--p); margin-bottom:20px;"></i>
                 <h2 style="font-size:1.8rem; margin-bottom:20px;">LSDT Sözleşmesi</h2>
-                <p style="color:var(--sub); margin-bottom:30px;">Bize Scam atmayacağınıza ve çalıntı ürünler kullanmayacağınıza söz veriyor musunuz?</p>
+                <p style="color:var(--sub); margin-bottom:30px;">Bize Scam atmayacağınıza ve çalmayacağınıza söz veriyor musunuz?</p>
                 <button class="btn-p" onclick="app.setupStep(4)">SÖZ VERİYORUM</button>
             </div>
         </div>
@@ -121,7 +124,7 @@
             <div class="setup-card">
                 <i class="fas fa-bell fa-3x" style="color:var(--p); margin-bottom:20px;"></i>
                 <h2 style="font-size:1.8rem; margin-bottom:20px;">Hazırsınız!</h2>
-                <p style="color:var(--sub); margin-bottom:30px;">Yeni görevler ve duyurular için bildirimler her zaman açık kalsın.</p>
+                <p style="color:var(--sub); margin-bottom:30px;">Yeni görevlerden haberdar olmak için her şey hazır.</p>
                 <button class="btn-p" onclick="app.requestNotif()">BAŞLAYALIM</button>
             </div>
         </div>
@@ -136,12 +139,21 @@
                 <form onsubmit="app.handleLogin(event)">
                     <input type="text" id="l-user" class="input-p" placeholder="Kullanıcı Adı" required>
                     <input type="password" id="l-pass" class="input-p" placeholder="Şifre" required>
-                    <div style="margin-bottom:15px; color:var(--sub); font-size:0.9rem; display:flex; align-items:center; justify-content:center; gap:10px;">
+                    <div style="margin-bottom:15px; color:var(--sub); font-size:0.9rem; display:flex; align-items:center; justify-content:center; gap:10px; cursor:pointer;" onclick="document.getElementById('l-rem').click()">
                         <input type="checkbox" id="l-rem" style="width:18px; height:18px; accent-color:var(--p);"> Beni Hatırla
                     </div>
                     <button type="submit" class="btn-p">GİRİŞ YAP <i class="fas fa-arrow-right"></i></button>
                 </form>
             </div>
+        </div>
+    </div>
+
+    <!-- WELCOME ANIMATION -->
+    <div id="welcome-screen" class="screen" style="z-index: 1500; background: var(--bg); justify-content: center; align-items: center;">
+        <div id="w-content" style="text-align: center; transform: scale(0.9); opacity: 0;">
+            <div id="w-avatar" style="width:120px; height:120px; background:var(--p-grad); color:white; border-radius:50%; display:flex; justify-content:center; align-items:center; font-weight:900; font-size:4rem; margin: 0 auto 30px;">L</div>
+            <h1 id="w-title" style="font-size: 3rem; font-weight: 900; margin-bottom: 10px; color: white;"></h1>
+            <p id="w-sub" style="color: var(--p); font-size: 1.2rem; font-weight: 700; text-transform: uppercase;"></p>
         </div>
     </div>
 
@@ -152,7 +164,7 @@
                 <div id="avatar" style="width:50px; height:50px; background:var(--p-grad); color:white; border-radius:50%; display:flex; justify-content:center; align-items:center; font-weight:900;">L</div>
                 <div><div id="u-name" style="font-weight:900; color:var(--p);">Geliştirici</div><div id="u-role" style="font-size:0.7rem; color:var(--sub);">ADMIN</div></div>
             </div>
-            <div onclick="location.reload()" style="color:var(--red); cursor:pointer;"><i class="fas fa-power-off fa-lg"></i></div>
+            <div onclick="localStorage.removeItem('lsdt_rem'); location.reload()" style="color:var(--red); cursor:pointer;"><i class="fas fa-power-off fa-lg"></i></div>
         </nav>
         <main id="page-content"></main>
         <nav class="bottom-nav">
@@ -170,7 +182,7 @@
             <input type="text" id="d-name" class="input-p" placeholder="Ad Soyad" required>
             <input type="text" id="d-user" class="input-p" placeholder="Kullanıcı Adı" required>
             <input type="password" id="d-pass" class="input-p" placeholder="Şifre" required>
-            <select id="d-cat" class="input-p"><option value="Script">Script</option><option value="Modelleme">Modelleme</option><option value="UI Tasarım">UI Tasarım</option><option value="Admin">Admin</option></select>
+            <div id="d-cat-wrap" class="p-select"></div>
             <button type="submit" class="btn-p">KAYDET</button>
             <button type="button" class="btn-p" style="background:none; margin-top:10px;" onclick="app.close()">VAZGEÇ</button>
         </form>
@@ -179,7 +191,7 @@
     <div id="modal-task" class="modal"><div class="modal-content">
         <h2 style="margin-bottom:20px;">Görev Ver</h2>
         <form onsubmit="app.handleNewTask(event)">
-            <select id="t-to" class="input-p"></select>
+            <div id="t-to-wrap" class="p-select"></div>
             <input type="text" id="t-title" class="input-p" placeholder="Başlık" required>
             <textarea id="t-desc" class="input-p" placeholder="Detaylar" style="height:100px;" required></textarea>
             <button type="submit" class="btn-p">GÖNDER</button>
@@ -188,9 +200,9 @@
     </div></div>
 
     <div id="modal-leave" class="modal"><div class="modal-content">
-        <h2 style="color:#f1c40f; margin-bottom:20px;">İzin Ver</h2>
+        <h2 style="color:var(--gold); margin-bottom:20px;">İzin Ver</h2>
         <form onsubmit="app.handleNewLeave(event)">
-            <select id="l-to" class="input-p"></select>
+            <div id="l-to-wrap" class="p-select"></div>
             <input type="number" id="l-days" class="input-p" placeholder="Kaç Gün?" required min="1">
             <textarea id="l-reason" class="input-p" placeholder="Sebep" style="height:80px;"></textarea>
             <button type="submit" class="btn-p" style="background:var(--gold-grad);">ONAYLA</button>
@@ -203,6 +215,7 @@
         const app = {
             db: { users: [], tasks: [], anns: [] },
             user: null,
+            sel: { dCat: 'Script', tTo: '', lTo: '' },
 
             async init() {
                 const tl = gsap.timeline();
@@ -222,7 +235,8 @@
                           if(found) app.loginAs(found); else app.show('login-screen');
                       } else app.show('login-screen');
                   }});
-                setInterval(() => app.sync(), 15000);
+                app.renderCats();
+                setInterval(() => app.sync(), 10000);
             },
 
             async sync() {
@@ -237,6 +251,16 @@
             close() { document.querySelectorAll('.modal').forEach(m => m.classList.remove('active')); },
             setupStep(n) { document.querySelectorAll('.setup-step').forEach(s => s.classList.remove('active')); document.getElementById('setup-' + n).classList.add('active'); },
             requestNotif() { localStorage.setItem('lsdt_setup', 'true'); app.show('login-screen'); },
+
+            renderCats() {
+                const cats = ['Script','Modelleme','UI Tasarım','Admin'];
+                const wrap = document.getElementById('d-cat-wrap'); if(!wrap) return; wrap.innerHTML = '';
+                cats.forEach(c => {
+                    const opt = document.createElement('div'); opt.className = 'p-opt' + (c === app.sel.dCat ? ' active':'');
+                    opt.innerText = c; opt.onclick = () => { app.sel.dCat = c; app.renderCats(); };
+                    wrap.appendChild(opt);
+                });
+            },
 
             async handleLogin(e) {
                 e.preventDefault();
@@ -255,7 +279,12 @@
                 document.getElementById('avatar').innerText = u.name[0];
                 document.getElementById('u-name').innerText = u.name;
                 document.getElementById('u-role').innerText = u.category;
-                app.show('main-app'); app.nav('dash');
+                app.show('welcome-screen');
+                const tl = gsap.timeline();
+                tl.to("#w-content", { scale: 1, opacity: 1, duration: 1, ease: "back.out" })
+                  .to("#welcome-screen", { opacity: 0, duration: 0.8, delay: 2, onComplete: () => {
+                      app.show('main-app'); app.nav('dash');
+                  }});
             },
 
             nav(p) {
@@ -265,7 +294,7 @@
                 
                 if(p === 'dash') {
                     c.innerHTML = `
-                        <div class="card" style="background:var(--p-grad);"><h1 style="color:white;">Selam, ${app.user.name.split(' ')[0]}</h1><p>${app.user.category}</p></div>
+                        <div class="card" style="background:var(--p-grad);"><h1 style="color:white; font-size:2rem;">Selam, ${app.user.name.split(' ')[0]}</h1><p>${app.user.category}</p></div>
                         ${app.user.role === 'admin' ? `
                             <div class="action-grid">
                                 <div class="action-card" onclick="app.open('modal-dev')"><i class="fas fa-user-plus"></i><span>Üye Ekle</span></div>
@@ -290,57 +319,64 @@
                         c.innerHTML += `<div class="card"><h3>${a.title}</h3><p>${a.text}</p>${app.user.role === 'admin' ? `<i class="fas fa-trash del-btn" onclick="app.delAnn('${a.id}')"></i>` : ''}</div>`;
                     });
                 } else if(p === 'set') {
-                    c.innerHTML = `<div class="card" style="text-align:center;"><h2>${app.user.name}</h2><p>${app.user.category}</p></div><button class="btn-p" onclick="localStorage.removeItem('lsdt_rem'); location.reload()">ÇIKIŞ YAP</button>`;
+                    c.innerHTML = `<div class="card" style="text-align:center;"><h2>${app.user.name}</h2><p>${app.user.category}</p></div>`;
                     if(app.user.role === 'admin') {
                         app.db.users.forEach(u => {
-                            if(u.username !== app.user.username) c.innerHTML += `<div class="card">${u.name} <i class="fas fa-trash del-btn" onclick="app.delUser('${u.id}')"></i></div>`;
+                            if(u.username !== app.user.username) c.innerHTML += `<div class="card" style="display:flex; justify-content:space-between; align-items:center;"><span>${u.name}</span><i class="fas fa-trash del-btn" style="position:static;" onclick="app.delUser('${u.id}')"></i></div>`;
                         });
                     }
                 }
             },
 
             openTaskModal() {
-                const s = document.getElementById('t-to'); s.innerHTML = '';
-                app.db.users.filter(u => u.role === 'dev').forEach(d => s.innerHTML += `<option value="${d.username}">${d.name}</option>`);
+                const wrap = document.getElementById('t-to-wrap'); wrap.innerHTML = '';
+                app.db.users.filter(u => u.role === 'dev').forEach(d => {
+                    const opt = document.createElement('div'); opt.className = 'p-opt' + (d.username === app.sel.tTo ? ' active':'');
+                    opt.innerText = d.name; opt.onclick = () => { app.sel.tTo = d.username; app.openTaskModal(); };
+                    wrap.appendChild(opt);
+                });
                 app.open('modal-task');
             },
 
             openLeaveModal() {
-                const s = document.getElementById('l-to'); s.innerHTML = '';
-                app.db.users.filter(u => u.role === 'dev').forEach(d => s.innerHTML += `<option value="${d.username}">${d.name}</option>`);
+                const wrap = document.getElementById('l-to-wrap'); wrap.innerHTML = '';
+                app.db.users.filter(u => u.role === 'dev').forEach(d => {
+                    const opt = document.createElement('div'); opt.className = 'p-opt' + (d.username === app.sel.lTo ? ' active':'');
+                    opt.innerText = d.name; opt.onclick = () => { app.sel.lTo = d.username; app.openLeaveModal(); };
+                    wrap.appendChild(opt);
+                });
                 app.open('modal-leave');
             },
 
             async handleNewDev(e) {
                 e.preventDefault();
-                await fetch(`${RENDER_URL}/api/users`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({name:document.getElementById('d-name').value, username:document.getElementById('d-user').value, password:document.getElementById('d-pass').value, role:document.getElementById('d-cat').value === 'Admin' ? 'admin' : 'dev', category:document.getElementById('d-cat').value})});
+                await fetch(`${RENDER_URL}/api/users`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({id:Date.now().toString(), name:document.getElementById('d-name').value, username:document.getElementById('d-user').value, password:document.getElementById('d-pass').value, role:app.sel.dCat === 'Admin' ? 'admin' : 'dev', category:app.sel.dCat})});
                 app.toast('Üye Eklendi'); app.close(); app.sync();
             },
 
             async handleNewTask(e) {
                 e.preventDefault();
-                await fetch(`${RENDER_URL}/api/tasks`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({id:Date.now().toString(), assignee:document.getElementById('t-to').value, title:document.getElementById('t-title').value, description:document.getElementById('t-desc').value, status:'Aktif'})});
+                await fetch(`${RENDER_URL}/api/tasks`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({id:Date.now().toString(), assignee:app.sel.tTo, title:document.getElementById('t-title').value, description:document.getElementById('t-desc').value, status:'Aktif'})});
                 app.toast('Görev Verildi'); app.close(); app.sync(); app.nav('tasks');
             },
 
             async handleNewAnn() {
-                await fetch(`${RENDER_URL}/api/announcements`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({title:document.getElementById('an-title').value, text:document.getElementById('an-text').value})});
+                await fetch(`${RENDER_URL}/api/announcements`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({id:Date.now().toString(), title:document.getElementById('an-title').value, text:document.getElementById('an-text').value})});
                 app.toast('Duyuru Yayınlandı'); app.sync(); app.nav('ann');
             },
 
             async handleNewLeave(e) {
                 e.preventDefault();
-                await fetch(`${RENDER_URL}/api/tasks`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({id:'L'+Date.now(), assignee:document.getElementById('l-to').value, title:'İZİN', description:document.getElementById('l-reason').value, status:'İzinde'})});
+                await fetch(`${RENDER_URL}/api/tasks`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({id:'L'+Date.now(), assignee:app.sel.lTo, title:'İZİN', description:document.getElementById('l-reason').value, status:'İzinde'})});
                 app.toast('İzin Verildi'); app.close(); app.sync();
             },
 
-            async delTask(id) { if(confirm('Sil?')) { await fetch(`${RENDER_URL}/api/tasks/${id}`, {method:'DELETE'}); app.sync(); app.nav('tasks'); } },
-            async delAnn(id) { if(confirm('Sil?')) { await fetch(`${RENDER_URL}/api/announcements/${id}`, {method:'DELETE'}); app.sync(); app.nav('ann'); } },
-            async delUser(id) { if(confirm('Sil?')) { await fetch(`${RENDER_URL}/api/users/${id}`, {method:'DELETE'}); app.sync(); app.nav('set'); } },
+            async delTask(id) { if(confirm('Sil?')) { await fetch(`${RENDER_URL}/api/sync`, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({tasks: app.db.tasks.filter(t => t.id != id)})}); app.sync(); app.nav('tasks'); } },
+            async delAnn(id) { if(confirm('Sil?')) { await fetch(`${RENDER_URL}/api/sync`, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({announcements: app.db.anns.filter(a => a.id != id)})}); app.sync(); app.nav('ann'); } },
+            async delUser(id) { if(confirm('Sil?')) { await fetch(`${RENDER_URL}/api/sync`, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({users: app.db.users.filter(u => u.id != id)})}); app.sync(); app.nav('set'); } },
 
             toast(m, bad=false) {
-                const el = document.getElementById('toast'); el.querySelector('span') || (el.innerHTML = `<span></span>`);
-                el.querySelector('span').innerText = m;
+                const el = document.getElementById('toast'); el.innerText = m;
                 el.style.background = bad ? 'var(--red)' : 'var(--p-grad)';
                 gsap.fromTo(el, {y:-100, opacity:0}, {y:0, opacity:1, duration:0.5});
                 setTimeout(() => gsap.to(el, {y:-100, opacity:0}), 3000);
