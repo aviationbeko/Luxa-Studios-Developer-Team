@@ -28,10 +28,10 @@
 
         /* LOADING */
         #loading-screen { justify-content: center; align-items: center; z-index: 9999; background: #05020a; }
-        .load-container { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; position: relative; width: 100%; }
-        #l-cube { width: 40px; height: 40px; background: var(--p-grad); border-radius: 12px; box-shadow: 0 0 40px rgba(108,92,231,0.8); position: absolute; }
-        #l-code { font-family: monospace; color: var(--green); font-size: 1.2rem; font-weight: 600; opacity: 0; white-space: nowrap; overflow: hidden; position: absolute; }
-        #l-text { font-size: 4.5rem; font-weight: 900; background: var(--p-grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; opacity: 0; position: absolute; letter-spacing: 5px; }
+        .load-container { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; width: 100%; gap: 40px; }
+        #l-cube { width: 50px; height: 50px; background: var(--p-grad); border-radius: 15px; box-shadow: 0 0 50px rgba(108,92,231,0.6); position: relative; }
+        #l-code { font-family: monospace; color: var(--green); font-size: 1.1rem; font-weight: 600; opacity: 0; white-space: nowrap; overflow: hidden; width: 0; border-right: 2px solid var(--green); padding-right: 5px; }
+        #l-text { font-size: 4.5rem; font-weight: 900; background: var(--p-grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; opacity: 0; letter-spacing: 10px; transform: scale(0.8); }
 
         /* UI ELEMENTS */
         .glass-card { background: rgba(255,255,255,0.08); backdrop-filter: blur(40px); border: 1px solid rgba(255,255,255,0.15); padding: 40px 30px; border-radius: 45px; width: 92%; max-width: 400px; text-align: center; box-shadow: 0 40px 100px rgba(0,0,0,0.5); }
@@ -84,7 +84,7 @@
     <div id="loading-screen" class="screen active">
         <div class="load-container">
             <div id="l-cube"></div>
-            <div id="l-code">&gt;_ init lsdt...</div>
+            <div id="l-code">&gt;_ init lsdt_v11...</div>
             <div id="l-text">LSDT</div>
         </div>
     </div>
@@ -186,10 +186,10 @@
 
             async init() {
                 const tl = gsap.timeline();
-                tl.fromTo("#l-cube", { y: -100, opacity: 0 }, { y: 0, opacity: 1, duration: 1, ease: "bounce.out" })
-                  .to("#l-code", { opacity: 1, duration: 0.1 }).to("#l-code", { width: "180px", duration: 1, ease: "steps(14)" })
-                  .to("#l-text", { opacity: 1, scale: 1, duration: 1, ease: "elastic.out(1, 0.5)" })
-                  .to("#loading-screen", { opacity: 0, duration: 0.8, delay: 6.2, onComplete: async () => {
+                tl.fromTo("#l-cube", { y: -50, opacity: 0, rotation: -45 }, { y: 0, opacity: 1, rotation: 0, duration: 1, ease: "back.out" })
+                  .to("#l-code", { opacity: 1, width: "180px", duration: 1.5, ease: "steps(15)" })
+                  .to("#l-text", { opacity: 1, scale: 1, duration: 1, ease: "elastic.out(1, 0.3)" })
+                  .to("#loading-screen", { opacity: 0, duration: 0.8, delay: 4.5, onComplete: async () => {
                       await app.sync();
                       const rem = localStorage.getItem('lsdt_rem');
                       if(!localStorage.getItem('lsdt_setup')) app.show('setup-screen');
@@ -301,7 +301,14 @@
 
             async handleNewDev(e) {
                 e.preventDefault();
-                const newUser = {id: Math.floor(Math.random() * 900000) + 100000, name:document.getElementById('d-name').value, username:document.getElementById('d-user').value, password:document.getElementById('d-pass').value, role:app.sel.dCat === 'Admin' ? 'admin' : 'dev', category:app.sel.dCat};
+                // UUID beklediği için ID göndermiyoruz, veritabanı kendi oluştursun
+                const newUser = {
+                    name: document.getElementById('d-name').value, 
+                    username: document.getElementById('d-user').value, 
+                    password: document.getElementById('d-pass').value, 
+                    role: app.sel.dCat === 'Admin' ? 'admin' : 'dev', 
+                    category: app.sel.dCat
+                };
                 try {
                     const r = await fetch(`${RENDER_URL}/api/users`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(newUser)});
                     const res = await r.json();
