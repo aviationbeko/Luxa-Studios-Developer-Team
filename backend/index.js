@@ -9,112 +9,71 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Supabase Setup
 const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY; // Use service role for backend operations
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-app.use(cors({
-    origin: '*', // Tüm adreslere izin ver
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    allowedHeaders: ['Content-Type', 'Authorization']
-}));
+app.use(cors({ origin: '*', methods: ['GET', 'POST', 'PUT', 'DELETE'], allowedHeaders: ['Content-Type', 'Authorization'] }));
 app.use(compression());
 app.use(express.json({ limit: '50mb' }));
+app.use((req, res, next) => { console.log(`${new Date().toISOString()} - ${req.method} ${req.url}`); next(); });
 
-// Middleware to log requests
-app.use((req, res, next) => {
-    console.log(`${new Date().toISOString()} - ${req.method} ${req.url}`);
-    next();
-});
+app.get('/', (req, res) => { res.json({ status: 'LSDT Backend Running', timestamp: new Date().toISOString() }); });
 
-// Health Check
-app.get('/', (req, res) => {
-    res.json({ status: 'LSDT Backend is running', timestamp: new Date().toISOString() });
-});
-
-// --- API Endpoints ---
-
-// Get all data
+// Tüm veriyi getir
 app.get('/api/state', async (req, res) => {
     try {
-        const { data: users, error: userError } = await supabase.from('users').select('*');
-        const { data: tasks, error: taskError } = await supabase.from('tasks').select('*');
-        const { data: announcements, error: annError } = await supabase.from('announcements').select('*');
-
-        if (userError || taskError || annError) throw new Error('Failed to fetch from Supabase');
-
+        const { data: users, error: e1 } = await supabase.from('users').select('*');
+        const { data: tasks, error: e2 } = await supabase.from('tasks').select('*');
+        const { data: announcements, error: e3 } = await supabase.from('announcements').select('*');
+        if (e1 || e2 || e3) throw new Error('Veri çekme hatası');
         res.json({ users, tasks, announcements });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 });
 
-// Sync state (Save everything)
-app.post('/api/sync', async (req, res) => {
-    const { users, tasks, announcements } = req.body;
-    try {
-        // This is a simplified sync. In a real app, we would handle upserts properly.
-        // For now, we'll implement specific endpoints or a bulk upsert.
-        
-        if (users) {
-            const { error } = await supabase.from('users').upsert(users, { onConflict: 'username' });
-            if (error) throw error;
-        }
-        if (tasks) {
-            const { error } = await supabase.from('tasks').upsert(tasks, { onConflict: 'id' });
-            if (error) throw error;
-        }
-        if (announcements) {
-            const { error } = await supabase.from('announcements').upsert(announcements);
-            if (error) throw error;
-        }
-
-        res.json({ success: true, message: 'Sync completed' });
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-});
-
-// Individual Upserts
+// Kullanıcı ekle
 app.post('/api/users', async (req, res) => {
-    console.log("Processing user request:", req.body);
     try {
         const userData = { ...req.body };
-        delete userData.id; // Manuel ID'yi sil, UUID otomatik oluşsun
+        delete userData.id; // ID'yi sil, veritabanı otomatik atasın
 
-        // Kullanıcı adı kontrolü
-        const { data: existingUser } = await supabase.from('users').select('username').eq('username', userData.username).single();
-        
+        const { data: existing } = await supabase.from('users').select('username').eq('username', userData.username).single();
         let result;
-        if (existingUser) {
+        if (existing) {
             result = await supabase.from('users').update(userData).eq('username', userData.username);
         } else {
             result = await supabase.from('users').insert([userData]);
         }
-
-        if (result.error) {
-            console.error("Supabase Error:", result.error);
-            return res.status(500).json({ error: result.error.message });
-        }
+        if (result.error) throw result.error;
         res.json({ success: true });
     } catch (err) {
-        console.error("Critical Server Error:", err);
+        console.error("User Error:", err);
         res.status(500).json({ error: err.message });
     }
 });
 
+// Görev ekle veya güncelle
 app.post('/api/tasks', async (req, res) => {
     try {
-        const taskData = { ...req.body };
-        const taskId = taskData.id;
-        
+        const body = { ...req.body };
+        const taskId = body.id ? Number(body.id) : null;
+
         let result;
-        if (!taskData.id) { // ID yoksa yeni kayıt, veritabanı otomatik sayı versin
-            delete taskData.id;
-            result = await supabase.from('tasks').insert([taskData]);
-        } else { // ID varsa güncelleme (upsert)
-            result = await supabase.from('tasks').upsert([taskData]);
+        if (!taskId) {
+            // YENİ GÖREV: ID yok, tüm alanlarla insert yap
+            delete body.id;
+            result = await supabase.from('tasks').insert([body]);
+        } else {
+            // MEVCUT GÖREV GÜNCELLEMESİ: Sadece gönderilen alanları güncelle
+            const updateData = {};
+            if (body.status !== undefined) updateData.status = body.status;
+            if (body.description !== undefined) updateData.description = body.description;
+            // Başka bir alan gelmişse onu da ekle
+            ['title', 'assignee', 'date'].forEach(k => { if (body[k] !== undefined) updateData[k] = body[k]; });
+            
+            result = await supabase.from('tasks').update(updateData).eq('id', taskId);
         }
 
         if (result.error) throw result.error;
@@ -125,17 +84,21 @@ app.post('/api/tasks', async (req, res) => {
     }
 });
 
+// Duyuru ekle
 app.post('/api/announcements', async (req, res) => {
     try {
-        const { error } = await supabase.from('announcements').insert([req.body]);
+        const annData = { ...req.body };
+        delete annData.id; // ID'yi sil, veritabanı otomatik atasın
+        const { error } = await supabase.from('announcements').insert([annData]);
         if (error) throw error;
         res.json({ success: true });
     } catch (error) {
+        console.error("Announcement Error:", error);
         res.status(500).json({ error: error.message });
     }
 });
 
-// --- DELETE Endpoints ---
+// SİL endpoint'leri
 app.delete('/api/users/:id', async (req, res) => {
     const { error } = await supabase.from('users').delete().eq('id', req.params.id);
     if (error) return res.status(500).json({ error: error.message });
@@ -143,17 +106,15 @@ app.delete('/api/users/:id', async (req, res) => {
 });
 
 app.delete('/api/tasks/:id', async (req, res) => {
-    const { error } = await supabase.from('tasks').delete().eq('id', req.params.id);
+    const { error } = await supabase.from('tasks').delete().eq('id', Number(req.params.id));
     if (error) return res.status(500).json({ error: error.message });
     res.json({ success: true });
 });
 
 app.delete('/api/announcements/:id', async (req, res) => {
-    const { error } = await supabase.from('announcements').delete().eq('id', req.params.id);
+    const { error } = await supabase.from('announcements').delete().eq('id', Number(req.params.id));
     if (error) return res.status(500).json({ error: error.message });
     res.json({ success: true });
 });
 
-app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
-});
+app.listen(PORT, () => { console.log(`Server running on port ${PORT}`); });
