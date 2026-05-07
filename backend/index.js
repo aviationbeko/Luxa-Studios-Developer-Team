@@ -66,8 +66,8 @@ app.post('/api/tasks', async (req, res) => {
         
         let result;
         if (!hasId) {
-            delete body.id;
-            console.log("Inserting new task:", body);
+            body.id = Date.now(); // Veritabanı ID vermiyorsa biz sayısal ID veriyoruz
+            console.log("Inserting new task with ID:", body.id);
             result = await supabase.from('tasks').insert([body]);
         } else {
             const taskId = body.id;

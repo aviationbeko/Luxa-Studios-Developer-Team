@@ -307,7 +307,7 @@
                             if(t.description.includes('[REPORT_START]')) {
                                 try {
                                     const r = JSON.parse(t.description.split('[REPORT_START]')[1].split('[REPORT_END]')[0]);
-                                    rHtml = `<div class="report-section"><h4>RAPOR</h4><p>${r.report}</p>${r.bug ? `<p style="color:var(--red)"><b>BUG:</b> ${r.bug}</p>`:''}${r.imgs && r.imgs.length ? `<button class="btn-mini" style="background:var(--p); width:100%; margin:10px 0;" onclick="app.toggleImgs(${t.id})">RESİMLERİ GÖR</button><div id="imgs-${t.id}" class="img-grid" style="display:none;">${r.imgs.map(i=>`<img src="${i}" class="img-item" onclick="window.open(this.src)">`).join('')}</div>`:''}${app.user.role==='admin'&&t.status==='İnceleniyor'?`<div style="display:flex; gap:10px; margin-top:10px;"><button class="btn-mini" style="background:var(--green); color:black;" onclick="app.updateTaskStatus('${t.id}', 'Onaylandı')">ONAYLA</button><button class="btn-mini" style="background:var(--red); color:white;" onclick="app.openRejectModal('${t.id}')">REDDET</button></div>`:''}</div>`;
+                                    rHtml = `<div class="report-section"><h4>RAPOR</h4><p>${r.report}</p>${r.bug ? `<p style="color:var(--red)"><b>BUG:</b> ${r.bug}</p>`:''}${r.imgs && r.imgs.length ? `<button class="btn-mini" style="background:var(--p); width:100%; margin:10px 0;" onclick="app.toggleImgs('${t.id}')">GÖRSELLERİ İNCELE</button><div id="imgs-${t.id}" class="img-grid" style="display:none;">${r.imgs.map(i=>`<img src="${i}" class="img-item" onclick="app.viewImg('${i}')">`).join('')}</div>`:''}${app.user.role==='admin'&&t.status==='İnceleniyor'?`<div style="display:flex; gap:10px; margin-top:10px;"><button class="btn-mini" style="background:var(--green); color:black;" onclick="app.updateTaskStatus('${t.id}', 'Onaylandı')">ONAYLA</button><button class="btn-mini" style="background:var(--red); color:white;" onclick="app.openRejectModal('${t.id}')">REDDET</button></div>`:''}</div>`;
                                 } catch(e) {}
                             }
                             c.innerHTML += `<div class="card"><div class="badge">${t.status}</div><h3>${t.title}</h3><p>${t.description.split('[REPORT_START]')[0].split('[REJECT_REASON]')[0]}</p>${rHtml}<div class="info-row"><span><b>Üye:</b> ${t.assignee}</span><span><b>Tarih:</b> ${new Date(t.date).toLocaleString('tr')}</span></div>${app.user.role==='admin'?`<i class="fas fa-trash del-btn" onclick="app.delItem('tasks', '${t.id}')"></i>`:''}</div>`;
@@ -319,12 +319,16 @@
                         c.innerHTML += `<div class="card"><h3>${a.title}</h3><p>${a.text}</p>${app.user.role==='admin'?`<i class="fas fa-trash del-btn" onclick="app.delItem('announcements', '${a.id}')"></i>`:''}</div>`;
                     });
                 } else if(p === 'set') {
-                    c.innerHTML = `<h2>Ekip Yönetimi</h2>`;
-                    app.db.users.forEach(u => { c.innerHTML += `<div class="card" style="display:flex; justify-content:space-between; align-items:center;"><span>${u.name} (${u.category})</span>${app.user.role==='admin'&&u.username!==app.user.username?`<i class="fas fa-trash del-btn" style="position:static" onclick="app.delItem('users', '${u.id}')"></i>`:''}</div>`; });
+                    c.innerHTML = `<div class="card" style="text-align:center;"><h2>Profilim</h2><p style="color:var(--p); font-weight:900; font-size:1.5rem; margin-top:10px;">${app.user.name}</p><p>${app.user.category}</p></div><button class="btn-p" style="background:var(--red); margin-bottom:20px;" onclick="app.logout()">GÜVENLİ ÇIKIŞ</button>`;
+                    if(app.user.role==='admin') {
+                        c.innerHTML += `<h3 style="margin-bottom:15px;">Ekip Yönetimi</h3>`;
+                        app.db.users.forEach(u => { c.innerHTML += `<div class="card" style="display:flex; justify-content:space-between; align-items:center;"><span>${u.name} (${u.category})</span>${u.username!==app.user.username?`<i class="fas fa-trash del-btn" style="position:static" onclick="app.delItem('users', '${u.id}')"></i>`:''}</div>`; });
+                    }
                 }
             },
 
             toggleImgs(id) { const d = document.getElementById(`imgs-${id}`); d.style.display = d.style.display==='none'?'grid':'none'; },
+            viewImg(src) { const w = window.open(""); w.document.write(`<img src="${src}" style="width:100%">`); },
             handleFiles(i) {
                 const p = document.getElementById('r-preview'); p.innerHTML = ''; app.tempImages = [];
                 Array.from(i.files).forEach(f => {
