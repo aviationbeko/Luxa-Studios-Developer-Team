@@ -341,14 +341,16 @@
                     c.innerHTML = `<h2>${app.user.role === 'admin' ? 'Tüm Denetimler' : 'Görevlerin'}</h2>`;
                     (app.db.tasks || []).slice().reverse().forEach(t => {
                         if(app.user.role === 'admin' || t.assignee === app.user.username) {
-                            const date = t.date ? new Date(t.date).toLocaleString('tr-TR') : 'Bilinmiyor';
+                            const date = t.date ? new Date(t.date).toLocaleString('tr-TR') : 'Bugün';
+                            const targetUser = app.db.users.find(u => u.username === t.assignee);
+                            const realName = targetUser ? targetUser.name : t.assignee;
+                            
                             c.innerHTML += `<div class="card">
                                 <div class="badge" style="background:${t.status === 'İnceleniyor' ? 'var(--gold)' : t.status === 'Onaylandı' ? 'var(--green)' : 'var(--glass)'}">${t.status}</div>
                                 <h3>${t.title}</h3>
-                                <p>${t.description}</p>
+                                <p style="white-space: pre-wrap;">${t.description}</p>
                                 <div class="info-row">
-                                    <span><b>Sorumlu:</b> ${t.assignee_name || t.assignee}</span>
-                                    <span><b>Veren Admin:</b> ${t.given_by || 'Sistem'}</span>
+                                    <span><b>Sorumlu:</b> ${realName}</span>
                                     <span><b>Tarih:</b> ${date}</span>
                                 </div>
                                 ${app.user.role === 'admin' ? `<i class="fas fa-trash del-btn" onclick="app.delTask('${t.id}')"></i>` : ''}
@@ -403,8 +405,13 @@
 
             async handleNewTask(e) {
                 e.preventDefault(); if(!app.sel.tTo) return app.toast('Kişi Seç!', true);
-                const target = app.db.users.find(u => u.username === app.sel.tTo);
-                const nt = { assignee:app.sel.tTo, assignee_name: target.name, given_by: app.user.name, title:document.getElementById('t-title').value, description:document.getElementById('t-desc').value, status:'Aktif', date: new Date().toISOString()};
+                const descWithAdmin = document.getElementById('t-desc').value + `\n\n[ADMIN: ${app.user.name}]`;
+                const nt = { 
+                    assignee: app.sel.tTo, 
+                    title: document.getElementById('t-title').value, 
+                    description: descWithAdmin, 
+                    status: 'Aktif'
+                };
                 const r = await fetch(`${RENDER_URL}/api/tasks`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(nt)});
                 if(r.ok) { app.toast('Görev Verildi'); app.close(); await app.sync(); app.nav('tasks'); } 
                 else { const errData = await r.json(); app.toast('HATA: ' + (errData.error || 'Bilinmiyor'), true); }
@@ -412,8 +419,13 @@
 
             async handleNewLeave(e) {
                 e.preventDefault(); if(!app.sel.lTo) return app.toast('Kişi Seç!', true);
-                const target = app.db.users.find(u => u.username === app.sel.lTo);
-                const nl = { assignee:app.sel.lTo, assignee_name: target.name, given_by: app.user.name, title:'İZİN TALEBİ', description: document.getElementById('l-days').value + ' Gün İzin: ' + document.getElementById('l-reason').value, status:'İzinde', date: new Date().toISOString()};
+                const leaveDesc = `${document.getElementById('l-days').value} Gün İzin Talebi. Gerekçe: ${document.getElementById('l-reason').value}\n\n[ADMIN: ${app.user.name}]`;
+                const nl = { 
+                    assignee: app.sel.lTo, 
+                    title: 'İZİN TALEBİ', 
+                    description: leaveDesc, 
+                    status: 'İzinde'
+                };
                 const r = await fetch(`${RENDER_URL}/api/tasks`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(nl)});
                 if(r.ok) { app.toast('İzin İşlendi'); app.close(); await app.sync(); app.nav('tasks'); } 
                 else { const errData = await r.json(); app.toast('HATA: ' + (errData.error || 'Bilinmiyor'), true); }
