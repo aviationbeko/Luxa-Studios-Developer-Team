@@ -4,102 +4,81 @@
     <meta charset="UTF-8">
     <link rel="icon" type="image/png" href="https://img.icons8.com/fluency/48/lightning-bolt.png" />
     <link rel="shortcut icon" type="image/png" href="https://img.icons8.com/fluency/48/lightning-bolt.png" />
-    <link rel="manifest" href="/manifest.json">
-    <meta name="theme-color" content="#6c5ce7">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>LSDT - Premium Edition</title>
+    <title>LSDT - Ultra Premium Edition</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <style>
         :root { 
-            --p: #a29bfe; 
-            --p-dark: #6c5ce7;
+            --p: #a29bfe; --p-dark: #6c5ce7;
             --bg: radial-gradient(circle at top right, #2d1454, #0f051d); 
             --bg-dark: #0f051d;
-            --card: rgba(255, 255, 255, 0.03); 
-            --text: #ffffff; 
-            --sub: #d1d8e0; 
-            --red: #ff7675; 
-            --green: #55efc4; 
-            --glass: rgba(162, 155, 254, 0.15);
+            --card: rgba(255, 255, 255, 0.05); 
+            --text: #ffffff; --sub: #d1d8e0; 
+            --red: #ff7675; --green: #55efc4; --gold: #f1c40f;
             --p-grad: linear-gradient(135deg, #6c5ce7, #a29bfe);
             --gold-grad: linear-gradient(135deg, #f1c40f, #e67e22);
         }
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Outfit', sans-serif; -webkit-tap-highlight-color: transparent; }
-        body { background: var(--bg-dark); color: var(--text); height: 100vh; width: 100vw; overflow: hidden; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Outfit', sans-serif; }
+        body { background: var(--bg-dark); color: var(--text); height: 100vh; overflow: hidden; }
         .screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: none; flex-direction: column; z-index: 10; background: var(--bg); }
         .screen.active { display: flex !important; }
 
         /* LOADING */
         #loading-screen { justify-content: center; align-items: center; z-index: 9999; background: #05020a; }
-        .load-container { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; position: relative; width: 100%; }
-        #l-cube { width: 40px; height: 40px; background: var(--p-grad); border-radius: 12px; box-shadow: 0 0 40px rgba(108,92,231,0.8); position: absolute; }
-        #l-code { font-family: monospace; color: var(--green); font-size: 1.2rem; font-weight: 600; opacity: 0; white-space: nowrap; overflow: hidden; position: absolute; }
-        #l-text { font-size: 4.5rem; font-weight: 900; background: var(--p-grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; opacity: 0; position: absolute; letter-spacing: 5px; }
+        .cube { width: 40px; height: 40px; background: var(--p-grad); border-radius: 12px; box-shadow: 0 0 40px rgba(108,92,231,0.8); }
+        
+        /* DASHBOARD ACTION GRID */
+        .action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
+        .action-card { background: var(--card); border: 1px solid rgba(255,255,255,0.1); border-radius: 30px; padding: 25px 15px; text-align: center; cursor: pointer; transition: 0.3s; position: relative; overflow: hidden; }
+        .action-card i { font-size: 2.2rem; display: block; margin-bottom: 12px; }
+        .action-card span { font-weight: 800; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; }
+        .action-card:hover { transform: translateY(-5px); background: rgba(255,255,255,0.1); border-color: var(--p); }
+        .action-card.gold { color: var(--gold); }
+        .action-card.gold:hover { border-color: var(--gold); }
 
         /* UI ELEMENTS */
-        .glass-card { background: rgba(255,255,255,0.08); backdrop-filter: blur(40px); border: 1px solid rgba(255,255,255,0.15); padding: 40px 30px; border-radius: 45px; width: 92%; max-width: 400px; text-align: center; box-shadow: 0 40px 100px rgba(0,0,0,0.5); transition: transform 0.3s ease, box-shadow 0.3s ease; }
-        .glass-card:hover { box-shadow: 0 50px 120px rgba(108,92,231,0.2); }
-        
-        .input-p { width: 100%; padding: 18px; margin-bottom: 15px; background: rgba(255,255,255,0.1); border: 2px solid transparent; border-radius: 25px; color: white; font-size: 1rem; outline: none; transition: 0.3s; }
-        .input-p:focus { border-color: var(--p); background: rgba(255,255,255,0.15); box-shadow: 0 0 20px rgba(162,155,254,0.2); }
-        
-        .p-select { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; justify-content: center; }
-        .p-opt { padding: 10px 18px; border-radius: 30px; background: rgba(108,92,231,0.1); border: 1px solid rgba(108,92,231,0.3); color: white; cursor: pointer; font-size: 0.8rem; font-weight: 700; transition: 0.3s; }
-        .p-opt:hover { background: rgba(108,92,231,0.3); transform: translateY(-2px); }
-        .p-opt.active { background: var(--p-grad); border-color: transparent; box-shadow: 0 5px 15px rgba(108,92,231,0.4); transform: translateY(-2px); }
-
-        .btn-p { width: 100%; padding: 18px; background: var(--p-grad); color: white; border: none; border-radius: 25px; font-weight: 900; cursor: pointer; transition: 0.3s; font-size: 1.1rem; box-shadow: 0 10px 30px rgba(108,92,231,0.3); position: relative; overflow: hidden; }
-        .btn-p::after { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent); transition: 0.5s; }
+        .glass-card { background: rgba(255,255,255,0.08); backdrop-filter: blur(40px); border: 1px solid rgba(255,255,255,0.15); padding: 40px 30px; border-radius: 45px; width: 92%; max-width: 400px; text-align: center; box-shadow: 0 40px 100px rgba(0,0,0,0.5); }
+        .input-p { width: 100%; padding: 18px; margin-bottom: 15px; background: rgba(255,255,255,0.1); border: 2px solid transparent; border-radius: 25px; color: white; outline: none; transition: 0.3s; }
+        .input-p:focus { border-color: var(--p); background: rgba(255,255,255,0.15); }
+        .btn-p { width: 100%; padding: 18px; background: var(--p-grad); color: white; border: none; border-radius: 25px; font-weight: 900; cursor: pointer; transition: 0.3s; font-size: 1.1rem; box-shadow: 0 10px 30px rgba(108,92,231,0.3); }
         .btn-p:hover { transform: translateY(-3px); box-shadow: 0 15px 35px rgba(108,92,231,0.5); }
-        .btn-p:hover::after { left: 100%; }
-        .btn-p:active { transform: scale(0.96); }
 
-        .top-nav { padding: 20px; display: flex; justify-content: space-between; align-items: center; background: transparent; z-index: 50; }
-        .bottom-nav { position: fixed; bottom: 0; width: 100%; height: 90px; background: rgba(15,5,29,0.7); backdrop-filter: blur(25px); display: flex; justify-content: space-around; align-items: center; border-top: 1px solid rgba(255,255,255,0.05); padding-bottom: 20px; z-index: 100; }
-        .nav-item { color: rgba(255,255,255,0.8); font-size: 0.8rem; text-align: center; cursor: pointer; display: flex; flex-direction: column; align-items: center; transition: 0.4s; font-weight: 700; position: relative; }
-        .nav-item.active { color: var(--p); transform: translateY(-8px); }
-        .nav-item i { font-size: 1.8rem; margin-bottom: 6px; }
-        
-        #page-content { flex: 1; padding: 20px; overflow-y: auto; padding-bottom: 120px; position: relative; }
-        .card { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15); padding: 25px; border-radius: 35px; margin-bottom: 20px; transition: 0.3s; position: relative; overflow: hidden; }
-        .card:hover { background: rgba(255,255,255,0.12); transform: translateY(-3px); box-shadow: 0 15px 30px rgba(0,0,0,0.3); }
-        .card h3 { color: var(--p); margin-bottom: 10px; font-weight: 900; font-size: 1.3rem; }
-        .badge { display: inline-block; padding: 6px 14px; border-radius: 12px; font-size: 0.7rem; font-weight: 900; margin-bottom: 12px; text-transform: uppercase; background: var(--glass); color: var(--p); letter-spacing: 1px; }
+        .top-nav { padding: 20px; display: flex; justify-content: space-between; align-items: center; }
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; height: 90px; background: rgba(15,5,29,0.8); backdrop-filter: blur(25px); display: flex; justify-content: space-around; align-items: center; border-top: 1px solid rgba(255,255,255,0.05); padding-bottom: 15px; z-index: 100; }
+        .nav-item { color: rgba(255,255,255,0.6); font-size: 0.75rem; text-align: center; cursor: pointer; font-weight: 700; }
+        .nav-item.active { color: var(--p); transform: translateY(-5px); }
+        .nav-item i { font-size: 1.6rem; display: block; margin-bottom: 5px; }
 
-        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: none; justify-content: center; align-items: center; z-index: 2000; backdrop-filter: blur(20px); opacity: 0; }
-        .modal.active { display: flex !important; opacity: 1; }
-        .modal-content { background: #1a0b2e; width: 90%; max-width: 450px; padding: 35px; border-radius: 40px; border: 1px solid rgba(255,255,255,0.1); overflow-y: auto; max-height: 85vh; position: relative; box-shadow: 0 30px 60px rgba(0,0,0,0.6); }
-        .modal-close { position: absolute; top: 20px; right: 25px; color: var(--sub); font-size: 1.5rem; cursor: pointer; transition: 0.3s; }
-        .modal-close:hover { color: var(--red); transform: rotate(90deg); }
+        #page-content { flex: 1; padding: 20px; overflow-y: auto; padding-bottom: 120px; }
+        .card { background: var(--card); border: 1px solid rgba(255,255,255,0.1); padding: 25px; border-radius: 35px; margin-bottom: 20px; position: relative; }
+        .card h3 { color: var(--p); margin-bottom: 10px; font-weight: 900; }
+        .badge { display: inline-block; padding: 6px 12px; border-radius: 10px; font-size: 0.7rem; font-weight: 900; margin-bottom: 12px; text-transform: uppercase; background: var(--glass); color: var(--p); }
+
+        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: none; justify-content: center; align-items: center; z-index: 2000; backdrop-filter: blur(15px); }
+        .modal.active { display: flex !important; }
+        .modal-content { background: #1a0b2e; width: 92%; max-width: 450px; padding: 35px; border-radius: 40px; border: 1px solid rgba(255,255,255,0.1); max-height: 85vh; overflow-y: auto; }
         
-        .toast { position: fixed; top: 30px; left: 50%; transform: translateX(-50%) translateY(-200%); background: var(--p-grad); color: white; padding: 18px 35px; border-radius: 25px; font-weight: 900; box-shadow: 0 15px 40px rgba(0,0,0,0.5); z-index: 3000; display: flex; align-items: center; gap: 10px; }
-        .image-preview { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
-        .image-preview img { width: 100%; height: 100px; object-fit: cover; border-radius: 20px; }
-        #file-btn { cursor: pointer; display: block; padding: 18px; background: rgba(108,92,231,0.05); border-radius: 40px; text-align: center; border: 2px dashed var(--p); color: var(--p); font-weight: 900; margin-bottom: 15px; }
-        
+        .toast { position: fixed; top: 30px; left: 50%; transform: translateX(-50%) translateY(-200%); background: var(--p-grad); color: white; padding: 18px 30px; border-radius: 20px; font-weight: 900; z-index: 3000; }
+        .del-btn { position: absolute; top: 20px; right: 20px; color: var(--red); opacity: 0.5; cursor: pointer; transition: 0.3s; }
+        .del-btn:hover { opacity: 1; transform: scale(1.2); }
+
         .setup-step { display: none; text-align: center; width: 100%; max-width: 400px; padding: 20px; }
         .setup-step.active { display: block; animation: fadeInUp 0.5s ease; }
-        .setup-card { background: rgba(255,255,255,0.05); padding: 40px 30px; border-radius: 40px; border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(20px); }
-        .rem-box { display: flex; align-items: center; justify-content: center; gap: 10px; margin: 15px 0; color: var(--sub); font-size: 0.9rem; cursor: pointer; }
-        .rem-box input { width: 18px; height: 18px; accent-color: var(--p); }
-
-        @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
-        .del-btn { position:absolute; top:20px; right:20px; color:rgba(255,118,117,0.5); cursor:pointer; font-size: 1.2rem; transition: 0.3s; padding: 5px; }
-        .del-btn:hover { color:var(--red); transform: scale(1.2); }
+        .setup-card { background: var(--card); padding: 40px 30px; border-radius: 40px; border: 1px solid rgba(255,255,255,0.1); }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
 
-    <div id="toast" class="toast"><i class="fas fa-info-circle"></i> <span id="toast-msg">Mesaj</span></div>
+    <div id="toast" class="toast"><span id="toast-msg"></span></div>
 
     <!-- LOADING SCREEN -->
     <div id="loading-screen" class="screen active">
-        <div class="load-container">
-            <div id="l-cube"></div>
-            <div id="l-code">&gt;_ init lsdt...</div>
-            <div id="l-text">LSDT</div>
+        <div style="text-align:center;">
+            <div id="l-cube" class="cube" style="margin: 0 auto;"></div>
+            <h1 id="l-text" style="font-size:4rem; font-weight:900; margin-top:30px; opacity:0; letter-spacing:10px;">LSDT</h1>
         </div>
     </div>
 
@@ -112,32 +91,32 @@
                 <p style="color:var(--sub); margin-bottom:30px;">Bu panel sadece yetkili Luxa Studios geliştiricileri içindir.</p>
                 <div style="display:flex; gap:15px;">
                     <button class="btn-p" onclick="app.setupStep(2)">EVET</button>
-                    <button class="btn-p" style="background:rgba(255,255,255,0.1);" onclick="app.toast('Lütfen adminler ile iletişime geçin!', true)">HAYIR</button>
+                    <button class="btn-p" style="background:rgba(255,255,255,0.1);" onclick="app.toast('Adminler ile iletişime geçin!', true)">HAYIR</button>
                 </div>
             </div>
         </div>
         <div id="setup-2" class="setup-step">
             <div class="setup-card">
                 <i class="fas fa-key fa-3x" style="color:var(--p); margin-bottom:20px;"></i>
-                <h2 style="font-size:1.8rem; margin-bottom:20px;">Giriş Bilgileriniz Var mı?</h2>
-                <p style="color:var(--sub); margin-bottom:30px;">Kullanıcı adınızı ve şifrenizi adminlerden temin ettiniz mi?</p>
-                <button class="btn-p" onclick="app.setupStep(3)">EVET</button>
+                <h2 style="font-size:1.8rem; margin-bottom:20px;">Bilgileriniz Hazır mı?</h2>
+                <p style="color:var(--sub); margin-bottom:30px;">Adminlerden giriş bilgilerinizi aldınız mı?</p>
+                <button class="btn-p" onclick="app.setupStep(3)">ALDIM</button>
             </div>
         </div>
         <div id="setup-3" class="setup-step">
             <div class="setup-card">
                 <i class="fas fa-shield-alt fa-3x" style="color:var(--p); margin-bottom:20px;"></i>
-                <h2 style="font-size:1.8rem; margin-bottom:20px;">LSDT Sözleşmesi</h2>
-                <p style="color:var(--sub); margin-bottom:30px;">Bize Scam atmayacağınıza ve çalıntı ürünler kullanmayacağınıza söz veriyor musunuz?</p>
+                <h2 style="font-size:1.8rem; margin-bottom:20px;">Sözleşme</h2>
+                <p style="color:var(--sub); margin-bottom:30px;">Bize Scam atmayacağınıza ve çalmayacağınıza söz veriyor musunuz?</p>
                 <button class="btn-p" onclick="app.setupStep(4)">SÖZ VERİYORUM</button>
             </div>
         </div>
         <div id="setup-4" class="setup-step">
             <div class="setup-card">
                 <i class="fas fa-bell fa-3x" style="color:var(--p); margin-bottom:20px;"></i>
-                <h2 style="font-size:1.8rem; margin-bottom:20px;">Bildirimler</h2>
-                <p style="color:var(--sub); margin-bottom:30px;">Yeni görevler ve duyurular için bildirimleri açmanızı öneririz.</p>
-                <button class="btn-p" onclick="app.requestNotif()">BİLDİRİMLERİ AÇ</button>
+                <h2 style="font-size:1.8rem; margin-bottom:20px;">Hazırsınız!</h2>
+                <p style="color:var(--sub); margin-bottom:30px;">Yeni görevlerden haberdar olmak için her şey hazır.</p>
+                <button class="btn-p" onclick="app.requestNotif()">BAŞLAYALIM</button>
             </div>
         </div>
     </div>
@@ -147,32 +126,25 @@
         <div style="height:100%; display:flex; justify-content:center; align-items:center;">
             <div class="glass-card">
                 <h1 style="color:white; font-size:3.5rem; font-weight:900; letter-spacing:-3px;">LSDT</h1>
-                <p style="color:var(--p); font-weight:800; margin-bottom:40px; text-transform:uppercase;">Luxa Studios Developer Team</p>
+                <p style="color:var(--p); font-weight:800; margin-bottom:40px;">DEVELOPER TEAM</p>
                 <form onsubmit="app.handleLogin(event)">
                     <input type="text" id="l-user" class="input-p" placeholder="Kullanıcı Adı" required>
                     <input type="password" id="l-pass" class="input-p" placeholder="Şifre" required>
-                    <label class="rem-box"><input type="checkbox" id="l-rem"> Beni Hatırla</label>
-                    <button type="submit" class="btn-p">GİRİŞ YAP <i class="fas fa-arrow-right"></i></button>
+                    <div style="margin:15px 0; color:var(--sub); font-size:0.9rem; display:flex; align-items:center; justify-content:center; gap:10px;">
+                        <input type="checkbox" id="l-rem" style="width:18px; height:18px; accent-color:var(--p);"> Beni Hatırla
+                    </div>
+                    <button type="submit" class="btn-p">GİRİŞ YAP</button>
                 </form>
             </div>
         </div>
     </div>
 
-    <!-- WELCOME ANIMATION -->
-    <div id="welcome-screen" class="screen" style="z-index: 1500; background: var(--bg); justify-content: center; align-items: center;">
-        <div id="w-content" style="text-align: center; transform: scale(0.9); opacity: 0;">
-            <div id="w-avatar" style="width:120px; height:120px; background:var(--p-grad); color:white; border-radius:50%; display:flex; justify-content:center; align-items:center; font-weight:900; font-size:4rem; margin: 0 auto 30px;">L</div>
-            <h1 id="w-title" style="font-size: 3rem; font-weight: 900; margin-bottom: 10px; color: white;"></h1>
-            <p id="w-sub" style="color: var(--p); font-size: 1.2rem; font-weight: 700; text-transform: uppercase;"></p>
-        </div>
-    </div>
-
-    <!-- MAIN APP SCREEN -->
+    <!-- MAIN APP -->
     <div id="main-app" class="screen">
         <nav class="top-nav">
             <div style="display:flex; gap:15px; align-items:center;">
-                <div id="avatar" style="width:50px; height:50px; background:var(--p-grad); color:white; border-radius:50%; display:flex; justify-content:center; align-items:center; font-weight:900;">L</div>
-                <div><div id="u-name" style="font-weight:900; color:var(--p);">Yükleniyor</div><div id="u-role" style="font-size:0.75rem; color:var(--sub); font-weight:800;">ADMIN</div></div>
+                <div id="avatar" style="width:50px; height:50px; background:var(--p-grad); color:white; border-radius:50%; display:flex; justify-content:center; align-items:center; font-weight:900; font-size:1.5rem;">L</div>
+                <div><div id="u-name" style="font-weight:900; color:var(--p); font-size:1.1rem;">Yükleniyor</div><div id="u-role" style="font-size:0.7rem; color:var(--sub); font-weight:800;">ADMIN</div></div>
             </div>
             <div onclick="location.reload()" style="color:var(--red); cursor:pointer;"><i class="fas fa-power-off fa-lg"></i></div>
         </nav>
@@ -187,281 +159,179 @@
 
     <!-- MODALS -->
     <div id="modal-dev" class="modal"><div class="modal-content">
-        <i class="fas fa-times modal-close" onclick="app.close()"></i>
-        <h2>Üye Ekle</h2>
+        <h2 style="margin-bottom:20px;">Yeni Üye Ekle</h2>
         <form onsubmit="app.handleNewDev(event)">
             <input type="text" id="d-name" class="input-p" placeholder="Ad Soyad" required>
             <input type="text" id="d-user" class="input-p" placeholder="Kullanıcı Adı" required>
             <input type="password" id="d-pass" class="input-p" placeholder="Şifre" required>
-            <div id="d-cat-wrap" class="p-select"></div>
-            <button type="submit" class="btn-p">OLUŞTUR</button>
+            <select id="d-cat" class="input-p" style="appearance:none;">
+                <option value="Script">Script</option>
+                <option value="Modelleme">Modelleme</option>
+                <option value="UI Tasarım">UI Tasarım</option>
+                <option value="Admin">Admin</option>
+            </select>
+            <button type="submit" class="btn-p">KAYDET</button>
+            <button type="button" class="btn-p" style="background:none; box-shadow:none; margin-top:10px;" onclick="app.close()">VAZGEÇ</button>
         </form>
     </div></div>
 
     <div id="modal-task" class="modal"><div class="modal-content">
-        <i class="fas fa-times modal-close" onclick="app.close()"></i>
-        <h2>Görev Ata</h2>
+        <h2 style="margin-bottom:20px;">Görev Ata</h2>
         <form onsubmit="app.handleNewTask(event)">
-            <div id="t-to-wrap" class="p-select"></div>
-            <div id="t-freq-wrap" class="p-select">
-                <div class="p-opt active" onclick="app.setSel('tFreq', 'Günlük', this)">Günlük</div>
-                <div class="p-opt" onclick="app.setSel('tFreq', 'Haftalık', this)">Haftalık</div>
-            </div>
+            <select id="t-to" class="input-p"></select>
             <input type="text" id="t-title" class="input-p" placeholder="Başlık" required>
             <textarea id="t-desc" class="input-p" placeholder="Detaylar" style="height:100px;" required></textarea>
-            <button type="submit" class="btn-p">GÖREVİ GÖNDER</button>
+            <button type="submit" class="btn-p">GÖNDER</button>
+            <button type="button" class="btn-p" style="background:none; box-shadow:none; margin-top:10px;" onclick="app.close()">VAZGEÇ</button>
         </form>
     </div></div>
 
     <div id="modal-leave" class="modal"><div class="modal-content">
-        <i class="fas fa-times modal-close" onclick="app.close()"></i>
-        <h2 style="color:#f1c40f;">İzin Ver</h2>
+        <h2 style="color:var(--gold); margin-bottom:20px;">İzin Tanımla</h2>
         <form onsubmit="app.handleNewLeave(event)">
-            <div id="l-to-wrap" class="p-select"></div>
+            <select id="l-to" class="input-p"></select>
             <input type="number" id="l-days" class="input-p" placeholder="Kaç Gün?" required min="1">
-            <textarea id="l-reason" class="input-p" placeholder="Sebep" style="height:80px;"></textarea>
-            <button type="submit" class="btn-p" style="background:var(--gold-grad);">İZİN ONAYLA</button>
+            <textarea id="l-reason" class="input-p" placeholder="İzin Sebebi" style="height:80px;"></textarea>
+            <button type="submit" class="btn-p" style="background:var(--gold-grad);">İZİN VER</button>
+            <button type="button" class="btn-p" style="background:none; box-shadow:none; margin-top:10px;" onclick="app.close()">VAZGEÇ</button>
         </form>
-    </div></div>
-
-    <div id="modal-report" class="modal"><div class="modal-content">
-        <i class="fas fa-times modal-close" onclick="app.close()"></i>
-        <h2>Rapor Hazırla</h2>
-        <form onsubmit="app.handleSubmitReport(event)">
-            <input type="hidden" id="r-id">
-            <textarea id="r-text" class="input-p" placeholder="Neler yaptın?" style="height:120px;" required></textarea>
-            <textarea id="r-bug" class="input-p" placeholder="Buglar (Opsiyonel)"></textarea>
-            <label id="file-btn"> RESİM SEÇ (En Az 2) <input type="file" id="r-files" multiple accept="image/*" required onchange="app.previewImgs(this)" style="display:none;"></label>
-            <div id="r-preview" class="image-preview"></div>
-            <button type="submit" class="btn-p">RAPORU GÖNDER</button>
-        </form>
-    </div></div>
-
-    <div id="modal-decide" class="modal"><div class="modal-content">
-        <i class="fas fa-times modal-close" onclick="app.close()"></i>
-        <h2>İncele</h2>
-        <div id="dec-details" style="margin-bottom:20px; font-size:0.9rem; background:rgba(0,0,0,0.2); padding:15px; border-radius:20px;"></div>
-        <div id="dec-images" class="image-preview" style="margin-bottom:20px;"></div>
-        <input type="hidden" id="dec-id">
-        <textarea id="dec-reason" class="input-p" placeholder="Red Sebebi" style="height:80px;"></textarea>
-        <div style="display:flex; gap:15px;">
-            <button onclick="app.finalize(true)" class="btn-p" style="background:var(--green); color:#000; flex:1;">ONAYLA</button>
-            <button onclick="app.finalize(false)" class="btn-p" style="background:var(--red); color:#fff; flex:1;">REDDET</button>
-        </div>
     </div></div>
 
     <script>
         const RENDER_URL = "https://lsdt.onrender.com";
-        
         const app = {
             db: { users: [], tasks: [], anns: [] },
             user: null,
-            sel: { dCat: 'Script', tTo: '', tFreq: 'Günlük', lTo: '' },
-            tempImgs: [],
 
             async init() {
                 const tl = gsap.timeline();
-                tl.fromTo("#l-cube", { y: -100, rotation: 0, opacity: 0 }, { y: 0, rotation: 180, opacity: 1, duration: 1, ease: "bounce.out" })
-                .to("#l-cube", { rotation: "+=360", scale: 0.5, opacity: 0, duration: 0.8, delay: 0.5 })
-                .to("#l-code", { opacity: 1, duration: 0.1 }).to("#l-code", { width: "180px", duration: 1, ease: "steps(14)" })
-                .to("#l-code", { opacity: 0, duration: 0.5, delay: 0.5 })
-                .to("#l-text", { opacity: 1, scale: 1, duration: 1, ease: "elastic.out(1, 0.5)" })
-                .to("#l-text", { filter: "drop-shadow(0 0 20px rgba(162,155,254,0.8))", duration: 0.5, yoyo: true, repeat: 1 })
-                .to("#loading-screen", { opacity: 0, duration: 0.8, onComplete: async () => {
-                    await app.sync();
-                    const setupDone = localStorage.getItem('lsdt_setup');
-                    const remUser = localStorage.getItem('lsdt_rem');
-                    if(!setupDone) app.show('setup-screen');
-                    else if(remUser) {
-                        const u = JSON.parse(remUser);
-                        const check = app.db.users.find(x => x.username === u.username && x.password === u.password);
-                        if(check) app.loginAs(check); else app.show('login-screen');
-                    } else app.show('login-screen');
-                }});
-                app.renderCats();
-                setInterval(() => app.sync(), 10000);
+                tl.fromTo("#l-cube", { y: -50, rotation: 0, opacity: 0 }, { y: 0, rotation: 180, opacity: 1, duration: 1, ease: "bounce.out" })
+                  .to("#l-text", { opacity: 1, letterSpacing: "5px", duration: 1 })
+                  .to("#loading-screen", { opacity: 0, duration: 0.8, delay: 1, onComplete: async () => {
+                      await app.sync();
+                      const setup = localStorage.getItem('lsdt_setup');
+                      const rem = localStorage.getItem('lsdt_rem');
+                      if(!setup) app.show('setup-screen');
+                      else if(rem) {
+                          const u = JSON.parse(rem);
+                          const found = app.db.users.find(x => x.username === u.username && x.password === u.password);
+                          if(found) app.loginAs(found); else app.show('login-screen');
+                      } else app.show('login-screen');
+                  }});
+                setInterval(() => app.sync(), 15000);
             },
 
             async sync() {
                 try {
                     const res = await fetch(`${RENDER_URL}/api/state`);
-                    const data = await res.json();
-                    app.db = data;
+                    app.db = await res.json();
                 } catch(e) {}
             },
 
-            async post(url, body) {
-                try {
-                    const res = await fetch(`${RENDER_URL}${url}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
-                    return await res.json();
-                } catch(e) { return { error: e.message }; }
-            },
-
             show(id) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.getElementById(id).classList.add('active'); },
-            open(id) { document.getElementById(id).classList.add('active'); gsap.from(document.getElementById(id).querySelector('.modal-content'), {scale:0.8, opacity:0, duration:0.3}); },
+            open(id) { document.getElementById(id).classList.add('active'); },
             close() { document.querySelectorAll('.modal').forEach(m => m.classList.remove('active')); },
             setupStep(n) { document.querySelectorAll('.setup-step').forEach(s => s.classList.remove('active')); document.getElementById('setup-' + n).classList.add('active'); },
-            
             requestNotif() { localStorage.setItem('lsdt_setup', 'true'); app.show('login-screen'); },
-
-            renderCats() {
-                const cats = ['UI Tasarımı','Modelleme','Script','Ses Efektleri','VFX Efektleri','Bug Raporcusu','Admin'];
-                const wrap = document.getElementById('d-cat-wrap'); if(!wrap) return; wrap.innerHTML = '';
-                cats.forEach(c => {
-                    const opt = document.createElement('div'); opt.className = 'p-opt' + (c === app.sel.dCat ? ' active':'');
-                    opt.innerText = c; opt.onclick = () => { app.sel.dCat = c; app.renderCats(); };
-                    wrap.appendChild(opt);
-                });
-            },
-
-            setSel(key, val, el) {
-                app.sel[key] = val;
-                el.parentElement.querySelectorAll('.p-opt').forEach(x => x.classList.remove('active'));
-                el.classList.add('active');
-            },
 
             async handleLogin(e) {
                 e.preventDefault();
                 const u = document.getElementById('l-user').value;
                 const p = document.getElementById('l-pass').value;
                 const rem = document.getElementById('l-rem').checked;
-                await app.sync();
                 const found = app.db.users.find(x => x.username === u && x.password === p);
                 if(found) {
                     if(rem) localStorage.setItem('lsdt_rem', JSON.stringify(found));
                     app.loginAs(found);
-                } else app.toast('Hata: Bilgiler Yanlış!', true);
+                } else app.toast('Hatalı Giriş!', true);
             },
 
             loginAs(u) {
                 app.user = u;
-                document.getElementById('w-avatar').innerText = u.name[0];
-                document.getElementById('w-title').innerText = `Hoşgeldin, ${u.name.split(' ')[0]}`;
-                document.getElementById('w-sub').innerText = u.category;
-                app.show('welcome-screen');
-                const tl = gsap.timeline();
-                tl.to("#w-content", { scale: 1, opacity: 1, duration: 1, ease: "back.out" })
-                  .to("#welcome-screen", { opacity: 0, duration: 0.8, delay: 2, onComplete: () => {
-                      document.getElementById('u-name').innerText = u.name;
-                      document.getElementById('avatar').innerText = u.name[0];
-                      document.getElementById('u-role').innerText = u.category;
-                      app.show('main-app'); app.nav('dash');
-                  }});
+                document.getElementById('avatar').innerText = u.name[0];
+                document.getElementById('u-name').innerText = u.name;
+                document.getElementById('u-role').innerText = u.category;
+                app.show('main-app'); app.nav('dash');
             },
 
             nav(p) {
                 const c = document.getElementById('page-content');
                 document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
                 document.getElementById('nav-'+p).classList.add('active');
-                gsap.to(c, { opacity: 0, y: -10, duration: 0.2, onComplete: () => {
-                    if(p === 'dash') {
-                        const t = app.db.tasks.find(x => x.assignee === app.user.username && (x.status === 'Aktif' || x.status === 'Reddedildi' || x.status === 'İzinde'));
-                        const isP = app.db.tasks.find(x => x.assignee === app.user.username && x.status === 'Onay Bekliyor');
-                        let statusHtml = t ? `<div class="card"><h3>${t.title}</h3><p>${t.description}</p></div>` : (isP ? '<div class="card"><h3>Raporun İnceleniyor...</h3></div>' : '<div class="card"><h3>Şu An Serbestsin!</h3></div>');
-                        c.innerHTML = `<div class="card" style="background:var(--p-grad);"><h1 style="color:white;">Selam, ${app.user.name.split(' ')[0]}</h1><p>${app.user.category}</p></div>${app.user.role === 'admin' ? `<div style="display:grid; grid-template-columns:1fr 1fr; gap:15px;"><div class="card" onclick="app.open('modal-dev')">Üye Ekle</div><div class="card" onclick="app.openTaskModal()">Görev Ver</div><div class="card" onclick="app.openLeaveModal()">İzin Ver</div></div>` : `<h2>DURUMUN</h2>${statusHtml}`}`;
-                    } else if(p === 'tasks') {
-                        c.innerHTML = `<h2>Görevler</h2>`;
-                        const tasks = app.user.role === 'admin' ? app.db.tasks : app.db.tasks.filter(t => t.assignee === app.user.username);
-                        tasks.slice().reverse().forEach(t => {
-                            c.innerHTML += `<div class="card"><div class="badge">${t.status}</div><h3>${t.title}</h3><p>${t.description}</p>${app.user.role === 'dev' && (t.status === 'Aktif' || t.status === 'Reddedildi') ? `<button class="btn-p" onclick="app.openReport('${t.id}')">RAPOR GÖNDER</button>` : ''}${app.user.role === 'admin' && t.status === 'Onay Bekliyor' ? `<button class="btn-p" onclick="app.openDecide('${t.id}')">İNCELE</button>` : ''}${app.user.role === 'admin' ? `<i class="fas fa-trash del-btn" onclick="app.delTask('${t.id}')"></i>` : ''}</div>`;
-                        });
-                    } else if(p === 'ann') {
-                        c.innerHTML = `<h2>Duyurular</h2>${app.user.role === 'admin' ? `<div class="card"><input type="text" id="an-title" class="input-p" placeholder="Başlık"><textarea id="an-text" class="input-p" placeholder="Mesaj"></textarea><button class="btn-p" onclick="app.postAnn()">YAYINLA</button></div>` : ''}`;
-                        app.db.anns.slice().reverse().forEach(a => {
-                            c.innerHTML += `<div class="card"><h3>${a.title}</h3><p>${a.text}</p>${app.user.role === 'admin' ? `<i class="fas fa-trash del-btn" onclick="app.delAnn('${a.id}')"></i>` : ''}</div>`;
-                        });
-                    } else if(p === 'set') {
-                        c.innerHTML = `<div class="card" style="text-align:center;"><h2>${app.user.name}</h2><p>${app.user.category}</p></div><button class="btn-p" onclick="localStorage.removeItem('lsdt_rem'); location.reload()">ÇIKIŞ YAP</button>`;
-                        if(app.user.role === 'admin') {
-                            app.db.users.filter(u => u.username !== app.user.username).forEach(u => {
-                                c.innerHTML += `<div class="card">${u.name} <i class="fas fa-trash del-btn" onclick="app.delUser('${u.id}')"></i></div>`;
-                            });
+                
+                if(p === 'dash') {
+                    c.innerHTML = `
+                        <div class="card" style="background:var(--p-grad);"><h1 style="color:white; font-size:2rem;">Selam, ${app.user.name.split(' ')[0]}</h1><p>${app.user.category}</p></div>
+                        ${app.user.role === 'admin' ? `
+                            <div class="action-grid">
+                                <div class="action-card" onclick="app.open('modal-dev')"><i class="fas fa-user-plus"></i><span>Üye Ekle</span></div>
+                                <div class="action-card" onclick="app.openTaskModal()"><i class="fas fa-tasks"></i><span>Görev Ver</span></div>
+                                <div class="action-card gold" onclick="app.openLeaveModal()"><i class="fas fa-plane-departure"></i><span>İzin Ver</span></div>
+                                <div class="action-card" onclick="app.nav('ann')"><i class="fas fa-bullhorn"></i><span>Duyuru</span></div>
+                            </div>
+                            <h3 style="margin-top:25px;">Onay Bekleyen Raporlar</h3>
+                            <div id="review-list"></div>
+                        ` : `
+                            <div class="card"><h3>Güncel Durum</h3><p>Şu an aktif bir görevin bulunmuyor.</p></div>
+                        `}
+                    `;
+                } else if(p === 'tasks') {
+                    c.innerHTML = `<h2>Görev GUI</h2>`;
+                    app.db.tasks.slice().reverse().forEach(t => {
+                        if(app.user.role === 'admin' || t.assignee === app.user.username) {
+                            c.innerHTML += `<div class="card"><div class="badge">${t.status}</div><h3>${t.title}</h3><p style="font-size:0.9rem; color:var(--sub);">${t.description}</p>${app.user.role === 'admin' ? `<i class="fas fa-trash del-btn" onclick="app.delTask('${t.id}')"></i>` : ''}</div>`;
                         }
-                    }
-                    gsap.fromTo(c, { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.4 });
-                }});
+                    });
+                } else if(p === 'ann') {
+                    c.innerHTML = `<h2>Duyurular</h2>${app.user.role === 'admin' ? `<div class="card"><input type="text" id="an-title" class="input-p" placeholder="Başlık"><textarea id="an-text" class="input-p" placeholder="Mesaj"></textarea><button class="btn-p" onclick="app.postAnn()">YAYINLA</button></div>` : ''}`;
+                    app.db.anns.slice().reverse().forEach(a => {
+                        c.innerHTML += `<div class="card"><h3>${a.title}</h3><p>${a.text}</p>${app.user.role === 'admin' ? `<i class="fas fa-trash del-btn" onclick="app.delAnn('${a.id}')"></i>` : ''}</div>`;
+                    });
+                } else if(p === 'set') {
+                    c.innerHTML = `<div class="card" style="text-align:center;"><h2>${app.user.name}</h2><p>${app.user.category}</p><br><button class="btn-p" onclick="localStorage.removeItem('lsdt_rem'); location.reload()">Girişi Kapat</button></div>`;
+                }
+            },
+
+            openTaskModal() {
+                const s = document.getElementById('t-to'); s.innerHTML = '';
+                app.db.users.filter(u => u.role === 'dev').forEach(d => s.innerHTML += `<option value="${d.username}">${d.name}</option>`);
+                app.open('modal-task');
+            },
+
+            openLeaveModal() {
+                const s = document.getElementById('l-to'); s.innerHTML = '';
+                app.db.users.filter(u => u.role === 'dev').forEach(d => s.innerHTML += `<option value="${d.username}">${d.name}</option>`);
+                app.open('modal-leave');
             },
 
             async handleNewDev(e) {
                 e.preventDefault();
-                const res = await app.post('/api/users', { name: document.getElementById('d-name').value, username: document.getElementById('d-user').value, password: document.getElementById('d-pass').value, role: app.sel.dCat === 'Admin' ? 'admin' : 'dev', category: app.sel.dCat });
-                if(!res.error) { app.toast('Üye Kaydedildi!'); app.close(); app.sync(); }
-            },
-
-            openTaskModal() {
-                const wrap = document.getElementById('t-to-wrap'); wrap.innerHTML = '';
-                app.db.users.filter(u => u.role === 'dev').forEach(d => {
-                    const opt = document.createElement('div'); opt.className = 'p-opt' + (d.username === app.sel.tTo ? ' active':'');
-                    opt.innerText = d.name; opt.onclick = () => { app.sel.tTo = d.username; app.openTaskModal(); };
-                    wrap.appendChild(opt);
-                });
-                app.open('modal-task');
+                const res = await fetch(`${RENDER_URL}/api/users`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({name:document.getElementById('d-name').value, username:document.getElementById('d-user').value, password:document.getElementById('d-pass').value, role:document.getElementById('d-cat').value === 'Admin' ? 'admin' : 'dev', category:document.getElementById('d-cat').value})});
+                if(res.ok) { app.toast('Üye Ekleme Başarılı!'); app.close(); app.sync(); }
             },
 
             async handleNewTask(e) {
                 e.preventDefault();
-                const res = await app.post('/api/tasks', { id: Date.now().toString(), assignee: app.sel.tTo, title: document.getElementById('t-title').value, description: document.getElementById('t-desc').value, status: 'Aktif', type: app.sel.tFreq });
-                if(!res.error) { app.toast('Görev Verildi!'); app.close(); app.sync(); app.nav('tasks'); }
+                const res = await fetch(`${RENDER_URL}/api/tasks`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({id:Date.now().toString(), assignee:document.getElementById('t-to').value, title:document.getElementById('t-title').value, description:document.getElementById('t-desc').value, status:'Aktif'})});
+                if(res.ok) { app.toast('Görev Atandı!'); app.close(); app.sync(); app.nav('tasks'); }
+            },
+
+            async handleNewLeave(e) {
+                e.preventDefault();
+                const res = await fetch(`${RENDER_URL}/api/tasks`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({id:'L'+Date.now(), assignee:document.getElementById('l-to').value, title:'İZİN: ' + document.getElementById('l-days').value + ' Gün', description:document.getElementById('l-reason').value, status:'İzinde'})});
+                if(res.ok) { app.toast('İzin Tanımlandı!'); app.close(); app.sync(); app.nav('dash'); }
             },
 
             async postAnn() {
-                const res = await app.post('/api/announcements', { title: document.getElementById('an-title').value, text: document.getElementById('an-text').value });
-                if(!res.error) { app.toast('Duyuru Yayınlandı!'); app.sync(); app.nav('ann'); }
+                await fetch(`${RENDER_URL}/api/announcements`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({title:document.getElementById('an-title').value, text:document.getElementById('an-text').value})});
+                app.toast('Duyuru Yayınlandı!'); app.sync(); app.nav('ann');
             },
 
-            openReport(id) { document.getElementById('r-id').value = id; app.open('modal-report'); },
-
-            async handleSubmitReport(e) {
-                e.preventDefault();
-                const res = await app.post('/api/sync', { tasks: app.db.tasks.map(t => t.id == document.getElementById('r-id').value ? {...t, status:'Onay Bekliyor', report:document.getElementById('r-text').value, bugs:document.getElementById('r-bug').value, images:app.tempImgs} : t) });
-                if(!res.error) { app.toast('Rapor Gönderildi!'); app.close(); app.sync(); app.nav('dash'); }
-            },
-
-            async finalize(ok) {
-                const id = document.getElementById('dec-id').value;
-                const res = await app.post('/api/sync', { tasks: app.db.tasks.map(t => t.id == id ? {...t, status: ok ? 'Tamamlandı' : 'Reddedildi', report: ok ? '' : document.getElementById('dec-reason').value} : t) });
-                if(!res.error) { app.toast(ok ? 'Onaylandı!' : 'Reddedildi!'); app.close(); app.sync(); app.nav('dash'); }
-            },
-
-            async delUser(id) { if(confirm('Sil?')) { await fetch(`${RENDER_URL}/api/users/${id}`, {method:'DELETE'}); app.sync(); app.nav('set'); } },
-            async delTask(id) { if(confirm('Sil?')) { await fetch(`${RENDER_URL}/api/tasks/${id}`, {method:'DELETE'}); app.sync(); app.nav('tasks'); } },
-            async delAnn(id) { if(confirm('Sil?')) { await fetch(`${RENDER_URL}/api/announcements/${id}`, {method:'DELETE'}); app.sync(); app.nav('ann'); } },
-
-            openDecide(id) {
-                const t = app.db.tasks.find(x => x.id == id); document.getElementById('dec-id').value = id;
-                document.getElementById('dec-details').innerHTML = `<b>Dev:</b> ${t.assignee}<br><b>Rapor:</b> ${t.report}<br><b>Buglar:</b> ${t.bugs}`;
-                const imgDiv = document.getElementById('dec-images'); imgDiv.innerHTML = '';
-                (t.images || []).forEach(src => { const img = document.createElement('img'); img.src = src; imgDiv.appendChild(img); });
-                app.open('modal-decide');
-            },
-
-            async previewImgs(input) {
-                const prev = document.getElementById('r-preview'); prev.innerHTML = ''; app.tempImgs = [];
-                for (let file of input.files) {
-                    const base64 = await app.compressImg(file); app.tempImgs.push(base64);
-                    const img = document.createElement('img'); img.src = base64; prev.appendChild(img);
-                }
-            },
-
-            compressImg(file) {
-                return new Promise((resolve) => {
-                    const reader = new FileReader(); reader.readAsDataURL(file);
-                    reader.onload = (e) => {
-                        const img = new Image(); img.src = e.target.result;
-                        img.onload = () => {
-                            const canvas = document.createElement('canvas'); const MAX = 600;
-                            let w = img.width, h = img.height;
-                            if (w > MAX) { h *= MAX / w; w = MAX; }
-                            canvas.width = w; canvas.height = h;
-                            canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-                            resolve(canvas.toDataURL('image/jpeg', 0.5));
-                        };
-                    };
-                });
-            },
+            async delTask(id) { if(confirm('Silinsin mi?')) { await fetch(`${RENDER_URL}/api/tasks/${id}`, {method:'DELETE'}); app.sync(); app.nav('tasks'); } },
+            async delAnn(id) { if(confirm('Silinsin mi?')) { await fetch(`${RENDER_URL}/api/announcements/${id}`, {method:'DELETE'}); app.sync(); app.nav('ann'); } },
 
             toast(m, bad=false) {
-                const el = document.getElementById('toast'); document.getElementById('toast-msg').innerText = m;
+                const el = document.getElementById('toast'); el.innerText = m;
                 el.style.background = bad ? 'var(--red)' : 'var(--p-grad)';
                 gsap.fromTo(el, {y:-100, opacity:0}, {y:0, opacity:1, duration:0.5});
                 setTimeout(() => gsap.to(el, {y:-100, opacity:0}), 3000);
