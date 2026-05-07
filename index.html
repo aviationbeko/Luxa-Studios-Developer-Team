@@ -406,7 +406,8 @@
                 const target = app.db.users.find(u => u.username === app.sel.tTo);
                 const nt = { assignee:app.sel.tTo, assignee_name: target.name, given_by: app.user.name, title:document.getElementById('t-title').value, description:document.getElementById('t-desc').value, status:'Aktif', date: new Date().toISOString()};
                 const r = await fetch(`${RENDER_URL}/api/tasks`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(nt)});
-                if(r.ok) { app.toast('Görev Verildi'); app.close(); await app.sync(); app.nav('tasks'); } else { app.toast('Hata oluştu!', true); }
+                if(r.ok) { app.toast('Görev Verildi'); app.close(); await app.sync(); app.nav('tasks'); } 
+                else { const errData = await r.json(); app.toast('HATA: ' + (errData.error || 'Bilinmiyor'), true); }
             },
 
             async handleNewLeave(e) {
@@ -414,7 +415,8 @@
                 const target = app.db.users.find(u => u.username === app.sel.lTo);
                 const nl = { assignee:app.sel.lTo, assignee_name: target.name, given_by: app.user.name, title:'İZİN TALEBİ', description: document.getElementById('l-days').value + ' Gün İzin: ' + document.getElementById('l-reason').value, status:'İzinde', date: new Date().toISOString()};
                 const r = await fetch(`${RENDER_URL}/api/tasks`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(nl)});
-                if(r.ok) { app.toast('İzin İşlendi'); app.close(); await app.sync(); app.nav('tasks'); } else { app.toast('Hata oluştu!', true); }
+                if(r.ok) { app.toast('İzin İşlendi'); app.close(); await app.sync(); app.nav('tasks'); } 
+                else { const errData = await r.json(); app.toast('HATA: ' + (errData.error || 'Bilinmiyor'), true); }
             },
 
             async handleNewReport(e) {
@@ -432,7 +434,8 @@
                 if(!title || !text) return app.toast('Boş bırakmayın!', true);
                 const na = { title: title, text: text };
                 const r = await fetch(`${RENDER_URL}/api/announcements`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(na)});
-                if(r.ok) { app.toast('Yayınlandı'); await app.sync(); app.nav('ann'); } else { app.toast('Hata!', true); }
+                if(r.ok) { app.toast('Yayınlandı'); await app.sync(); app.nav('ann'); } 
+                else { const errData = await r.json(); app.toast('HATA: ' + (errData.error || 'Bilinmiyor'), true); }
             },
 
             async delTask(id) { if(confirm('Sil?')) { await fetch(`${RENDER_URL}/api/tasks/${id}`, {method:'DELETE'}); await app.sync(); app.nav('tasks'); } },
