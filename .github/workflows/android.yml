@@ -15,11 +15,14 @@ jobs:
         with:
           node-version: 18
 
-      - name: Install Capacitor
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Initialize Capacitor Android
         run: |
-          npm install @capacitor/core @capacitor/cli @capacitor/android
-          npx cap init LSDT com.lsdt.app --web-dir .
           npx cap add android
+          npx cap copy android
+          npx cap sync android
 
       - name: Setup Java
         uses: actions/setup-java@v3

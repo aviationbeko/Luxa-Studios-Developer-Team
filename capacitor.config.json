@@ -1,0 +1,6 @@
+{
+  "appId": "com.lsdt.app",
+  "appName": "LSDT",
+  "webDir": ".",
+  "bundledWebRuntime": false
+}
