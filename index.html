@@ -81,12 +81,15 @@
         /* PREVIEW SYSTEM */
         .img-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 15px; }
         .img-item { width: 100%; aspect-ratio: 1; border-radius: 15px; object-fit: cover; border: 1px solid rgba(255,255,255,0.2); }
-        .img-picker { border: 2px dashed var(--p); padding: 20px; border-radius: 25px; cursor: pointer; transition: 0.3s; color: var(--p); font-weight: 700; margin-bottom: 20px; }
+        .img-picker { border: 2px dashed var(--p); padding: 20px; border-radius: 25px; cursor: pointer; transition: 0.3s; color: var(--p); font-weight: 700; margin-bottom: 20px; text-align: center; }
         .img-picker:hover { background: rgba(162,155,254,0.1); }
 
-        .report-section { background: rgba(0,0,0,0.2); padding: 15px; border-radius: 20px; margin-top: 15px; border-left: 4px solid var(--p); }
-        .report-section h4 { font-size: 0.8rem; color: var(--p); text-transform: uppercase; margin-bottom: 8px; }
-        .report-section p { font-size: 0.9rem; color: var(--sub); line-height: 1.4; }
+        .report-section { background: rgba(0,0,0,0.3); padding: 15px; border-radius: 20px; margin-top: 15px; border-left: 4px solid var(--p); }
+        .report-section h4 { font-size: 0.8rem; color: var(--p); text-transform: uppercase; margin-bottom: 8px; font-weight: 900; }
+        .report-section p { font-size: 0.9rem; color: var(--sub); line-height: 1.4; white-space: pre-wrap; }
+
+        .btn-mini { padding: 10px 15px; border-radius: 15px; border: none; font-weight: 900; cursor: pointer; font-size: 0.8rem; flex: 1; transition: 0.3s; }
+        .btn-mini:hover { transform: scale(1.05); }
 
         @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
     </style>
@@ -232,7 +235,7 @@
             <textarea id="r-text" class="input-p" placeholder="Yapılan işlemler..." style="height:120px;" required></textarea>
             <textarea id="r-bug" class="input-p" placeholder="Varsa karşılaşılan Bug/Sorunlar..." style="height:80px;"></textarea>
             
-            <div id="r-img-picker" class="img-picker" onclick="document.getElementById('r-file').click()">
+            <div class="img-picker" onclick="document.getElementById('r-file').click()">
                 <i class="fas fa-image"></i> RESİM SEÇ
             </div>
             <input type="file" id="r-file" style="display:none;" multiple accept="image/*" onchange="app.handleFiles(this)">
@@ -337,7 +340,7 @@
                     const myLeave = (app.db.tasks || []).find(t => t.assignee === app.user.username && t.status === 'İzinde');
                     
                     if(myLeave) {
-                        c.innerHTML = `<div class="card" style="background:var(--gold-grad);"><h1>İzindesin</h1><p>${myLeave.description}</p></div>`;
+                        c.innerHTML = `<div class="card" style="background:var(--gold-grad);"><h1>İzindesin</h1><p>${myLeave.description.split('[REPORT_START]')[0]}</p></div>`;
                     } else {
                         c.innerHTML = `<div class="card" style="background:var(--p-grad);"><h1>Selam, ${app.user.name.split(' ')[0]}</h1><p>${app.user.category}</p></div>`;
                     }
@@ -353,7 +356,7 @@
                         c.innerHTML += `<h3>Aktif Görevlerin</h3>`;
                         if(myTasks.length > 0) {
                             myTasks.forEach(t => {
-                                c.innerHTML += `<div class="card"><h3>${t.title}</h3><p>${t.description}</p><button class="btn-p" style="margin-top:15px; padding:12px; font-size:0.9rem;" onclick="app.openReportModal('${t.id}', '${t.title}')">RAPOR GÖNDER</button></div>`;
+                                c.innerHTML += `<div class="card"><h3>${t.title}</h3><p>${t.description.split('[REPORT_START]')[0]}</p><button class="btn-p" style="margin-top:15px; padding:12px; font-size:0.9rem;" onclick="app.openReportModal('${t.id}', '${t.title}')">RAPOR GÖNDER</button></div>`;
                             });
                         } else { c.innerHTML += `<div class="card"><p>Şu an aktif bir görevin bulunmuyor. Serbestsin!</p></div>`; }
                     }
@@ -366,19 +369,30 @@
                             const realName = targetUser ? targetUser.name : t.assignee;
                             
                             let reportHtml = '';
-                            if(t.report_text) {
-                                reportHtml = `<div class="report-section">
-                                    <h4>GELEN RAPOR</h4>
-                                    <p>${t.report_text}</p>
-                                    ${t.bug_text ? `<h4>BUG BİLDİRİMİ</h4><p style="color:var(--red);">${t.bug_text}</p>` : ''}
-                                    ${t.report_images ? `<div class="img-grid">${t.report_images.map(img => `<img src="${img}" class="img-item">`).join('')}</div>` : ''}
-                                </div>`;
+                            if(t.description.includes('[REPORT_START]')) {
+                                try {
+                                    const jsonStr = t.description.split('[REPORT_START]')[1].split('[REPORT_END]')[0];
+                                    const rData = JSON.parse(jsonStr);
+                                    reportHtml = `<div class="report-section">
+                                        <h4>GELEN RAPOR</h4>
+                                        <p>${rData.report}</p>
+                                        ${rData.bug ? `<h4>BUG BİLDİRİMİ</h4><p style="color:var(--red); font-weight:700;">${rData.bug}</p>` : ''}
+                                        ${rData.imgs && rData.imgs.length > 0 ? `<div class="img-grid">${rData.imgs.map(img => `<img src="${img}" class="img-item" onclick="window.open(this.src)">`).join('')}</div>` : ''}
+                                        
+                                        ${app.user.role === 'admin' && t.status === 'İnceleniyor' ? `
+                                            <div style="display:flex; gap:10px; margin-top:15px;">
+                                                <button class="btn-mini" style="background:var(--green); color:#000;" onclick="app.updateTaskStatus('${t.id}', 'Onaylandı')">ONAYLA</button>
+                                                <button class="btn-mini" style="background:var(--red); color:#fff;" onclick="app.updateTaskStatus('${t.id}', 'Aktif')">REDDET</button>
+                                            </div>
+                                        ` : ''}
+                                    </div>`;
+                                } catch(e) { console.log("Report Parse Error", e); }
                             }
 
                             c.innerHTML += `<div class="card">
-                                <div class="badge" style="background:${t.status === 'İnceleniyor' ? 'var(--gold)' : t.status === 'Onaylandı' ? 'var(--green)' : 'var(--glass)'}">${t.status}</div>
+                                <div class="badge" style="background:${t.status === 'İnceleniyor' ? 'var(--gold)' : t.status === 'Onaylandı' ? 'var(--green)' : t.status === 'Aktif' ? 'var(--p-dark)' : 'var(--glass)'}">${t.status}</div>
                                 <h3>${t.title}</h3>
-                                <p style="white-space: pre-wrap;">${t.description}</p>
+                                <p style="white-space: pre-wrap;">${t.description.split('[REPORT_START]')[0]}</p>
                                 ${reportHtml}
                                 <div class="info-row">
                                     <span><b>Sorumlu:</b> ${realName}</span>
@@ -452,9 +466,9 @@
 
             async handleNewDev(e) {
                 e.preventDefault();
-                const newUser = { name: document.getElementById('d-name').value, username: document.getElementById('d-user').value, password: document.getElementById('d-pass').value, role: app.sel.dCat === 'Admin' ? 'admin' : 'dev', category: app.sel.dCat };
+                const newUser = { id: app.genUUID(), name: document.getElementById('d-name').value, username: document.getElementById('d-user').value, password: document.getElementById('d-pass').value, role: app.sel.dCat === 'Admin' ? 'admin' : 'dev', category: app.sel.dCat };
                 const r = await fetch(`${RENDER_URL}/api/users`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(newUser)});
-                if(r.ok) { app.toast('Üye Eklendi!'); app.close(); await app.sync(); app.nav('set'); } else app.toast('Hata!', true);
+                if(r.ok) { app.toast('Üye Eklendi!'); app.close(); await app.sync(); app.nav('set'); } else { const ed = await r.json(); app.toast('HATA: ' + (ed.error || 'Bilinmiyor'), true); }
             },
 
             async handleNewTask(e) {
@@ -462,7 +476,7 @@
                 const descWithAdmin = document.getElementById('t-desc').value + `\n\n[ADMIN: ${app.user.name}]`;
                 const nt = { id: app.genUUID(), assignee: app.sel.tTo, title: document.getElementById('t-title').value, description: descWithAdmin, status: 'Aktif', date: new Date().toISOString() };
                 const r = await fetch(`${RENDER_URL}/api/tasks`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(nt)});
-                if(r.ok) { app.toast('Görev Verildi'); app.close(); await app.sync(); app.nav('tasks'); } else app.toast('Hata!', true);
+                if(r.ok) { app.toast('Görev Verildi'); app.close(); await app.sync(); app.nav('tasks'); } else { const ed = await r.json(); app.toast('HATA: ' + (ed.error || 'Bilinmiyor'), true); }
             },
 
             async handleNewLeave(e) {
@@ -470,22 +484,40 @@
                 const leaveDesc = `${document.getElementById('l-days').value} Gün İzin. Gerekçe: ${document.getElementById('l-reason').value}\n\n[ADMIN: ${app.user.name}]`;
                 const nl = { id: app.genUUID(), assignee: app.sel.lTo, title: 'İZİN', description: leaveDesc, status: 'İzinde', date: new Date().toISOString() };
                 const r = await fetch(`${RENDER_URL}/api/tasks`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(nl)});
-                if(r.ok) { app.toast('İzin İşlendi'); app.close(); await app.sync(); app.nav('tasks'); } else app.toast('Hata!', true);
+                if(r.ok) { app.toast('İzin İşlendi'); app.close(); await app.sync(); app.nav('tasks'); } else { const ed = await r.json(); app.toast('HATA: ' + (ed.error || 'Bilinmiyor'), true); }
             },
 
             async handleNewReport(e) {
                 e.preventDefault();
                 const tid = document.getElementById('r-task-id').value;
                 const task = app.db.tasks.find(t => t.id === tid);
-                const updatedTask = { 
-                    ...task, 
-                    status: 'İnceleniyor', 
-                    report_text: document.getElementById('r-text').value, 
-                    bug_text: document.getElementById('r-bug').value,
-                    report_images: app.tempImages 
+                
+                // Veritabanı sütun hatasını önlemek için veriyi description içine JSON olarak gömüyoruz
+                const reportData = {
+                    report: document.getElementById('r-text').value,
+                    bug: document.getElementById('r-bug').value,
+                    imgs: app.tempImages
                 };
+                
+                const cleanDesc = task.description.split('[REPORT_START]')[0];
+                const finalDesc = cleanDesc + `\n\n[REPORT_START]${JSON.stringify(reportData)}[REPORT_END]`;
+
+                const updatedTask = { 
+                    id: tid,
+                    status: 'İnceleniyor', 
+                    description: finalDesc
+                };
+                
                 const r = await fetch(`${RENDER_URL}/api/tasks`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(updatedTask) });
-                if(r.ok) { app.toast('Rapor Gönderildi!'); app.close(); await app.sync(); app.nav('dash'); } else app.toast('Hata!', true);
+                if(r.ok) { app.toast('Rapor Gönderildi!'); app.close(); await app.sync(); app.nav('dash'); } 
+                else { const ed = await r.json(); app.toast('HATA: ' + (ed.error || 'Bilinmiyor'), true); }
+            },
+
+            async updateTaskStatus(tid, status) {
+                const updatedTask = { id: tid, status: status };
+                const r = await fetch(`${RENDER_URL}/api/tasks`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(updatedTask) });
+                if(r.ok) { app.toast(status === 'Onaylandı' ? 'Onaylandı!' : 'Reddedildi!'); await app.sync(); app.nav('tasks'); } 
+                else { const ed = await r.json(); app.toast('HATA: ' + (ed.error || 'Bilinmiyor'), true); }
             },
 
             async handleNewAnn() {
@@ -494,7 +526,7 @@
                 if(!title || !text) return app.toast('Boş bırakmayın!', true);
                 const na = { id: app.genUUID(), title: title, text: text };
                 const r = await fetch(`${RENDER_URL}/api/announcements`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(na)});
-                if(r.ok) { app.toast('Yayınlandı'); await app.sync(); app.nav('ann'); } else app.toast('Hata!', true);
+                if(r.ok) { app.toast('Yayınlandı'); await app.sync(); app.nav('ann'); } else { const ed = await r.json(); app.toast('HATA: ' + (ed.error || 'Bilinmiyor'), true); }
             },
 
             async delTask(id) { if(confirm('Sil?')) { await fetch(`${RENDER_URL}/api/tasks/${id}`, {method:'DELETE'}); await app.sync(); app.nav('tasks'); } },
