@@ -67,7 +67,7 @@
         .modal.active { display: flex !important; }
         .modal-content { background: #1a0b2e; width: 92%; max-width: 450px; padding: 35px; border-radius: 40px; border: 1px solid rgba(255,255,255,0.1); }
         
-        .toast { position: fixed; top: 30px; left: 50%; transform: translateX(-50%) translateY(-200%); background: var(--p-grad); color: white; padding: 18px 35px; border-radius: 25px; font-weight: 900; z-index: 3000; max-width: 80%; text-align: center; }
+        .toast { position: fixed; top: 30px; left: 50%; transform: translateX(-50%) translateY(-200%); background: var(--p-grad); color: white; padding: 18px 35px; border-radius: 25px; font-weight: 900; z-index: 3000; max-width: 80%; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.5); transition: 0.5s; }
         .del-btn { position: absolute; top: 20px; right: 20px; color: var(--red); opacity: 0.5; cursor: pointer; font-size: 1.2rem; }
 
         .setup-step { display: none; text-align: center; width: 100%; max-width: 400px; padding: 20px; }
@@ -91,18 +91,9 @@
 
     <!-- SETUP SCREEN -->
     <div id="setup-screen" class="screen" style="justify-content:center; align-items:center; background: #05020a;">
-        <div id="setup-1" class="setup-step active">
-            <div class="setup-card">
-                <i class="fas fa-id-card fa-3x" style="color:var(--p); margin-bottom:20px;"></i>
-                <h2 style="font-size:1.8rem; margin-bottom:20px;">LSDT Üyesi misiniz?</h2>
-                <div style="display:flex; gap:15px;">
-                    <button class="btn-p" onclick="app.setupStep(2)">EVET</button>
-                    <button class="btn-p" style="background:rgba(255,255,255,0.1);" onclick="app.toast('Adminler ile iletişime geçin!', true)">HAYIR</button>
-                </div>
-            </div>
-        </div>
+        <div id="setup-1" class="setup-step active"><div class="setup-card"><h2>LSDT Üyesi misiniz?</h2><div style="display:flex; gap:15px; margin-top:20px;"><button class="btn-p" onclick="app.setupStep(2)">EVET</button><button class="btn-p" style="background:rgba(255,255,255,0.1);" onclick="app.toast('Yetkiniz yok!', true)">HAYIR</button></div></div></div>
         <div id="setup-2" class="setup-step"><div class="setup-card"><h2>Bilgileriniz Tam mı?</h2><button class="btn-p" onclick="app.setupStep(3)">ALDIM</button></div></div>
-        <div id="setup-3" class="setup-step"><div class="setup-card"><h2>LSDT Sözleşmesi</h2><button class="btn-p" onclick="app.setupStep(4)">SÖZ VERİYORUM</button></div></div>
+        <div id="setup-3" class="setup-step"><div class="setup-card"><h2>Sözleşme</h2><button class="btn-p" onclick="app.setupStep(4)">SÖZ VERİYORUM</button></div></div>
         <div id="setup-4" class="setup-step"><div class="setup-card"><h2>Hazırsınız!</h2><button class="btn-p" onclick="app.requestNotif()">BAŞLAYALIM</button></div></div>
     </div>
 
@@ -110,15 +101,15 @@
     <div id="login-screen" class="screen">
         <div style="height:100%; display:flex; justify-content:center; align-items:center;">
             <div class="glass-card">
-                <h1 style="color:white; font-size:3.5rem; font-weight:900; letter-spacing:-3px;">LSDT</h1>
-                <p style="color:var(--p); font-weight:800; margin-bottom:40px; text-transform:uppercase;">Luxa Studios Developer Team</p>
+                <h1 style="font-size:3.5rem; font-weight:900;">LSDT</h1>
+                <p style="color:var(--p); margin-bottom:40px;">Luxa Studios Developer Team</p>
                 <form onsubmit="app.handleLogin(event)">
                     <input type="text" id="l-user" class="input-p" placeholder="Kullanıcı Adı" required>
                     <input type="password" id="l-pass" class="input-p" placeholder="Şifre" required>
                     <div style="margin-bottom:15px; color:var(--sub); font-size:0.9rem; display:flex; align-items:center; justify-content:center; gap:10px;">
                         <input type="checkbox" id="l-rem" style="width:18px; height:18px; accent-color:var(--p);"> Beni Hatırla
                     </div>
-                    <button type="submit" class="btn-p">GİRİŞ YAP <i class="fas fa-arrow-right"></i></button>
+                    <button type="submit" class="btn-p">GİRİŞ YAP</button>
                 </form>
             </div>
         </div>
@@ -153,7 +144,7 @@
 
     <!-- MODALS -->
     <div id="modal-dev" class="modal"><div class="modal-content">
-        <h2 style="margin-bottom:20px;">Üye Ekle</h2>
+        <h2>Üye Ekle</h2>
         <form onsubmit="app.handleNewDev(event)">
             <input type="text" id="d-name" class="input-p" placeholder="Ad Soyad" required>
             <input type="text" id="d-user" class="input-p" placeholder="Kullanıcı Adı" required>
@@ -179,7 +170,7 @@
         <h2 style="color:var(--gold);">İzin Ver</h2>
         <form onsubmit="app.handleNewLeave(event)">
             <div id="l-to-wrap" class="p-select"></div>
-            <input type="number" id="l-days" class="input-p" placeholder="Kaç Gün?" required min="1">
+            <input type="number" id="l-days" class="input-p" placeholder="Gün" required min="1">
             <textarea id="l-reason" class="input-p" placeholder="Sebep" style="height:80px;"></textarea>
             <button type="submit" class="btn-p" style="background:var(--gold-grad);">ONAYLA</button>
             <button type="button" class="btn-p" style="background:none; margin-top:10px;" onclick="app.close()">VAZGEÇ</button>
@@ -258,7 +249,7 @@
                         document.getElementById('u-role').innerText = u.category;
                         app.show('main-app'); app.nav('dash');
                     }});
-                }, 3000);
+                }, 2500);
             },
 
             nav(p) {
@@ -310,17 +301,17 @@
 
             async handleNewDev(e) {
                 e.preventDefault();
-                const newUser = {id: Math.floor(Math.random() * 1000000), name:document.getElementById('d-name').value, username:document.getElementById('d-user').value, password:document.getElementById('d-pass').value, role:app.sel.dCat === 'Admin' ? 'admin' : 'dev', category:app.sel.dCat};
+                const newUser = {id: Math.floor(Math.random() * 900000) + 100000, name:document.getElementById('d-name').value, username:document.getElementById('d-user').value, password:document.getElementById('d-pass').value, role:app.sel.dCat === 'Admin' ? 'admin' : 'dev', category:app.sel.dCat};
                 try {
                     const r = await fetch(`${RENDER_URL}/api/users`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(newUser)});
                     const res = await r.json();
-                    if(r.ok) { app.toast('Üye Eklendi'); app.close(); await app.sync(); app.nav('set'); } 
-                    else { app.toast('Hata: ' + (res.error || 'Bilinmiyor'), true); }
-                } catch(err) { app.toast('Sunucuya bağlanılamadı!', true); }
+                    if(r.ok) { app.toast('Üye Eklendi!'); app.close(); await app.sync(); app.nav('set'); } 
+                    else { app.toast('HATA: ' + (res.error || 'Veritabanı hatası'), true); }
+                } catch(err) { app.toast('Sunucu Hatası!', true); }
             },
 
             async handleNewTask(e) {
-                e.preventDefault(); if(!app.sel.tTo) return app.toast('Seçim Yap!', true);
+                e.preventDefault(); if(!app.sel.tTo) return app.toast('Kişi Seç!', true);
                 const nt = {id: Date.now().toString(), assignee:app.sel.tTo, title:document.getElementById('t-title').value, description:document.getElementById('t-desc').value, status:'Aktif'};
                 await fetch(`${RENDER_URL}/api/tasks`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(nt)});
                 app.toast('Görev Verildi'); app.close(); await app.sync(); app.nav('tasks');
@@ -333,7 +324,7 @@
             },
 
             async handleNewLeave(e) {
-                e.preventDefault(); if(!app.sel.lTo) return app.toast('Seçim Yap!', true);
+                e.preventDefault(); if(!app.sel.lTo) return app.toast('Kişi Seç!', true);
                 const nl = {id: 'L'+Date.now(), assignee:app.sel.lTo, title:'İZİN', description:document.getElementById('l-reason').value, status:'İzinde'};
                 await fetch(`${RENDER_URL}/api/tasks`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(nl)});
                 app.toast('İzin Verildi'); app.close(); await app.sync(); app.nav('dash');
@@ -344,10 +335,12 @@
             async delUser(id) { if(confirm('Sil?')) { await fetch(`${RENDER_URL}/api/users/${id}`, {method:'DELETE'}); await app.sync(); app.nav('set'); } },
 
             toast(m, bad=false) {
-                const el = document.getElementById('toast'); el.querySelector('span') || (el.innerHTML = `<span></span>`);
-                el.querySelector('span').innerText = m; el.style.background = bad ? 'var(--red)' : 'var(--p-grad)';
-                gsap.fromTo(el, {y:-100, opacity:0}, {y:0, opacity:1, duration:0.5});
-                setTimeout(() => gsap.to(el, {y:-100, opacity:0}), 3000);
+                const el = document.getElementById('toast'); 
+                document.getElementById('toast-msg').innerText = m;
+                el.style.background = bad ? 'var(--red)' : 'var(--p-grad)';
+                el.style.transform = 'translateX(-50%) translateY(0)';
+                el.style.opacity = '1';
+                setTimeout(() => { el.style.transform = 'translateX(-50%) translateY(-200%)'; el.style.opacity = '0'; }, 3500);
             }
         };
         window.onload = () => app.init();

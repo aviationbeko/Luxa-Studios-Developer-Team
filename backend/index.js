@@ -78,16 +78,27 @@ app.post('/api/sync', async (req, res) => {
 
 // Individual Upserts
 app.post('/api/users', async (req, res) => {
-    console.log("Adding user:", req.body);
+    console.log("Processing user request:", req.body);
     try {
-        const { data, error } = await supabase.from('users').upsert(req.body, { onConflict: 'username' });
-        if (error) {
-            console.error("Supabase Error:", error);
-            return res.status(500).json({ error: error.message, details: error });
+        // Önce bu kullanıcı adı var mı kontrol et
+        const { data: existingUser } = await supabase.from('users').select('username').eq('username', req.body.username).single();
+        
+        let result;
+        if (existingUser) {
+            // Varsa güncelle
+            result = await supabase.from('users').update(req.body).eq('username', req.body.username);
+        } else {
+            // Yoksa yeni ekle
+            result = await supabase.from('users').insert([req.body]);
         }
-        res.json({ success: true, data });
+
+        if (result.error) {
+            console.error("Supabase Error:", result.error);
+            return res.status(500).json({ error: result.error.message, code: result.error.code });
+        }
+        res.json({ success: true, message: "İşlem başarılı" });
     } catch (err) {
-        console.error("Server Error:", err);
+        console.error("Critical Server Error:", err);
         res.status(500).json({ error: err.message });
     }
 });
