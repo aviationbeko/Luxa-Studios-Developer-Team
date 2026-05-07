@@ -110,10 +110,10 @@ app.post('/api/tasks', async (req, res) => {
         const taskId = taskData.id;
         
         let result;
-        if (taskId && req.body.status === 'İnceleniyor') { // Eğer güncelleme ise (Rapor)
+        if (taskId) { // Eğer bir ID gelmişse bu bir güncellemedir (Rapor, Onay, Red vb.)
             delete taskData.id;
             result = await supabase.from('tasks').update(taskData).eq('id', taskId);
-        } else { // Yeni görev veya izin
+        } else { // ID yoksa bu yeni bir görev veya izindir
             result = await supabase.from('tasks').insert([taskData]);
         }
 

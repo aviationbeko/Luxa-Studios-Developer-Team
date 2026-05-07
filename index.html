@@ -246,12 +246,20 @@
         </form>
     </div></div>
 
+    <div id="modal-reject" class="modal"><div class="modal-content">
+        <h2>Görev Reddet</h2>
+        <p style="color:var(--sub); margin-bottom:15px;">Geliştiriciye red sebebini açıkla:</p>
+        <textarea id="rej-reason" class="input-p" placeholder="Neler eksik? Neden reddedildi?" style="height:150px;"></textarea>
+        <button class="btn-p" onclick="app.confirmReject()">REDDET VE GÖNDER</button>
+        <button type="button" class="btn-p" style="background:none; margin-top:10px;" onclick="app.close()">VAZGEÇ</button>
+    </div></div>
+
     <script>
         const RENDER_URL = "https://lsdt.onrender.com";
         const app = {
             db: { users: [], tasks: [], announcements: [] },
             user: null,
-            sel: { dCat: 'Script', tTo: '', lTo: '' },
+            sel: { dCat: 'Script', tTo: '', lTo: '', rejId: '' },
             tempImages: [],
 
             async init() {
@@ -289,11 +297,15 @@
             setupStep(n) { document.querySelectorAll('.setup-step').forEach(s => s.classList.remove('active')); document.getElementById('setup-' + n).classList.add('active'); },
             
             async enableNotif() { 
-                if("Notification" in window) { 
-                    const p = await Notification.requestPermission(); 
-                    if(p === 'granted') app.toast('Bildirimler Aktif!');
-                } 
-                app.setupStep(3); 
+                if(!("Notification" in window)) return app.toast('Tarayıcı desteklemiyor!', true);
+                const p = await Notification.requestPermission(); 
+                if(p === 'granted') {
+                    new Notification("LSDT v11.0", { body: "Bildirimler Başarıyla Açıldı!", icon: "https://img.icons8.com/fluency/48/lightning-bolt.png" });
+                    app.toast('Bildirimler Aktif!');
+                    app.setupStep(3);
+                } else {
+                    app.toast('Lütfen bildirim izni verin!', true);
+                }
             },
             
             finishSetup() { localStorage.setItem('lsdt_setup', 'true'); app.show('login-screen'); },
@@ -336,7 +348,7 @@
                 document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
                 document.getElementById('nav-'+p).classList.add('active');
                 if(p === 'dash') {
-                    const myTasks = (app.db.tasks || []).filter(t => t.assignee === app.user.username && t.status === 'Aktif');
+                    const myTasks = (app.db.tasks || []).filter(t => t.assignee === app.user.username && (t.status === 'Aktif' || t.status === 'Reddedildi'));
                     const myLeave = (app.db.tasks || []).find(t => t.assignee === app.user.username && t.status === 'İzinde');
                     
                     if(myLeave) {
@@ -356,7 +368,21 @@
                         c.innerHTML += `<h3>Aktif Görevlerin</h3>`;
                         if(myTasks.length > 0) {
                             myTasks.forEach(t => {
-                                c.innerHTML += `<div class="card"><h3>${t.title}</h3><p>${t.description.split('[REPORT_START]')[0]}</p><button class="btn-p" style="margin-top:15px; padding:12px; font-size:0.9rem;" onclick="app.openReportModal('${t.id}', '${t.title}')">RAPOR GÖNDER</button></div>`;
+                                let rejInfo = '';
+                                if(t.status === 'Reddedildi' && t.description.includes('[REJECT_REASON]')) {
+                                    const rejMsg = t.description.split('[REJECT_REASON]')[1].split('[END_REASON]')[0];
+                                    rejInfo = `<div class="report-section" style="border-color:var(--red); background:rgba(255,118,117,0.15); margin-bottom:15px;">
+                                        <h4>RED SEBEBİ</h4>
+                                        <p style="color:var(--red); font-weight:700;">${rejMsg}</p>
+                                    </div>`;
+                                }
+                                c.innerHTML += `<div class="card">
+                                    <div class="badge" style="background:${t.status === 'Reddedildi' ? 'var(--red)' : 'var(--p-dark)'}">${t.status}</div>
+                                    <h3>${t.title}</h3>
+                                    ${rejInfo}
+                                    <p>${t.description.split('[REPORT_START]')[0].split('[REJECT_REASON]')[0]}</p>
+                                    <button class="btn-p" style="margin-top:15px; padding:12px; font-size:0.9rem;" onclick="app.openReportModal('${t.id}', '${t.title}')">YENİ RAPOR GÖNDER</button>
+                                </div>`;
                             });
                         } else { c.innerHTML += `<div class="card"><p>Şu an aktif bir görevin bulunmuyor. Serbestsin!</p></div>`; }
                     }
@@ -382,17 +408,24 @@
                                         ${app.user.role === 'admin' && t.status === 'İnceleniyor' ? `
                                             <div style="display:flex; gap:10px; margin-top:15px;">
                                                 <button class="btn-mini" style="background:var(--green); color:#000;" onclick="app.updateTaskStatus('${t.id}', 'Onaylandı')">ONAYLA</button>
-                                                <button class="btn-mini" style="background:var(--red); color:#fff;" onclick="app.updateTaskStatus('${t.id}', 'Aktif')">REDDET</button>
+                                                <button class="btn-mini" style="background:var(--red); color:#fff;" onclick="app.openRejectModal('${t.id}')">REDDET</button>
                                             </div>
                                         ` : ''}
                                     </div>`;
-                                } catch(e) { console.log("Report Parse Error", e); }
+                                } catch(e) { }
+                            }
+
+                            let rejBadgeHtml = '';
+                            if(t.status === 'Reddedildi' && t.description.includes('[REJECT_REASON]')) {
+                                const rejMsg = t.description.split('[REJECT_REASON]')[1].split('[END_REASON]')[0];
+                                rejBadgeHtml = `<div style="color:var(--red); font-size:0.8rem; margin-top:5px; font-weight:800;">RED SEBEBİ: ${rejMsg}</div>`;
                             }
 
                             c.innerHTML += `<div class="card">
-                                <div class="badge" style="background:${t.status === 'İnceleniyor' ? 'var(--gold)' : t.status === 'Onaylandı' ? 'var(--green)' : t.status === 'Aktif' ? 'var(--p-dark)' : 'var(--glass)'}">${t.status}</div>
+                                <div class="badge" style="background:${t.status === 'İnceleniyor' ? 'var(--gold)' : t.status === 'Onaylandı' ? 'var(--green)' : t.status === 'Reddedildi' ? 'var(--red)' : t.status === 'Aktif' ? 'var(--p-dark)' : 'var(--glass)'}">${t.status}</div>
                                 <h3>${t.title}</h3>
-                                <p style="white-space: pre-wrap;">${t.description.split('[REPORT_START]')[0]}</p>
+                                <p style="white-space: pre-wrap;">${t.description.split('[REPORT_START]')[0].split('[REJECT_REASON]')[0]}</p>
+                                ${rejBadgeHtml}
                                 ${reportHtml}
                                 <div class="info-row">
                                     <span><b>Sorumlu:</b> ${realName}</span>
@@ -457,6 +490,31 @@
                 app.open('modal-report');
             },
 
+            openRejectModal(tid) {
+                app.sel.rejId = tid;
+                document.getElementById('rej-reason').value = '';
+                app.open('modal-reject');
+            },
+
+            async confirmReject() {
+                const reason = document.getElementById('rej-reason').value;
+                if(!reason) return app.toast('Sebep yazmalısın!', true);
+                
+                const task = app.db.tasks.find(t => t.id === app.sel.rejId);
+                const cleanDesc = task.description.split('[REPORT_START]')[0].split('[REJECT_REASON]')[0];
+                const finalDesc = cleanDesc + `\n\n[REJECT_REASON]${reason}[END_REASON]`;
+
+                const updatedTask = { 
+                    id: app.sel.rejId, 
+                    status: 'Reddedildi',
+                    description: finalDesc
+                };
+
+                const r = await fetch(`${RENDER_URL}/api/tasks`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(updatedTask) });
+                if(r.ok) { app.toast('Görev Reddedildi'); app.close(); await app.sync(); app.nav('tasks'); } 
+                else { const ed = await r.json(); app.toast('HATA: ' + (ed.error || 'Bilinmiyor'), true); }
+            },
+
             genUUID() {
                 return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
                     const r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
@@ -491,23 +549,10 @@
                 e.preventDefault();
                 const tid = document.getElementById('r-task-id').value;
                 const task = app.db.tasks.find(t => t.id === tid);
-                
-                // Veritabanı sütun hatasını önlemek için veriyi description içine JSON olarak gömüyoruz
-                const reportData = {
-                    report: document.getElementById('r-text').value,
-                    bug: document.getElementById('r-bug').value,
-                    imgs: app.tempImages
-                };
-                
-                const cleanDesc = task.description.split('[REPORT_START]')[0];
+                const reportData = { report: document.getElementById('r-text').value, bug: document.getElementById('r-bug').value, imgs: app.tempImages };
+                const cleanDesc = task.description.split('[REPORT_START]')[0].split('[REJECT_REASON]')[0];
                 const finalDesc = cleanDesc + `\n\n[REPORT_START]${JSON.stringify(reportData)}[REPORT_END]`;
-
-                const updatedTask = { 
-                    id: tid,
-                    status: 'İnceleniyor', 
-                    description: finalDesc
-                };
-                
+                const updatedTask = { id: tid, status: 'İnceleniyor', description: finalDesc };
                 const r = await fetch(`${RENDER_URL}/api/tasks`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(updatedTask) });
                 if(r.ok) { app.toast('Rapor Gönderildi!'); app.close(); await app.sync(); app.nav('dash'); } 
                 else { const ed = await r.json(); app.toast('HATA: ' + (ed.error || 'Bilinmiyor'), true); }
