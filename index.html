@@ -69,7 +69,7 @@
         .modal.active { display: flex !important; }
         .modal-content { background: #1a0b2e; width: 92%; max-width: 450px; padding: 35px; border-radius: 40px; border: 1px solid rgba(255,255,255,0.1); max-height: 90vh; overflow-y: auto; }
         
-        .toast { position: fixed; top: 30px; left: 50%; transform: translateX(-50%) translateY(-200%); background: var(--p-grad); color: white; padding: 18px 35px; border-radius: 25px; font-weight: 900; z-index: 3000; max-width: 80%; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.5); transition: 0.5s; }
+        .toast { position: fixed; top: 30px; left: 50%; transform: translateX(-50%) translateY(-200%); background: var(--p-grad); color: white; padding: 18px 35px; border-radius: 25px; font-weight: 900; z-index: 3000; max-width: 80%; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.5); transition: 0.5s; opacity: 0; }
         .del-btn { position: absolute; top: 20px; right: 20px; color: var(--red); opacity: 0.5; cursor: pointer; font-size: 1.2rem; transition: 0.3s; }
         .del-btn:hover { opacity: 1; transform: scale(1.1); }
 
@@ -112,7 +112,7 @@
             <div class="setup-card">
                 <i class="fas fa-rocket fa-4x" style="color:var(--p); margin-bottom:20px;"></i>
                 <h2>LSDT v11.0 Giriş</h2>
-                <p>Luxa Studios Developer Team (LSDT) yönetim sistemine hoş geldiniz. Bu platform, projelerimizin gizliliğini ve ekibimizin verimliliğini korumak için tasarlanmıştır.</p>
+                <p>Luxa Studios Developer Team (LSDT) yönetim sistemine hoş geldiniz. Bu platform, ekibimizin verimliliğini korumak için tasarlanmıştır.</p>
                 <button class="btn-p" onclick="app.setupStep(2)">KURULUMA BAŞLA</button>
             </div>
         </div>
@@ -120,7 +120,7 @@
             <div class="setup-card">
                 <i class="fas fa-bell fa-4x" style="color:var(--gold); margin-bottom:20px;"></i>
                 <h2>Anlık Bildirimler</h2>
-                <p>Yeni bir görev atandığında, raporunuz onaylandığında veya acil bir duyuru yapıldığında anında haberdar olmak için sistem bildirimlerini aktif edin.</p>
+                <p>Yeni bir görev veya rapor durumu için bildirimleri aktif edin.</p>
                 <button class="btn-p" onclick="app.enableNotif()">BİLDİRİMLERİ ŞİMDİ AÇ</button>
                 <button class="btn-p" style="background:none; margin-top:10px;" onclick="app.setupStep(3)">BELKİ SONRA</button>
             </div>
@@ -130,9 +130,9 @@
                 <i class="fas fa-file-contract fa-4x" style="color:var(--red); margin-bottom:20px;"></i>
                 <h2>Ekip Sözleşmesi</h2>
                 <p style="font-size:0.85rem;">
-                    1. LSDT materyalleri DMCA hakları ile korunmaktadır. İzinsiz paylaşım yasaktır.<br>
-                    2. Scam (Dolandırıcılık) faaliyetlerinde bulunmak kalıcı ihraç sebebidir.<br>
-                    3. Atanan görevlerin raporlanmaması disiplin suçu sayılır.
+                    1. LSDT materyalleri DMCA ile korunur. İzinsiz paylaşım yasaktır.<br>
+                    2. Scam faaliyetleri kalıcı ihraç sebebidir.<br>
+                    3. Görev raporları zorunludur.
                 </p>
                 <button class="btn-p" onclick="app.setupStep(4)">SÖZLEŞMEYİ ONAYLIYORUM</button>
             </div>
@@ -141,7 +141,7 @@
             <div class="setup-card">
                 <i class="fas fa-check-circle fa-4x" style="color:var(--p); margin-bottom:20px;"></i>
                 <h2>Kurulum Tamamlandı</h2>
-                <p>Tüm adımları başarıyla tamamladınız. LSDT Ultra Premium deneyimine hazırsınız.</p>
+                <p>Artık hazırsınız.</p>
                 <button class="btn-p" onclick="app.finishSetup()">PANELİ AÇ</button>
             </div>
         </div>
@@ -166,10 +166,10 @@
     </div>
 
     <!-- WELCOME SCREEN -->
-    <div id="welcome-screen" class="screen" style="z-index: 1500; background: var(--bg); justify-content: center; align-items: center;">
+    <div id="welcome-screen" class="screen" style="z-index: 1500; background: var(--bg); justify-content: center; align-items: center; display: none;">
         <div id="w-content" style="text-align: center; transform: scale(0.9); opacity: 0;">
             <div id="w-avatar" style="width:120px; height:120px; background:var(--p-grad); color:white; border-radius:50%; display:flex; justify-content:center; align-items:center; font-weight:900; font-size:4rem; margin: 0 auto 30px;">L</div>
-            <h1 id="w-title" style="font-size: 3rem; font-weight: 900; color: white;"></h1>
+            <h1 id="w-title" style="font-size: 3rem; font-weight: 900; color: white;">HOŞGELDİN</h1>
             <p id="w-sub" style="color: var(--p); font-size: 1.2rem; font-weight: 700; text-transform: uppercase;"></p>
         </div>
     </div>
@@ -179,15 +179,16 @@
         <nav class="top-nav">
             <div style="display:flex; gap:15px; align-items:center;">
                 <div id="avatar" style="width:50px; height:50px; background:var(--p-grad); color:white; border-radius:50%; display:flex; justify-content:center; align-items:center; font-weight:900;">L</div>
-                <div><div id="u-name" style="font-weight:900; color:var(--p);">Yükleniyor...</div><div id="u-role" style="font-size:0.75rem; color:var(--sub); font-weight:800;">ADMIN</div></div>
+                <div><div id="u-name" style="font-weight:900; color:var(--p);">...</div><div id="u-role" style="font-size:0.75rem; color:var(--sub); font-weight:800;">...</div></div>
             </div>
+            <i class="fas fa-sign-out-alt" onclick="app.logout()" style="color:var(--red); font-size:1.5rem; cursor:pointer;"></i>
         </nav>
         <main id="page-content"></main>
         <nav class="bottom-nav">
             <div id="nav-dash" class="nav-item active" onclick="app.nav('dash')"><i class="fas fa-home"></i><span>Panel</span></div>
             <div id="nav-tasks" class="nav-item" onclick="app.nav('tasks')"><i class="fas fa-tasks"></i><span>Görevler</span></div>
             <div id="nav-ann" class="nav-item" onclick="app.nav('ann')"><i class="fas fa-bullhorn"></i><span>Duyuru</span></div>
-            <div id="nav-set" class="nav-item" onclick="app.nav('set')"><i class="fas fa-user-circle"></i><span>Profil</span></div>
+            <div id="nav-set" class="nav-item" onclick="app.nav('set')"><i class="fas fa-user-cog"></i><span>Ayarlar</span></div>
         </nav>
     </div>
 
@@ -200,54 +201,52 @@
             <input type="password" id="d-pass" class="input-p" placeholder="Şifre" required>
             <div id="d-cat-wrap" class="p-select"></div>
             <button type="submit" class="btn-p">KAYDET</button>
-            <button type="button" class="btn-p" style="background:none; margin-top:10px;" onclick="app.close()">VAZGEÇ</button>
+            <button type="button" class="btn-p" style="background:none; margin-top:10px;" onclick="app.close()">KAPAT</button>
         </form>
     </div></div>
 
     <div id="modal-task" class="modal"><div class="modal-content">
-        <h2>Görev Ver</h2>
+        <h2>Görev Atama</h2>
         <form onsubmit="app.handleNewTask(event)">
             <div id="t-to-wrap" class="p-select"></div>
-            <input type="text" id="t-title" class="input-p" placeholder="Görev Başlığı" required>
+            <input type="text" id="t-title" class="input-p" placeholder="Başlık" required>
             <textarea id="t-desc" class="input-p" placeholder="Detaylar" style="height:100px;" required></textarea>
-            <button type="submit" class="btn-p">GÖREVİ GÖNDER</button>
-            <button type="button" class="btn-p" style="background:none; margin-top:10px;" onclick="app.close()">VAZGEÇ</button>
+            <button type="submit" class="btn-p">GÖREVİ VER</button>
+            <button type="button" class="btn-p" style="background:none; margin-top:10px;" onclick="app.close()">KAPAT</button>
         </form>
     </div></div>
 
     <div id="modal-leave" class="modal"><div class="modal-content">
-        <h2>İzin Tanımla</h2>
+        <h2>İzin Tanımlama</h2>
         <form onsubmit="app.handleNewLeave(event)">
             <div id="l-to-wrap" class="p-select"></div>
-            <input type="number" id="l-days" class="input-p" placeholder="Kaç Gün?" required>
-            <textarea id="l-reason" class="input-p" placeholder="İzin Gerekçesi" style="height:100px;" required></textarea>
-            <button type="submit" class="btn-p">İZNİ ONAYLA</button>
-            <button type="button" class="btn-p" style="background:none; margin-top:10px;" onclick="app.close()">VAZGEÇ</button>
+            <input type="number" id="l-days" class="input-p" placeholder="Gün Sayısı" required>
+            <textarea id="l-reason" class="input-p" placeholder="Gerekçe" style="height:100px;" required></textarea>
+            <button type="submit" class="btn-p">İZİN VER</button>
+            <button type="button" class="btn-p" style="background:none; margin-top:10px;" onclick="app.close()">KAPAT</button>
         </form>
     </div></div>
 
     <div id="modal-report" class="modal"><div class="modal-content">
-        <h2>Gelişmiş Rapor</h2>
+        <h2>Rapor Hazırla</h2>
         <form onsubmit="app.handleNewReport(event)">
             <input type="hidden" id="r-task-id">
             <h3 id="r-task-title" style="margin-bottom:15px; color:var(--p);"></h3>
-            <textarea id="r-text" class="input-p" placeholder="Yapılan işlemler..." style="height:120px;" required></textarea>
-            <textarea id="r-bug" class="input-p" placeholder="Varsa karşılaşılan Bug/Sorunlar..." style="height:80px;"></textarea>
-            <div class="img-picker" onclick="document.getElementById('r-file').click()">
-                <i class="fas fa-image"></i> RESİM SEÇ
-            </div>
+            <textarea id="r-text" class="input-p" placeholder="Ne yapıldı?" style="height:120px;" required></textarea>
+            <textarea id="r-bug" class="input-p" placeholder="Hatalar..." style="height:80px;"></textarea>
+            <div class="img-picker" onclick="document.getElementById('r-file').click()"><i class="fas fa-image"></i> GÖRSEL EKLE</div>
             <input type="file" id="r-file" style="display:none;" multiple accept="image/*" onchange="app.handleFiles(this)">
             <div id="r-preview" class="img-grid"></div>
-            <button type="submit" class="btn-p" style="margin-top:20px;">RAPORU SİSTEME İŞLE</button>
-            <button type="button" class="btn-p" style="background:none; margin-top:10px;" onclick="app.close()">VAZGEÇ</button>
+            <button type="submit" class="btn-p" style="margin-top:20px;">GÖNDER</button>
+            <button type="button" class="btn-p" style="background:none; margin-top:10px;" onclick="app.close()">KAPAT</button>
         </form>
     </div></div>
 
     <div id="modal-reject" class="modal"><div class="modal-content">
-        <h2>Görev Reddet</h2>
-        <textarea id="rej-reason" class="input-p" placeholder="Red sebebi..." style="height:150px;"></textarea>
-        <button class="btn-p" onclick="app.confirmReject()">REDDET VE GÖNDER</button>
-        <button type="button" class="btn-p" style="background:none; margin-top:10px;" onclick="app.close()">VAZGEÇ</button>
+        <h2>Görev Red</h2>
+        <textarea id="rej-reason" class="input-p" placeholder="Neden reddedildi?" style="height:150px;"></textarea>
+        <button class="btn-p" onclick="app.confirmReject()">REDDİ ONAYLA</button>
+        <button type="button" class="btn-p" style="background:none; margin-top:10px;" onclick="app.close()">KAPAT</button>
     </div></div>
 
     <script>
@@ -263,27 +262,25 @@
                 tl.fromTo("#l-cube", { y: -50, opacity: 0, rotation: -45 }, { y: 0, opacity: 1, rotation: 0, duration: 1, ease: "back.out" })
                   .to("#l-code", { opacity: 1, width: "180px", duration: 1.5, ease: "steps(15)" })
                   .to("#l-text", { opacity: 1, scale: 1, duration: 1, ease: "elastic.out(1, 0.3)" })
-                  .to("#loading-screen", { opacity: 0, duration: 0.8, delay: 3, onComplete: async () => {
+                  .to("#loading-screen", { opacity: 0, duration: 0.8, delay: 2, onComplete: async () => {
                       await app.sync();
                       const rem = localStorage.getItem('lsdt_rem');
                       if(!localStorage.getItem('lsdt_setup')) app.show('setup-screen');
                       else if(rem) {
                           const u = JSON.parse(rem);
-                          const f = (app.db.users || []).find(x => x.username === u.username && x.password === u.password);
+                          const f = app.db.users.find(x => x.username === u.username && x.password === u.password);
                           if(f) app.loginAs(f); else app.show('login-screen');
                       } else app.show('login-screen');
                   }});
                 app.renderCats();
-                setInterval(() => app.sync(), 15000);
+                setInterval(() => app.sync(), 20000);
             },
 
             async sync() {
                 try {
                     const r = await fetch(`${RENDER_URL}/api/state`);
                     const d = await r.json();
-                    app.db.users = d.users || [];
-                    app.db.tasks = d.tasks || [];
-                    app.db.announcements = d.announcements || [];
+                    app.db = { users: d.users || [], tasks: d.tasks || [], announcements: d.announcements || [] };
                 } catch(e) {}
             },
 
@@ -293,7 +290,6 @@
             setupStep(n) { document.querySelectorAll('.setup-step').forEach(s => s.classList.remove('active')); document.getElementById('setup-' + n).classList.add('active'); },
             
             async enableNotif() { 
-                if(!("Notification" in window)) return app.toast('Desteklenmiyor!', true);
                 const p = await Notification.requestPermission(); 
                 if(p === 'granted') { app.toast('Aktif!'); app.setupStep(3); } else app.toast('İzin verin!', true);
             },
@@ -312,16 +308,28 @@
             async handleLogin(e) {
                 e.preventDefault();
                 const u = document.getElementById('l-user').value, p = document.getElementById('l-pass').value, rem = document.getElementById('l-rem').checked;
-                const f = (app.db.users || []).find(x => x.username === u && x.password === p);
+                const f = app.db.users.find(x => x.username === u && x.password === p);
                 if(f) { if(rem) localStorage.setItem('lsdt_rem', JSON.stringify(f)); app.loginAs(f); } else app.toast('Hatalı!', true);
             },
 
             loginAs(u) {
                 app.user = u;
-                document.getElementById('avatar').innerText = u.name[0];
-                document.getElementById('u-name').innerText = u.name;
-                document.getElementById('u-role').innerText = u.category;
-                app.show('main-app'); app.nav('dash');
+                document.getElementById('welcome-screen').style.display = 'flex';
+                document.getElementById('w-avatar').innerText = u.name[0];
+                document.getElementById('w-title').innerText = "SELAM, " + u.name.split(' ')[0].toUpperCase();
+                document.getElementById('w-sub').innerText = u.category;
+                
+                gsap.to("#w-content", { opacity: 1, scale: 1, duration: 1, ease: "back.out" });
+                setTimeout(() => {
+                    gsap.to("#welcome-screen", { opacity: 0, duration: 0.8, onComplete: () => {
+                        document.getElementById('welcome-screen').style.display = 'none';
+                        document.getElementById('welcome-screen').style.opacity = '1';
+                        document.getElementById('avatar').innerText = u.name[0];
+                        document.getElementById('u-name').innerText = u.name;
+                        document.getElementById('u-role').innerText = u.category;
+                        app.show('main-app'); app.nav('dash');
+                    }});
+                }, 2500);
             },
 
             nav(p) {
@@ -329,48 +337,48 @@
                 document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
                 document.getElementById('nav-'+p).classList.add('active');
                 if(p === 'dash') {
-                    const myTasks = (app.db.tasks || []).filter(t => t.assignee === app.user.username && (t.status === 'Aktif' || t.status === 'Reddedildi'));
-                    const myLeave = (app.db.tasks || []).find(t => t.assignee === app.user.username && t.status === 'İzinde');
-                    c.innerHTML = `<div class="card" style="background:${myLeave ? 'var(--gold-grad)' : 'var(--p-grad)'};"><h1>${myLeave ? 'İzindesin' : 'Selam, ' + app.user.name.split(' ')[0]}</h1><p>${myLeave ? myLeave.description.split('[REPORT_START]')[0] : app.user.category}</p></div>`;
+                    const myTasks = app.db.tasks.filter(t => t.assignee === app.user.username && (t.status === 'Aktif' || t.status === 'Reddedildi'));
+                    const myLeave = app.db.tasks.find(t => t.assignee === app.user.username && t.status === 'İzinde');
+                    c.innerHTML = `<div class="card" style="background:${myLeave ? 'var(--gold-grad)' : 'var(--p-grad)'};"><h1>${myLeave ? 'İzindesin' : 'LSDT Panel'}</h1><p>${myLeave ? myLeave.description.split('[REPORT_START]')[0] : app.user.category}</p></div>`;
                     if(app.user.role === 'admin') {
                         c.innerHTML += `<div class="action-grid">
                             <div class="action-card" onclick="app.open('modal-dev')"><i class="fas fa-user-plus"></i><span>Üye Ekle</span></div>
                             <div class="action-card" onclick="app.openTaskModal()"><i class="fas fa-tasks"></i><span>Görev Ver</span></div>
-                            <div class="action-card gold" onclick="app.openLeaveModal()"><i class="fas fa-plane-departure"></i><span>İzin Ver</span></div>
-                            <div class="action-card" onclick="app.nav('ann')"><i class="fas fa-bullhorn"></i><span>Duyuru</span></div>
+                            <div class="action-card gold" onclick="app.openLeaveModal()"><i class="fas fa-plane-departure"></i><span>İzin Tanımla</span></div>
+                            <div class="action-card" onclick="app.nav('ann')"><i class="fas fa-bullhorn"></i><span>Duyuru At</span></div>
                         </div>`;
                     } else if(!myLeave) {
-                        c.innerHTML += `<h3>Görevlerin</h3>`;
+                        c.innerHTML += `<h3 style="margin-bottom:15px;">Aktif Görevlerin</h3>`;
                         if(myTasks.length > 0) myTasks.forEach(t => {
-                            let rej = t.status === 'Reddedildi' && t.description.includes('[REJECT_REASON]') ? `<div style="color:var(--red); padding:10px; background:rgba(255,118,117,0.1); border-radius:10px; margin:10px 0;"><b>RED:</b> ${t.description.split('[REJECT_REASON]')[1].split('[END_REASON]')[0]}</div>` : '';
-                            c.innerHTML += `<div class="card"><div class="badge">${t.status}</div><h3>${t.title}</h3>${rej}<p>${t.description.split('[REPORT_START]')[0].split('[REJECT_REASON]')[0]}</p><button class="btn-p" style="margin-top:15px;" onclick="app.openReportModal(${t.id}, '${t.title}')">RAPOR GÖNDER</button></div>`;
+                            let rej = (t.status === 'Reddedildi' && t.description.includes('[REJECT_REASON]')) ? `<div style="color:var(--red); padding:10px; background:rgba(255,118,117,0.1); border-radius:10px; margin:10px 0;"><b>RED SEBEBİ:</b> ${t.description.split('[REJECT_REASON]')[1].split('[END_REASON]')[0]}</div>` : '';
+                            c.innerHTML += `<div class="card"><div class="badge">${t.status}</div><h3>${t.title}</h3>${rej}<p>${t.description.split('[REPORT_START]')[0].split('[REJECT_REASON]')[0]}</p><button class="btn-p" style="margin-top:15px;" onclick="app.openReportModal('${t.id}', '${t.title.replace(/'/g, "\\'")}')">RAPOR GÖNDER</button></div>`;
                         });
-                        else c.innerHTML += `<div class="card"><p>Görev yok!</p></div>`;
+                        else c.innerHTML += `<div class="card"><p>Şu an atanmış aktif göreviniz bulunmuyor.</p></div>`;
                     }
                 } else if(p === 'tasks') {
-                    c.innerHTML = `<h2>${app.user.role === 'admin' ? 'Denetim' : 'Görev Geçmişi'}</h2>`;
-                    (app.db.tasks || []).slice().reverse().forEach(t => {
+                    c.innerHTML = `<h2>${app.user.role === 'admin' ? 'Tüm Kayıtlar' : 'Geçmiş'}</h2>`;
+                    [...app.db.tasks].reverse().forEach(t => {
                         if(app.user.role === 'admin' || t.assignee === app.user.username) {
                             let rHtml = '';
                             if(t.description.includes('[REPORT_START]')) {
                                 try {
                                     const r = JSON.parse(t.description.split('[REPORT_START]')[1].split('[REPORT_END]')[0]);
-                                    rHtml = `<div class="report-section"><h4>RAPOR</h4><p>${r.report}</p>${r.bug ? `<p style="color:var(--red)"><b>BUG:</b> ${r.bug}</p>`:''}${r.imgs && r.imgs.length ? `<button class="btn-mini" style="background:var(--p); width:100%; margin:10px 0;" onclick="app.toggleImgs(${t.id})">RESİMLER</button><div id="imgs-${t.id}" class="img-grid" style="display:none;">${r.imgs.map(i=>`<img src="${i}" class="img-item" onclick="window.open(this.src)">`).join('')}</div>`:''}${app.user.role==='admin'&&t.status==='İnceleniyor'?`<div style="display:flex; gap:10px; margin-top:10px;"><button class="btn-mini" style="background:var(--green)" onclick="app.updateTaskStatus(${t.id}, 'Onaylandı')">ONAY</button><button class="btn-mini" style="background:var(--red); color:white;" onclick="app.openRejectModal(${t.id})">RED</button></div>`:''}</div>`;
+                                    rHtml = `<div class="report-section"><h4>GÖNDERİLEN RAPOR</h4><p>${r.report}</p>${r.bug ? `<p style="color:var(--red)"><b>HATALAR:</b> ${r.bug}</p>`:''}${r.imgs && r.imgs.length ? `<button class="btn-mini" style="background:var(--p); width:100%; margin:10px 0;" onclick="app.toggleImgs(${t.id})">GÖRSELLERİ İNCELE</button><div id="imgs-${t.id}" class="img-grid" style="display:none;">${r.imgs.map(i=>`<img src="${i}" class="img-item" onclick="window.open(this.src)">`).join('')}</div>`:''}${app.user.role==='admin'&&t.status==='İnceleniyor'?`<div style="display:flex; gap:10px; margin-top:10px;"><button class="btn-mini" style="background:var(--green); color:black;" onclick="app.updateTaskStatus('${t.id}', 'Onaylandı')">ONAY</button><button class="btn-mini" style="background:var(--red); color:white;" onclick="app.openRejectModal('${t.id}')">REDDET</button></div>`:''}</div>`;
                                 } catch(e) {}
                             }
-                            c.innerHTML += `<div class="card"><div class="badge">${t.status}</div><h3>${t.title}</h3><p>${t.description.split('[REPORT_START]')[0].split('[REJECT_REASON]')[0]}</p>${rHtml}<div class="info-row"><span><b>Kişi:</b> ${t.assignee}</span><span><b>Tarih:</b> ${new Date(t.date).toLocaleString('tr')}</span></div>${app.user.role==='admin'?`<i class="fas fa-trash del-btn" onclick="app.delTask(${t.id})"></i>`:''}</div>`;
+                            c.innerHTML += `<div class="card"><div class="badge">${t.status}</div><h3>${t.title}</h3><p>${t.description.split('[REPORT_START]')[0].split('[REJECT_REASON]')[0]}</p>${rHtml}<div class="info-row"><span><b>Geliştirici:</b> ${t.assignee}</span><span><b>Tarih:</b> ${new Date(t.date).toLocaleString('tr')}</span></div>${app.user.role==='admin'?`<i class="fas fa-trash del-btn" onclick="app.delTask('${t.id}')"></i>`:''}</div>`;
                         }
                     });
                 } else if(p === 'ann') {
-                    c.innerHTML = `<h2>Duyurular</h2>${app.user.role==='admin'?`<div class="card"><input id="an-title" class="input-p" placeholder="Başlık"><textarea id="an-text" class="input-p" placeholder="Mesaj"></textarea><button class="btn-p" onclick="app.handleNewAnn()">YAYINLA</button></div>`:''}`;
-                    (app.db.announcements || []).slice().reverse().forEach(a => {
-                        c.innerHTML += `<div class="card"><h3>${a.title}</h3><p>${a.text}</p>${app.user.role==='admin'?`<i class="fas fa-trash del-btn" onclick="app.delAnn(${a.id})"></i>`:''}</div>`;
+                    c.innerHTML = `<h2>Duyuru Merkezi</h2>${app.user.role==='admin'?`<div class="card"><input id="an-title" class="input-p" placeholder="Başlık"><textarea id="an-text" class="input-p" placeholder="Mesaj"></textarea><button class="btn-p" onclick="app.handleNewAnn()">DUYURUYU PAYLAŞ</button></div>`:''}`;
+                    [...app.db.announcements].reverse().forEach(a => {
+                        c.innerHTML += `<div class="card"><h3>${a.title}</h3><p>${a.text}</p>${app.user.role==='admin'?`<i class="fas fa-trash del-btn" onclick="app.delAnn('${a.id}')"></i>`:''}</div>`;
                     });
                 } else if(p === 'set') {
-                    c.innerHTML = `<div class="card" style="text-align:center;"><h2>${app.user.name}</h2><p>${app.user.category}</p></div><button class="btn-p" style="background:var(--red)" onclick="app.logout()">ÇIKIŞ YAP</button>`;
+                    c.innerHTML = `<div class="card" style="text-align:center;"><h2>Ayarlar</h2><p>LSDT v11.0 Ultra Premium</p></div><button class="btn-p" style="background:var(--red); margin-bottom:20px;" onclick="app.logout()">GÜVENLİ ÇIKIŞ</button>`;
                     if(app.user.role==='admin') {
-                        c.innerHTML += `<h3 style="margin:20px 0 10px;">Üyeler</h3>`;
-                        app.db.users.forEach(u => { if(u.username!==app.user.username) c.innerHTML += `<div class="card" style="display:flex; justify-content:space-between; align-items:center;"><span>${u.name}</span><i class="fas fa-trash del-btn" style="position:static" onclick="app.delUser('${u.id}')"></i></div>`; });
+                        c.innerHTML += `<h3 style="margin-bottom:15px;">Ekip Listesi</h3>`;
+                        app.db.users.forEach(u => { if(u.username!==app.user.username) c.innerHTML += `<div class="card" style="display:flex; justify-content:space-between; align-items:center;"><span>${u.name} (${u.category})</span><i class="fas fa-trash del-btn" style="position:static" onclick="app.delUser('${u.id}')"></i></div>`; });
                     }
                 }
             },
@@ -414,9 +422,9 @@
 
             async handleNewLeave(e) {
                 e.preventDefault(); if(!app.sel.lTo) return app.toast('Kişi seç!', true);
-                const l = { assignee: app.sel.lTo, title: 'İZİN', description: `${document.getElementById('l-days').value} Gün İzin. Sebep: ${document.getElementById('l-reason').value}\n\n[ADMIN: ${app.user.name}]`, status: 'İzinde', date: new Date().toISOString() };
+                const l = { assignee: app.sel.lTo, title: 'İZİN KAYDI', description: `${document.getElementById('l-days').value} Gün İzin. Sebep: ${document.getElementById('l-reason').value}\n\n[ADMIN: ${app.user.name}]`, status: 'İzinde', date: new Date().toISOString() };
                 const r = await fetch(`${RENDER_URL}/api/tasks`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(l)});
-                if(r.ok) { app.toast('İzin verildi'); app.close(); await app.sync(); app.nav('tasks'); } else app.toast('Hata!', true);
+                if(r.ok) { app.toast('İzin Verildi'); app.close(); await app.sync(); app.nav('dash'); } else app.toast('Hata!', true);
             },
 
             async handleNewReport(e) {
@@ -425,12 +433,12 @@
                 const d = { report: document.getElementById('r-text').value, bug: document.getElementById('r-bug').value, imgs: app.tempImages };
                 const ut = { id: Number(tid), status: 'İnceleniyor', description: t.description.split('[REPORT_START]')[0].split('[REJECT_REASON]')[0] + `\n\n[REPORT_START]${JSON.stringify(d)}[REPORT_END]` };
                 const r = await fetch(`${RENDER_URL}/api/tasks`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(ut)});
-                if(r.ok) { app.toast('Gönderildi'); app.close(); await app.sync(); app.nav('dash'); } else app.toast('Hata!', true);
+                if(r.ok) { app.toast('Rapor Gönderildi'); app.close(); await app.sync(); app.nav('dash'); } else app.toast('Hata!', true);
             },
 
             async updateTaskStatus(id, s) {
                 const r = await fetch(`${RENDER_URL}/api/tasks`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ id: Number(id), status: s })});
-                if(r.ok) { app.toast('Tamam'); await app.sync(); app.nav('tasks'); } else app.toast('Hata!', true);
+                if(r.ok) { app.toast('Güncellendi'); await app.sync(); app.nav('tasks'); } else app.toast('Hata!', true);
             },
 
             async confirmReject() {
@@ -445,12 +453,12 @@
                 const title = document.getElementById('an-title').value, text = document.getElementById('an-text').value;
                 if(!title || !text) return app.toast('Boş bırakma!', true);
                 const r = await fetch(`${RENDER_URL}/api/announcements`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ title, text })});
-                if(r.ok) { app.toast('Yayınlandı'); await app.sync(); app.nav('ann'); } else app.toast('Hata!', true);
+                if(r.ok) { app.toast('Duyuruldu'); await app.sync(); app.nav('ann'); } else app.toast('Hata!', true);
             },
 
-            async delTask(id) { if(confirm('Sil?')) { await fetch(`${RENDER_URL}/api/tasks/${Number(id)}`, {method:'DELETE'}); await app.sync(); app.nav('tasks'); } },
-            async delAnn(id) { if(confirm('Sil?')) { await fetch(`${RENDER_URL}/api/announcements/${Number(id)}`, {method:'DELETE'}); await app.sync(); app.nav('ann'); } },
-            async delUser(id) { if(confirm('Sil?')) { await fetch(`${RENDER_URL}/api/users/${id}`, {method:'DELETE'}); await app.sync(); app.nav('set'); } },
+            async delTask(id) { if(confirm('Bu görevi silmek istediğinize emin misiniz?')) { const r = await fetch(`${RENDER_URL}/api/tasks/${Number(id)}`, {method:'DELETE'}); if(r.ok) { app.toast('Silindi'); await app.sync(); app.nav('tasks'); } else app.toast('Hata!', true); } },
+            async delAnn(id) { if(confirm('Bu duyuruyu silmek istediğinize emin misiniz?')) { const r = await fetch(`${RENDER_URL}/api/announcements/${Number(id)}`, {method:'DELETE'}); if(r.ok) { app.toast('Silindi'); await app.sync(); app.nav('ann'); } else app.toast('Hata!', true); } },
+            async delUser(id) { if(confirm('Bu kullanıcıyı silmek istediğinize emin misiniz?')) { const r = await fetch(`${RENDER_URL}/api/users/${id}`, {method:'DELETE'}); if(r.ok) { app.toast('Silindi'); await app.sync(); app.nav('set'); } else app.toast('Hata!', true); } },
             logout() { localStorage.removeItem('lsdt_rem'); location.reload(); },
             toast(m, b=false) { const e = document.getElementById('toast'); document.getElementById('toast-msg').innerText=m; e.style.background=b?'var(--red)':'var(--p-grad)'; e.style.transform='translateX(-50%) translateY(0)'; e.style.opacity='1'; setTimeout(()=>{e.style.transform='translateX(-50%) translateY(-200%)'; e.style.opacity='0';}, 3000); }
         };
