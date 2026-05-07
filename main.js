@@ -2,7 +2,7 @@ import './style.css';
 
 // LSDT - Advanced Logic (Cloud Sync Edition)
 // LSDT - Advanced Logic (Cloud Sync Edition)
-const RENDER_URL = 'http://localhost:3000';
+const RENDER_URL = 'https://lsdt.onrender.com';
 const CLOUD_API = `${RENDER_URL}/api/state`;
 
 const State = {
