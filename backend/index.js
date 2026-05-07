@@ -109,7 +109,13 @@ app.post('/api/tasks', async (req, res) => {
         const taskData = { ...req.body };
         const taskId = taskData.id;
         
-        let result = await supabase.from('tasks').upsert([taskData]);
+        let result;
+        if (!taskData.id) { // ID yoksa yeni kayıt, veritabanı otomatik sayı versin
+            delete taskData.id;
+            result = await supabase.from('tasks').insert([taskData]);
+        } else { // ID varsa güncelleme (upsert)
+            result = await supabase.from('tasks').upsert([taskData]);
+        }
 
         if (result.error) throw result.error;
         res.json({ success: true });

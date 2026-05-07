@@ -348,13 +348,8 @@
                 if(p === 'dash') {
                     const myTasks = (app.db.tasks || []).filter(t => t.assignee === app.user.username && (t.status === 'Aktif' || t.status === 'Reddedildi'));
                     const myLeave = (app.db.tasks || []).find(t => t.assignee === app.user.username && t.status === 'İzinde');
-                    
-                    if(myLeave) {
-                        c.innerHTML = `<div class="card" style="background:var(--gold-grad);"><h1>İzindesin</h1><p>${myLeave.description.split('[REPORT_START]')[0]}</p></div>`;
-                    } else {
-                        c.innerHTML = `<div class="card" style="background:var(--p-grad);"><h1>Selam, ${app.user.name.split(' ')[0]}</h1><p>${app.user.category}</p></div>`;
-                    }
-                    
+                    if(myLeave) c.innerHTML = `<div class="card" style="background:var(--gold-grad);"><h1>İzindesin</h1><p>${myLeave.description.split('[REPORT_START]')[0]}</p></div>`;
+                    else c.innerHTML = `<div class="card" style="background:var(--p-grad);"><h1>Selam, ${app.user.name.split(' ')[0]}</h1><p>${app.user.category}</p></div>`;
                     if(app.user.role === 'admin') {
                         c.innerHTML += `<div class="action-grid">
                             <div class="action-card" onclick="app.open('modal-dev')"><i class="fas fa-user-plus"></i><span>Üye Ekle</span></div>
@@ -369,20 +364,11 @@
                                 let rejInfo = '';
                                 if(t.status === 'Reddedildi' && t.description.includes('[REJECT_REASON]')) {
                                     const rejMsg = t.description.split('[REJECT_REASON]')[1].split('[END_REASON]')[0];
-                                    rejInfo = `<div class="report-section" style="border-color:var(--red); background:rgba(255,118,117,0.15); margin-bottom:15px;">
-                                        <h4>RED SEBEBİ</h4>
-                                        <p style="color:var(--red); font-weight:700;">${rejMsg}</p>
-                                    </div>`;
+                                    rejInfo = `<div class="report-section" style="border-color:var(--red); background:rgba(255,118,117,0.15); margin-bottom:15px;"><h4>RED SEBEBİ</h4><p style="color:var(--red); font-weight:700;">${rejMsg}</p></div>`;
                                 }
-                                c.innerHTML += `<div class="card">
-                                    <div class="badge" style="background:${t.status === 'Reddedildi' ? 'var(--red)' : 'var(--p-dark)'}">${t.status}</div>
-                                    <h3>${t.title}</h3>
-                                    ${rejInfo}
-                                    <p>${t.description.split('[REPORT_START]')[0].split('[REJECT_REASON]')[0]}</p>
-                                    <button class="btn-p" style="margin-top:15px; padding:12px; font-size:0.9rem;" onclick="app.openReportModal('${t.id}', '${t.title}')">YENİ RAPOR GÖNDER</button>
-                                </div>`;
+                                c.innerHTML += `<div class="card"><div class="badge" style="background:${t.status === 'Reddedildi' ? 'var(--red)' : 'var(--p-dark)'}">${t.status}</div><h3>${t.title}</h3>${rejInfo}<p>${t.description.split('[REPORT_START]')[0].split('[REJECT_REASON]')[0]}</p><button class="btn-p" style="margin-top:15px; padding:12px; font-size:0.9rem;" onclick="app.openReportModal('${t.id}', '${t.title}')">YENİ RAPOR GÖNDER</button></div>`;
                             });
-                        } else { c.innerHTML += `<div class="card"><p>Şu an aktif bir görevin bulunmuyor. Serbestsin!</p></div>`; }
+                        } else c.innerHTML += `<div class="card"><p>Şu an aktif bir görevin bulunmuyor. Serbestsin!</p></div>`;
                     }
                 } else if(p === 'tasks') {
                     c.innerHTML = `<h2>${app.user.role === 'admin' ? 'Tüm Denetimler' : 'Görevlerin'}</h2>`;
@@ -391,52 +377,20 @@
                             const date = t.date ? new Date(t.date).toLocaleString('tr-TR') : 'Bugün';
                             const targetUser = app.db.users.find(u => u.username === t.assignee);
                             const realName = targetUser ? targetUser.name : t.assignee;
-                            
                             let reportHtml = '';
                             if(t.description.includes('[REPORT_START]')) {
                                 try {
                                     const jsonStr = t.description.split('[REPORT_START]')[1].split('[REPORT_END]')[0];
                                     const rData = JSON.parse(jsonStr);
-                                    reportHtml = `<div class="report-section">
-                                        <h4>GELEN RAPOR</h4>
-                                        <p>${rData.report}</p>
-                                        ${rData.bug ? `<h4>BUG BİLDİRİMİ</h4><p style="color:var(--red); font-weight:700;">${rData.bug}</p>` : ''}
-                                        
-                                        ${rData.imgs && rData.imgs.length > 0 ? `
-                                            <button class="btn-mini" style="background:var(--p); color:#000; margin-top:10px; width:100%;" id="btn-imgs-${t.id}" onclick="app.toggleImgs('${t.id}')">FOTOĞRAFLARI İNCELE</button>
-                                            <div id="imgs-${t.id}" class="img-grid" style="display:none; margin-top:10px;">
-                                                ${rData.imgs.map(img => `<img src="${img}" class="img-item" onclick="window.open(this.src)">`).join('')}
-                                            </div>
-                                        ` : ''}
-                                        
-                                        ${app.user.role === 'admin' && t.status === 'İnceleniyor' ? `
-                                            <div style="display:flex; gap:10px; margin-top:15px;">
-                                                <button class="btn-mini" style="background:var(--green); color:#000;" onclick="app.updateTaskStatus('${t.id}', 'Onaylandı')">ONAYLA</button>
-                                                <button class="btn-mini" style="background:var(--red); color:#fff;" onclick="app.openRejectModal('${t.id}')">REDDET</button>
-                                            </div>
-                                        ` : ''}
-                                    </div>`;
-                                } catch(e) { }
+                                    reportHtml = `<div class="report-section"><h4>GELEN RAPOR</h4><p>${rData.report}</p>${rData.bug ? `<h4>BUG BİLDİRİMİ</h4><p style="color:var(--red); font-weight:700;">${rData.bug}</p>` : ''}${rData.imgs && rData.imgs.length > 0 ? `<button class="btn-mini" style="background:var(--p); color:#000; margin-top:10px; width:100%;" id="btn-imgs-${t.id}" onclick="app.toggleImgs('${t.id}')">FOTOĞRAFLARI İNCELE</button><div id="imgs-${t.id}" class="img-grid" style="display:none; margin-top:10px;">${rData.imgs.map(img => `<img src="${img}" class="img-item" onclick="window.open(this.src)">`).join('')}</div>` : ''}${app.user.role === 'admin' && t.status === 'İnceleniyor' ? `<div style="display:flex; gap:10px; margin-top:15px;"><button class="btn-mini" style="background:var(--green); color:#000;" onclick="app.updateTaskStatus('${t.id}', 'Onaylandı')">ONAYLA</button><button class="btn-mini" style="background:var(--red); color:#fff;" onclick="app.openRejectModal('${t.id}')">REDDET</button></div>` : ''}</div>`;
+                                } catch(e) {}
                             }
-
                             let rejBadgeHtml = '';
                             if(t.status === 'Reddedildi' && t.description.includes('[REJECT_REASON]')) {
                                 const rejMsg = t.description.split('[REJECT_REASON]')[1].split('[END_REASON]')[0];
                                 rejBadgeHtml = `<div style="color:var(--red); font-size:0.8rem; margin-top:5px; font-weight:800;">RED SEBEBİ: ${rejMsg}</div>`;
                             }
-
-                            c.innerHTML += `<div class="card">
-                                <div class="badge" style="background:${t.status === 'İnceleniyor' ? 'var(--gold)' : t.status === 'Onaylandı' ? 'var(--green)' : t.status === 'Reddedildi' ? 'var(--red)' : t.status === 'Aktif' ? 'var(--p-dark)' : 'var(--glass)'}">${t.status}</div>
-                                <h3>${t.title}</h3>
-                                <p style="white-space: pre-wrap;">${t.description.split('[REPORT_START]')[0].split('[REJECT_REASON]')[0]}</p>
-                                ${rejBadgeHtml}
-                                ${reportHtml}
-                                <div class="info-row">
-                                    <span><b>Sorumlu:</b> ${realName}</span>
-                                    <span><b>Tarih:</b> ${date}</span>
-                                </div>
-                                ${app.user.role === 'admin' ? `<i class="fas fa-trash del-btn" onclick="app.delTask('${t.id}')"></i>` : ''}
-                            </div>`;
+                            c.innerHTML += `<div class="card"><div class="badge" style="background:${t.status === 'İnceleniyor' ? 'var(--gold)' : t.status === 'Onaylandı' ? 'var(--green)' : t.status === 'Reddedildi' ? 'var(--red)' : t.status === 'Aktif' ? 'var(--p-dark)' : 'var(--glass)'}">${t.status}</div><h3>${t.title}</h3><p style="white-space: pre-wrap;">${t.description.split('[REPORT_START]')[0].split('[REJECT_REASON]')[0]}</p>${rejBadgeHtml}${reportHtml}<div class="info-row"><span><b>Sorumlu:</b> ${realName}</span><span><b>Tarih:</b> ${date}</span></div>${app.user.role === 'admin' ? `<i class="fas fa-trash del-btn" onclick="app.delTask('${t.id}')"></i>` : ''}</div>`;
                         }
                     });
                 } else if(p === 'ann') {
@@ -445,8 +399,7 @@
                         c.innerHTML += `<div class="card"><h3>${a.title}</h3><p>${a.text}</p>${app.user.role === 'admin' ? `<i class="fas fa-trash del-btn" onclick="app.delAnn('${a.id}')"></i>` : ''}</div>`;
                     });
                 } else if(p === 'set') {
-                    c.innerHTML = `<div class="card" style="text-align:center;"><h2>${app.user.name}</h2><p>${app.user.category}</p></div>
-                    <button class="btn-p" style="background:var(--red); margin-bottom:20px;" onclick="app.logout()"><i class="fas fa-sign-out-alt"></i> ÇIKIŞ YAP</button>`;
+                    c.innerHTML = `<div class="card" style="text-align:center;"><h2>${app.user.name}</h2><p>${app.user.category}</p></div><button class="btn-p" style="background:var(--red); margin-bottom:20px;" onclick="app.logout()"><i class="fas fa-sign-out-alt"></i> ÇIKIŞ YAP</button>`;
                     if(app.user.role === 'admin') {
                         c.innerHTML += `<h3>Ekip Üyeleri</h3>`;
                         (app.db.users || []).forEach(u => {
@@ -457,28 +410,20 @@
             },
 
             toggleImgs(tid) {
-                const wrap = document.getElementById(`imgs-${tid}`);
-                const btn = document.getElementById(`btn-imgs-${tid}`);
-                if(wrap.style.display === 'none') {
-                    wrap.style.display = 'grid'; btn.innerText = 'FOTOĞRAFLARI KAPAT';
-                } else {
-                    wrap.style.display = 'none'; btn.innerText = 'FOTOĞRAFLARI İNCELE';
-                }
+                const wrap = document.getElementById(`imgs-${tid}`), btn = document.getElementById(`btn-imgs-${tid}`);
+                if(wrap.style.display === 'none') { wrap.style.display = 'grid'; btn.innerText = 'FOTOĞRAFLARI KAPAT'; }
+                else { wrap.style.display = 'none'; btn.innerText = 'FOTOĞRAFLARI İNCELE'; }
             },
 
             handleFiles(input) {
-                const files = input.files;
-                const prev = document.getElementById('r-preview');
+                const files = input.files, prev = document.getElementById('r-preview');
                 prev.innerHTML = ''; app.tempImages = [];
                 Array.from(files).forEach(file => {
                     const reader = new FileReader();
                     reader.onload = (e) => {
                         app.tempImages.push(e.target.result);
-                        const img = document.createElement('img');
-                        img.src = e.target.result; img.className = 'img-item';
-                        prev.appendChild(img);
-                    };
-                    reader.readAsDataURL(file);
+                        const img = document.createElement('img'); img.src = e.target.result; img.className = 'img-item'; prev.appendChild(img);
+                    }; reader.readAsDataURL(file);
                 });
             },
 
@@ -498,97 +443,68 @@
                 }); app.open('modal-leave');
             },
 
-            openReportModal(tid, title) {
-                document.getElementById('r-task-id').value = tid;
-                document.getElementById('r-task-title').innerText = title;
-                app.open('modal-report');
-            },
-
-            openRejectModal(tid) {
-                app.sel.rejId = tid;
-                document.getElementById('rej-reason').value = '';
-                app.open('modal-reject');
-            },
+            openReportModal(tid, title) { document.getElementById('r-task-id').value = tid; document.getElementById('r-task-title').innerText = title; app.open('modal-report'); },
+            openRejectModal(tid) { app.sel.rejId = tid; document.getElementById('rej-reason').value = ''; app.open('modal-reject'); },
 
             async confirmReject() {
-                const reason = document.getElementById('rej-reason').value;
-                if(!reason) return app.toast('Sebep yazmalısın!', true);
+                const reason = document.getElementById('rej-reason').value; if(!reason) return app.toast('Sebep yaz!', true);
                 const task = app.db.tasks.find(t => t.id === app.sel.rejId);
                 const cleanDesc = task.description.split('[REPORT_START]')[0].split('[REJECT_REASON]')[0];
-                const finalDesc = cleanDesc + `\n\n[REJECT_REASON]${reason}[END_REASON]`;
-                const updatedTask = { id: app.sel.rejId, status: 'Reddedildi', description: finalDesc };
+                const updatedTask = { id: app.sel.rejId, status: 'Reddedildi', description: cleanDesc + `\n\n[REJECT_REASON]${reason}[END_REASON]` };
                 const r = await fetch(`${RENDER_URL}/api/tasks`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(updatedTask) });
-                if(r.ok) { app.toast('Görev Reddedildi'); app.close(); await app.sync(); app.nav('tasks'); } else app.toast('Hata!', true);
-            },
-
-            genUUID() {
-                return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
-                    const r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
-                    return v.toString(16);
-                });
+                if(r.ok) { app.toast('Reddedildi'); app.close(); await app.sync(); app.nav('tasks'); } else app.toast('Hata!', true);
             },
 
             async handleNewDev(e) {
                 e.preventDefault();
-                const newUser = { id: app.genUUID(), name: document.getElementById('d-name').value, username: document.getElementById('d-user').value, password: document.getElementById('d-pass').value, role: app.sel.dCat === 'Admin' ? 'admin' : 'dev', category: app.sel.dCat };
+                const newUser = { name: document.getElementById('d-name').value, username: document.getElementById('d-user').value, password: document.getElementById('d-pass').value, role: app.sel.dCat === 'Admin' ? 'admin' : 'dev', category: app.sel.dCat };
                 const r = await fetch(`${RENDER_URL}/api/users`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(newUser)});
-                if(r.ok) { app.toast('Üye Eklendi!'); app.close(); await app.sync(); app.nav('set'); } else app.toast('Hata!', true);
+                if(r.ok) { app.toast('Eklendi!'); app.close(); await app.sync(); app.nav('set'); } else app.toast('Hata!', true);
             },
 
             async handleNewTask(e) {
                 e.preventDefault(); if(!app.sel.tTo) return app.toast('Kişi Seç!', true);
-                const descWithAdmin = document.getElementById('t-desc').value + `\n\n[ADMIN: ${app.user.name}]`;
-                const nt = { id: app.genUUID(), assignee: app.sel.tTo, title: document.getElementById('t-title').value, description: descWithAdmin, status: 'Aktif', date: new Date().toISOString() };
+                const nt = { assignee: app.sel.tTo, title: document.getElementById('t-title').value, description: document.getElementById('t-desc').value + `\n\n[ADMIN: ${app.user.name}]`, status: 'Aktif', date: new Date().toISOString() };
                 const r = await fetch(`${RENDER_URL}/api/tasks`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(nt)});
-                if(r.ok) { app.toast('Görev Verildi'); app.close(); await app.sync(); app.nav('tasks'); } else app.toast('Hata!', true);
+                if(r.ok) { app.toast('Atandı'); app.close(); await app.sync(); app.nav('tasks'); } else app.toast('Hata!', true);
             },
 
             async handleNewLeave(e) {
                 e.preventDefault(); if(!app.sel.lTo) return app.toast('Kişi Seç!', true);
-                const leaveDesc = `${document.getElementById('l-days').value} Gün İzin. Gerekçe: ${document.getElementById('l-reason').value}\n\n[ADMIN: ${app.user.name}]`;
-                const nl = { id: app.genUUID(), assignee: app.sel.lTo, title: 'İZİN', description: leaveDesc, status: 'İzinde', date: new Date().toISOString() };
+                const nl = { assignee: app.sel.lTo, title: 'İZİN', description: `${document.getElementById('l-days').value} Gün İzin. Gerekçe: ${document.getElementById('l-reason').value}\n\n[ADMIN: ${app.user.name}]`, status: 'İzinde', date: new Date().toISOString() };
                 const r = await fetch(`${RENDER_URL}/api/tasks`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(nl)});
-                if(r.ok) { app.toast('İzin İşlendi'); app.close(); await app.sync(); app.nav('tasks'); } else app.toast('Hata!', true);
+                if(r.ok) { app.toast('Onaylandı'); app.close(); await app.sync(); app.nav('tasks'); } else app.toast('Hata!', true);
             },
 
             async handleNewReport(e) {
                 e.preventDefault();
-                const tid = document.getElementById('r-task-id').value;
-                const task = app.db.tasks.find(t => t.id === tid);
+                const tid = document.getElementById('r-task-id').value, task = app.db.tasks.find(t => t.id == tid);
                 const reportData = { report: document.getElementById('r-text').value, bug: document.getElementById('r-bug').value, imgs: app.tempImages };
                 const cleanDesc = task.description.split('[REPORT_START]')[0].split('[REJECT_REASON]')[0];
-                const finalDesc = cleanDesc + `\n\n[REPORT_START]${JSON.stringify(reportData)}[REPORT_END]`;
-                const updatedTask = { id: tid, status: 'İnceleniyor', description: finalDesc };
+                const updatedTask = { id: tid, status: 'İnceleniyor', description: cleanDesc + `\n\n[REPORT_START]${JSON.stringify(reportData)}[REPORT_END]` };
                 const r = await fetch(`${RENDER_URL}/api/tasks`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(updatedTask) });
-                if(r.ok) { app.toast('Rapor Gönderildi!'); app.close(); await app.sync(); app.nav('dash'); } else app.toast('Hata!', true);
+                if(r.ok) { app.toast('Gönderildi!'); app.close(); await app.sync(); app.nav('dash'); } else app.toast('Hata!', true);
             },
 
             async updateTaskStatus(tid, status) {
-                const updatedTask = { id: tid, status: status };
-                const r = await fetch(`${RENDER_URL}/api/tasks`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(updatedTask) });
-                if(r.ok) { app.toast(status === 'Onaylandı' ? 'Onaylandı!' : 'Reddedildi!'); await app.sync(); app.nav('tasks'); } else app.toast('Hata!', true);
+                const r = await fetch(`${RENDER_URL}/api/tasks`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ id: tid, status: status }) });
+                if(r.ok) { app.toast('Güncellendi'); await app.sync(); app.nav('tasks'); } else app.toast('Hata!', true);
             },
 
             async handleNewAnn() {
                 const title = document.getElementById('an-title').value, text = document.getElementById('an-text').value;
                 if(!title || !text) return app.toast('Boş bırakmayın!', true);
-                const na = { id: app.genUUID(), title: title, text: text };
-                const r = await fetch(`${RENDER_URL}/api/announcements`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(na)});
+                const r = await fetch(`${RENDER_URL}/api/announcements`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ title, text }) });
                 if(r.ok) { app.toast('Yayınlandı'); await app.sync(); app.nav('ann'); } else app.toast('Hata!', true);
             },
 
             async delTask(id) { if(confirm('Sil?')) { await fetch(`${RENDER_URL}/api/tasks/${id}`, {method:'DELETE'}); await app.sync(); app.nav('tasks'); } },
             async delAnn(id) { if(confirm('Sil?')) { await fetch(`${RENDER_URL}/api/announcements/${id}`, {method:'DELETE'}); await app.sync(); app.nav('ann'); } },
             async delUser(id) { if(confirm('Sil?')) { await fetch(`${RENDER_URL}/api/users/${id}`, {method:'DELETE'}); await app.sync(); app.nav('set'); } },
-
             logout() { localStorage.removeItem('lsdt_rem'); location.reload(); },
-
             toast(m, bad=false) {
-                const el = document.getElementById('toast'); 
-                document.getElementById('toast-msg').innerText = m;
-                el.style.background = bad ? 'var(--red)' : 'var(--p-grad)';
-                el.style.transform = 'translateX(-50%) translateY(0)';
-                el.style.opacity = '1';
+                const el = document.getElementById('toast'); document.getElementById('toast-msg').innerText = m;
+                el.style.background = bad ? 'var(--red)' : 'var(--p-grad)'; el.style.transform = 'translateX(-50%) translateY(0)'; el.style.opacity = '1';
                 setTimeout(() => { el.style.transform = 'translateX(-50%) translateY(-200%)'; el.style.opacity = '0'; }, 3500);
             }
         };
