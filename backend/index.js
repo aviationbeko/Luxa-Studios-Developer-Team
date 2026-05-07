@@ -80,23 +80,24 @@ app.post('/api/sync', async (req, res) => {
 app.post('/api/users', async (req, res) => {
     console.log("Processing user request:", req.body);
     try {
-        // Önce bu kullanıcı adı var mı kontrol et
-        const { data: existingUser } = await supabase.from('users').select('username').eq('username', req.body.username).single();
+        const userData = { ...req.body };
+        delete userData.id; // Manuel ID'yi sil, UUID otomatik oluşsun
+
+        // Kullanıcı adı kontrolü
+        const { data: existingUser } = await supabase.from('users').select('username').eq('username', userData.username).single();
         
         let result;
         if (existingUser) {
-            // Varsa güncelle
-            result = await supabase.from('users').update(req.body).eq('username', req.body.username);
+            result = await supabase.from('users').update(userData).eq('username', userData.username);
         } else {
-            // Yoksa yeni ekle
-            result = await supabase.from('users').insert([req.body]);
+            result = await supabase.from('users').insert([userData]);
         }
 
         if (result.error) {
             console.error("Supabase Error:", result.error);
-            return res.status(500).json({ error: result.error.message, code: result.error.code });
+            return res.status(500).json({ error: result.error.message });
         }
-        res.json({ success: true, message: "İşlem başarılı" });
+        res.json({ success: true });
     } catch (err) {
         console.error("Critical Server Error:", err);
         res.status(500).json({ error: err.message });
