@@ -14,9 +14,13 @@ const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY; // Use service role for backend operations
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-app.use(cors());
+app.use(cors({
+    origin: '*', // Tüm adreslere izin ver
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+}));
 app.use(compression());
-app.use(express.json({ limit: '50mb' })); // Increased limit for image uploads
+app.use(express.json({ limit: '50mb' }));
 
 // Middleware to log requests
 app.use((req, res, next) => {
