@@ -19,78 +19,59 @@
             --red: #ff7675; --green: #55efc4; --gold: #f1c40f;
             --glass: rgba(162, 155, 254, 0.15);
             --p-grad: linear-gradient(135deg, #6c5ce7, #a29bfe);
-            --gold-grad: linear-gradient(135deg, #f1c40f, #e67e22);
         }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Outfit', sans-serif; -webkit-tap-highlight-color: transparent; }
         body { background: var(--bg-dark); color: var(--text); height: 100vh; width: 100vw; overflow: hidden; }
         .screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: none; flex-direction: column; z-index: 10; background: var(--bg); }
         .screen.active { display: flex !important; }
 
-        /* LOADING */
         #loading-screen { justify-content: center; align-items: center; z-index: 9999; background: #05020a; }
         .load-container { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; width: 100%; gap: 40px; }
-        #l-cube { width: 50px; height: 50px; background: var(--p-grad); border-radius: 15px; box-shadow: 0 0 50px rgba(108,92,231,0.6); position: relative; }
-        #l-code { font-family: monospace; color: var(--green); font-size: 1.1rem; font-weight: 600; opacity: 0; white-space: nowrap; overflow: hidden; width: 0; border-right: 2px solid var(--green); padding-right: 5px; }
-        #l-text { font-size: 4.5rem; font-weight: 900; background: var(--p-grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; opacity: 0; letter-spacing: 10px; transform: scale(0.8); }
+        #l-cube { width: 50px; height: 50px; background: var(--p-grad); border-radius: 15px; box-shadow: 0 0 50px rgba(108,92,231,0.6); }
+        #l-code { font-family: monospace; color: var(--green); font-size: 1.1rem; opacity: 0; white-space: nowrap; overflow: hidden; width: 0; border-right: 2px solid var(--green); }
+        #l-text { font-size: 4.5rem; font-weight: 900; background: var(--p-grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; opacity: 0; letter-spacing: 10px; }
 
-        /* UI ELEMENTS */
-        .glass-card { background: rgba(255,255,255,0.08); backdrop-filter: blur(40px); border: 1px solid rgba(255,255,255,0.15); padding: 40px 30px; border-radius: 45px; width: 92%; max-width: 400px; text-align: center; box-shadow: 0 40px 100px rgba(0,0,0,0.5); }
-        .input-p { width: 100%; padding: 18px; margin-bottom: 15px; background: rgba(255,255,255,0.1); border: 2px solid transparent; border-radius: 25px; color: white; font-size: 1rem; outline: none; transition: 0.3s; }
-        .input-p:focus { border-color: var(--p); background: rgba(255,255,255,0.15); box-shadow: 0 0 20px rgba(162,155,254,0.2); }
+        .glass-card { background: rgba(255,255,255,0.08); backdrop-filter: blur(40px); border: 1px solid rgba(255,255,255,0.15); padding: 40px 30px; border-radius: 45px; width: 92%; max-width: 400px; text-align: center; }
+        .input-p { width: 100%; padding: 18px; margin-bottom: 15px; background: rgba(255,255,255,0.1); border: 2px solid transparent; border-radius: 25px; color: white; outline: none; }
+        .input-p:focus { border-color: var(--p); background: rgba(255,255,255,0.15); }
         
         .p-select { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; justify-content: center; max-height: 200px; overflow-y: auto; padding: 10px; }
         .p-opt { padding: 10px 18px; border-radius: 30px; background: rgba(108,92,231,0.1); border: 1px solid rgba(108,92,231,0.3); color: white; cursor: pointer; font-size: 0.8rem; font-weight: 700; transition: 0.3s; }
-        .p-opt.active { background: var(--p-grad); border-color: transparent; box-shadow: 0 5px 15px rgba(108,92,231,0.4); transform: translateY(-2px); }
+        .p-opt.active { background: var(--p-grad); transform: translateY(-2px); }
 
-        .btn-p { width: 100%; padding: 18px; background: var(--p-grad); color: white; border: none; border-radius: 25px; font-weight: 900; cursor: pointer; transition: 0.3s; font-size: 1.1rem; box-shadow: 0 10px 30px rgba(108,92,231,0.3); }
-        .btn-p:hover { transform: translateY(-3px); box-shadow: 0 15px 35px rgba(108,92,231,0.5); }
+        .btn-p { width: 100%; padding: 18px; background: var(--p-grad); color: white; border: none; border-radius: 25px; font-weight: 900; cursor: pointer; transition: 0.3s; }
+        .btn-p:hover { transform: translateY(-3px); }
         
-        .top-nav { padding: 25px 20px; display: flex; justify-content: space-between; align-items: center; background: transparent; z-index: 50; }
+        .top-nav { padding: 25px 20px; display: flex; justify-content: space-between; align-items: center; z-index: 50; }
         .bottom-nav { position: fixed; bottom: 0; width: 100%; height: 90px; background: rgba(15,5,29,0.7); backdrop-filter: blur(25px); display: flex; justify-content: space-around; align-items: center; border-top: 1px solid rgba(255,255,255,0.05); padding-bottom: 20px; z-index: 100; }
-        .nav-item { color: rgba(255,255,255,0.8); font-size: 0.8rem; text-align: center; cursor: pointer; display: flex; flex-direction: column; align-items: center; transition: 0.4s; font-weight: 700; }
-        .nav-item.active { color: var(--p); transform: translateY(-8px); }
+        .nav-item { color: rgba(255,255,255,0.8); font-size: 0.8rem; text-align: center; cursor: pointer; transition: 0.4s; }
+        .nav-item.active { color: var(--p); transform: translateY(-8px); font-weight: 900; }
         .nav-item i { font-size: 1.8rem; margin-bottom: 6px; }
         
         #page-content { flex: 1; padding: 20px; overflow-y: auto; padding-bottom: 120px; }
-        .card { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15); padding: 25px; border-radius: 35px; margin-bottom: 20px; position: relative; overflow: hidden; }
+        .card { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); padding: 25px; border-radius: 35px; margin-bottom: 20px; position: relative; }
         .card h3 { color: var(--p); margin-bottom: 10px; font-weight: 900; }
         .badge { display: inline-block; padding: 6px 14px; border-radius: 12px; font-size: 0.7rem; font-weight: 900; margin-bottom: 12px; text-transform: uppercase; background: var(--glass); color: var(--p); }
         .info-row { font-size: 0.75rem; color: var(--sub); margin-top: 10px; display: flex; flex-direction: column; gap: 4px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px; }
-        .info-row b { color: var(--p); }
 
         .action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
-        .action-card { background: var(--card); border: 1px solid rgba(255,255,255,0.1); border-radius: 30px; padding: 25px 15px; text-align: center; cursor: pointer; transition: 0.3s; }
+        .action-card { background: var(--card); border: 1px solid rgba(255,255,255,0.1); border-radius: 30px; padding: 25px 15px; text-align: center; cursor: pointer; }
         .action-card i { font-size: 2.2rem; display: block; margin-bottom: 12px; }
-        .action-card span { font-weight: 800; font-size: 0.8rem; text-transform: uppercase; }
-        .action-card:hover { transform: translateY(-5px); background: rgba(255,255,255,0.1); border-color: var(--p); }
-        .action-card.gold { color: var(--gold); }
 
         .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: none; justify-content: center; align-items: center; z-index: 2000; backdrop-filter: blur(20px); }
         .modal.active { display: flex !important; }
         .modal-content { background: #1a0b2e; width: 92%; max-width: 450px; padding: 35px; border-radius: 40px; border: 1px solid rgba(255,255,255,0.1); max-height: 90vh; overflow-y: auto; }
         
-        .toast { position: fixed; top: 30px; left: 50%; transform: translateX(-50%) translateY(-200%); background: var(--p-grad); color: white; padding: 18px 35px; border-radius: 25px; font-weight: 900; z-index: 3000; max-width: 80%; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.5); transition: 0.5s; opacity: 0; }
-        .del-btn { position: absolute; top: 20px; right: 20px; color: var(--red); opacity: 0.5; cursor: pointer; font-size: 1.2rem; transition: 0.3s; }
-        .del-btn:hover { opacity: 1; transform: scale(1.1); }
-
-        .setup-step { display: none; text-align: center; width: 100%; max-width: 500px; padding: 20px; }
-        .setup-step.active { display: block; animation: fadeInUp 0.5s ease; }
-        .setup-card { background: rgba(255,255,255,0.05); padding: 50px 40px; border-radius: 45px; border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(20px); }
-        .setup-card p { color: var(--sub); line-height: 1.6; margin: 20px 0 30px; font-size: 1rem; text-align: justify; }
+        .toast { position: fixed; top: 30px; left: 50%; transform: translateX(-50%) translateY(-200%); background: var(--p-grad); color: white; padding: 18px 35px; border-radius: 25px; font-weight: 900; z-index: 3000; transition: 0.5s; opacity: 0; }
+        .del-btn { position: absolute; top: 20px; right: 20px; color: var(--red); opacity: 0.6; cursor: pointer; padding: 10px; }
 
         .img-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 15px; }
         .img-item { width: 100%; aspect-ratio: 1; border-radius: 15px; object-fit: cover; border: 1px solid rgba(255,255,255,0.2); }
-        .img-picker { border: 2px dashed var(--p); padding: 20px; border-radius: 25px; cursor: pointer; transition: 0.3s; color: var(--p); font-weight: 700; margin-bottom: 20px; text-align: center; }
-        .img-picker:hover { background: rgba(162,155,254,0.1); }
+        .img-picker { border: 2px dashed var(--p); padding: 20px; border-radius: 25px; cursor: pointer; color: var(--p); text-align: center; margin-bottom: 20px; }
 
         .report-section { background: rgba(0,0,0,0.3); padding: 15px; border-radius: 20px; margin-top: 15px; border-left: 4px solid var(--p); }
-        .report-section h4 { font-size: 0.8rem; color: var(--p); text-transform: uppercase; margin-bottom: 8px; font-weight: 900; }
-        .report-section p { font-size: 0.9rem; color: var(--sub); line-height: 1.4; white-space: pre-wrap; }
-
-        .btn-mini { padding: 10px 15px; border-radius: 15px; border: none; font-weight: 900; cursor: pointer; font-size: 0.8rem; flex: 1; transition: 0.3s; }
-        .btn-mini:hover { transform: scale(1.05); }
-
-        @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+        .report-section h4 { font-size: 0.8rem; color: var(--p); font-weight: 900; }
+        .btn-mini { padding: 10px 15px; border-radius: 15px; border: none; font-weight: 900; cursor: pointer; font-size: 0.8rem; }
     </style>
 </head>
 <body>
@@ -101,48 +82,18 @@
     <div id="loading-screen" class="screen active">
         <div class="load-container">
             <div id="l-cube"></div>
-            <div id="l-code">&gt;_ init lsdt_v11...</div>
+            <div id="l-code">&gt;_ secure_init...</div>
             <div id="l-text">LSDT</div>
         </div>
     </div>
 
     <!-- SETUP SCREEN -->
     <div id="setup-screen" class="screen" style="justify-content:center; align-items:center; background: #05020a;">
-        <div id="setup-1" class="setup-step active">
-            <div class="setup-card">
+        <div id="setup-1" class="setup-step active" style="text-align:center;">
+            <div class="glass-card" style="width:100%;">
                 <i class="fas fa-rocket fa-4x" style="color:var(--p); margin-bottom:20px;"></i>
-                <h2>LSDT v11.0 Giriş</h2>
-                <p>Luxa Studios Developer Team (LSDT) yönetim sistemine hoş geldiniz. Bu platform, ekibimizin verimliliğini korumak için tasarlanmıştır.</p>
-                <button class="btn-p" onclick="app.setupStep(2)">KURULUMA BAŞLA</button>
-            </div>
-        </div>
-        <div id="setup-2" class="setup-step">
-            <div class="setup-card">
-                <i class="fas fa-bell fa-4x" style="color:var(--gold); margin-bottom:20px;"></i>
-                <h2>Anlık Bildirimler</h2>
-                <p>Yeni bir görev veya rapor durumu için bildirimleri aktif edin.</p>
-                <button class="btn-p" onclick="app.enableNotif()">BİLDİRİMLERİ ŞİMDİ AÇ</button>
-                <button class="btn-p" style="background:none; margin-top:10px;" onclick="app.setupStep(3)">BELKİ SONRA</button>
-            </div>
-        </div>
-        <div id="setup-3" class="setup-step">
-            <div class="setup-card">
-                <i class="fas fa-file-contract fa-4x" style="color:var(--red); margin-bottom:20px;"></i>
-                <h2>Ekip Sözleşmesi</h2>
-                <p style="font-size:0.85rem;">
-                    1. LSDT materyalleri DMCA ile korunur. İzinsiz paylaşım yasaktır.<br>
-                    2. Scam faaliyetleri kalıcı ihraç sebebidir.<br>
-                    3. Görev raporları zorunludur.
-                </p>
-                <button class="btn-p" onclick="app.setupStep(4)">SÖZLEŞMEYİ ONAYLIYORUM</button>
-            </div>
-        </div>
-        <div id="setup-4" class="setup-step">
-            <div class="setup-card">
-                <i class="fas fa-check-circle fa-4x" style="color:var(--p); margin-bottom:20px;"></i>
-                <h2>Kurulum Tamamlandı</h2>
-                <p>Artık hazırsınız.</p>
-                <button class="btn-p" onclick="app.finishSetup()">PANELİ AÇ</button>
+                <h2>LSDT v11.0</h2>
+                <button class="btn-p" style="margin-top:20px;" onclick="app.finishSetup()">BAŞLAT</button>
             </div>
         </div>
     </div>
@@ -152,14 +103,14 @@
         <div style="height:100%; display:flex; justify-content:center; align-items:center;">
             <div class="glass-card">
                 <h1 style="font-size:3.5rem; font-weight:900;">LSDT</h1>
-                <p style="color:var(--p); margin-bottom:40px;">Luxa Studios Developer Team</p>
+                <p style="color:var(--p); margin-bottom:40px;">Yönetim Paneli</p>
                 <form onsubmit="app.handleLogin(event)">
                     <input type="text" id="l-user" class="input-p" placeholder="Kullanıcı Adı" required>
                     <input type="password" id="l-pass" class="input-p" placeholder="Şifre" required>
-                    <div style="margin-bottom:15px; color:var(--sub); font-size:0.9rem; display:flex; align-items:center; justify-content:center; gap:10px;">
-                        <input type="checkbox" id="l-rem" style="width:18px; height:18px; accent-color:var(--p);"> Beni Hatırla
+                    <div style="margin-bottom:15px; color:var(--sub); font-size:0.9rem;">
+                        <input type="checkbox" id="l-rem" checked> Beni Hatırla
                     </div>
-                    <button type="submit" class="btn-p">GİRİŞ YAP</button>
+                    <button type="submit" class="btn-p">SİSTEME GİR</button>
                 </form>
             </div>
         </div>
@@ -181,26 +132,26 @@
                 <div id="avatar" style="width:50px; height:50px; background:var(--p-grad); color:white; border-radius:50%; display:flex; justify-content:center; align-items:center; font-weight:900;">L</div>
                 <div><div id="u-name" style="font-weight:900; color:var(--p);">...</div><div id="u-role" style="font-size:0.75rem; color:var(--sub); font-weight:800;">...</div></div>
             </div>
-            <i class="fas fa-sign-out-alt" onclick="app.logout()" style="color:var(--red); font-size:1.5rem; cursor:pointer;"></i>
+            <i class="fas fa-power-off" onclick="app.logout()" style="color:var(--red); font-size:1.5rem; cursor:pointer;"></i>
         </nav>
         <main id="page-content"></main>
         <nav class="bottom-nav">
             <div id="nav-dash" class="nav-item active" onclick="app.nav('dash')"><i class="fas fa-home"></i><span>Panel</span></div>
-            <div id="nav-tasks" class="nav-item" onclick="app.nav('tasks')"><i class="fas fa-tasks"></i><span>Görevler</span></div>
+            <div id="nav-tasks" class="nav-item" onclick="app.nav('tasks')"><i class="fas fa-clipboard-list"></i><span>Kayıtlar</span></div>
             <div id="nav-ann" class="nav-item" onclick="app.nav('ann')"><i class="fas fa-bullhorn"></i><span>Duyuru</span></div>
-            <div id="nav-set" class="nav-item" onclick="app.nav('set')"><i class="fas fa-user-cog"></i><span>Ayarlar</span></div>
+            <div id="nav-set" class="nav-item" onclick="app.nav('set')"><i class="fas fa-cog"></i><span>Ekip</span></div>
         </nav>
     </div>
 
     <!-- MODALS -->
     <div id="modal-dev" class="modal"><div class="modal-content">
-        <h2>Üye Ekle</h2>
+        <h2>Yeni Üye</h2>
         <form onsubmit="app.handleNewDev(event)">
             <input type="text" id="d-name" class="input-p" placeholder="Ad Soyad" required>
             <input type="text" id="d-user" class="input-p" placeholder="Kullanıcı Adı" required>
             <input type="password" id="d-pass" class="input-p" placeholder="Şifre" required>
             <div id="d-cat-wrap" class="p-select"></div>
-            <button type="submit" class="btn-p">KAYDET</button>
+            <button type="submit" class="btn-p">ÜYEYİ EKLE</button>
             <button type="button" class="btn-p" style="background:none; margin-top:10px;" onclick="app.close()">KAPAT</button>
         </form>
     </div></div>
@@ -217,35 +168,35 @@
     </div></div>
 
     <div id="modal-leave" class="modal"><div class="modal-content">
-        <h2>İzin Tanımlama</h2>
+        <h2>İzin Tanımla</h2>
         <form onsubmit="app.handleNewLeave(event)">
             <div id="l-to-wrap" class="p-select"></div>
-            <input type="number" id="l-days" class="input-p" placeholder="Gün Sayısı" required>
+            <input type="number" id="l-days" class="input-p" placeholder="Gün" required>
             <textarea id="l-reason" class="input-p" placeholder="Gerekçe" style="height:100px;" required></textarea>
-            <button type="submit" class="btn-p">İZİN VER</button>
+            <button type="submit" class="btn-p">İZNİ ONAYLA</button>
             <button type="button" class="btn-p" style="background:none; margin-top:10px;" onclick="app.close()">KAPAT</button>
         </form>
     </div></div>
 
     <div id="modal-report" class="modal"><div class="modal-content">
-        <h2>Rapor Hazırla</h2>
+        <h2>Rapor Gönder</h2>
         <form onsubmit="app.handleNewReport(event)">
             <input type="hidden" id="r-task-id">
             <h3 id="r-task-title" style="margin-bottom:15px; color:var(--p);"></h3>
-            <textarea id="r-text" class="input-p" placeholder="Ne yapıldı?" style="height:120px;" required></textarea>
-            <textarea id="r-bug" class="input-p" placeholder="Hatalar..." style="height:80px;"></textarea>
-            <div class="img-picker" onclick="document.getElementById('r-file').click()"><i class="fas fa-image"></i> GÖRSEL EKLE</div>
+            <textarea id="r-text" class="input-p" placeholder="Yapılanlar..." style="height:120px;" required></textarea>
+            <textarea id="r-bug" class="input-p" placeholder="Sorunlar..." style="height:80px;"></textarea>
+            <div class="img-picker" onclick="document.getElementById('r-file').click()"><i class="fas fa-camera"></i> GÖRSEL EKLE</div>
             <input type="file" id="r-file" style="display:none;" multiple accept="image/*" onchange="app.handleFiles(this)">
             <div id="r-preview" class="img-grid"></div>
             <button type="submit" class="btn-p" style="margin-top:20px;">GÖNDER</button>
-            <button type="button" class="btn-p" style="background:none; margin-top:10px;" onclick="app.close()">KAPAT</button>
+            <button type="button" class="btn-p" style="background:none; margin-top:10px;" onclick="app.close()">VAZGEÇ</button>
         </form>
     </div></div>
 
     <div id="modal-reject" class="modal"><div class="modal-content">
-        <h2>Görev Red</h2>
-        <textarea id="rej-reason" class="input-p" placeholder="Neden reddedildi?" style="height:150px;"></textarea>
-        <button class="btn-p" onclick="app.confirmReject()">REDDİ ONAYLA</button>
+        <h2>Görevi Reddet</h2>
+        <textarea id="rej-reason" class="input-p" placeholder="Sebep..." style="height:150px;"></textarea>
+        <button class="btn-p" onclick="app.confirmReject()">REDDİ GÖNDER</button>
         <button type="button" class="btn-p" style="background:none; margin-top:10px;" onclick="app.close()">KAPAT</button>
     </div></div>
 
@@ -259,10 +210,11 @@
 
             async init() {
                 const tl = gsap.timeline();
-                tl.fromTo("#l-cube", { y: -50, opacity: 0, rotation: -45 }, { y: 0, opacity: 1, rotation: 0, duration: 1, ease: "back.out" })
-                  .to("#l-code", { opacity: 1, width: "180px", duration: 1.5, ease: "steps(15)" })
-                  .to("#l-text", { opacity: 1, scale: 1, duration: 1, ease: "elastic.out(1, 0.3)" })
-                  .to("#loading-screen", { opacity: 0, duration: 0.8, delay: 2, onComplete: async () => {
+                tl.fromTo("#l-cube", { y: -50, opacity: 0 }, { y: 0, opacity: 1, duration: 1 })
+                  .to("#l-code", { opacity: 1, width: "180px", duration: 1, ease: "steps(15)" })
+                  .to("#l-text", { opacity: 1, duration: 1 })
+                  .to("#loading-screen", { opacity: 0, duration: 0.5, delay: 1.5, onComplete: async () => {
+                      document.getElementById('loading-screen').classList.remove('active');
                       await app.sync();
                       const rem = localStorage.getItem('lsdt_rem');
                       if(!localStorage.getItem('lsdt_setup')) app.show('setup-screen');
@@ -273,7 +225,7 @@
                       } else app.show('login-screen');
                   }});
                 app.renderCats();
-                setInterval(() => app.sync(), 20000);
+                setInterval(() => app.sync(), 15000);
             },
 
             async sync() {
@@ -287,13 +239,6 @@
             show(id) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.getElementById(id).classList.add('active'); },
             open(id) { document.getElementById(id).classList.add('active'); },
             close() { document.querySelectorAll('.modal').forEach(m => m.classList.remove('active')); app.tempImages = []; document.getElementById('r-preview').innerHTML = ''; },
-            setupStep(n) { document.querySelectorAll('.setup-step').forEach(s => s.classList.remove('active')); document.getElementById('setup-' + n).classList.add('active'); },
-            
-            async enableNotif() { 
-                const p = await Notification.requestPermission(); 
-                if(p === 'granted') { app.toast('Aktif!'); app.setupStep(3); } else app.toast('İzin verin!', true);
-            },
-            
             finishSetup() { localStorage.setItem('lsdt_setup', 'true'); app.show('login-screen'); },
 
             renderCats() {
@@ -318,10 +263,9 @@
                 document.getElementById('w-avatar').innerText = u.name[0];
                 document.getElementById('w-title').innerText = "SELAM, " + u.name.split(' ')[0].toUpperCase();
                 document.getElementById('w-sub').innerText = u.category;
-                
-                gsap.to("#w-content", { opacity: 1, scale: 1, duration: 1, ease: "back.out" });
+                gsap.to("#w-content", { opacity: 1, scale: 1, duration: 0.8 });
                 setTimeout(() => {
-                    gsap.to("#welcome-screen", { opacity: 0, duration: 0.8, onComplete: () => {
+                    gsap.to("#welcome-screen", { opacity: 0, duration: 0.5, onComplete: () => {
                         document.getElementById('welcome-screen').style.display = 'none';
                         document.getElementById('welcome-screen').style.opacity = '1';
                         document.getElementById('avatar').innerText = u.name[0];
@@ -329,7 +273,7 @@
                         document.getElementById('u-role').innerText = u.category;
                         app.show('main-app'); app.nav('dash');
                     }});
-                }, 2500);
+                }, 2000);
             },
 
             nav(p) {
@@ -342,44 +286,41 @@
                     c.innerHTML = `<div class="card" style="background:${myLeave ? 'var(--gold-grad)' : 'var(--p-grad)'};"><h1>${myLeave ? 'İzindesin' : 'LSDT Panel'}</h1><p>${myLeave ? myLeave.description.split('[REPORT_START]')[0] : app.user.category}</p></div>`;
                     if(app.user.role === 'admin') {
                         c.innerHTML += `<div class="action-grid">
-                            <div class="action-card" onclick="app.open('modal-dev')"><i class="fas fa-user-plus"></i><span>Üye Ekle</span></div>
+                            <div class="action-card" onclick="app.open('modal-dev')"><i class="fas fa-user-plus"></i><span>Yeni Üye</span></div>
                             <div class="action-card" onclick="app.openTaskModal()"><i class="fas fa-tasks"></i><span>Görev Ver</span></div>
-                            <div class="action-card gold" onclick="app.openLeaveModal()"><i class="fas fa-plane-departure"></i><span>İzin Tanımla</span></div>
-                            <div class="action-card" onclick="app.nav('ann')"><i class="fas fa-bullhorn"></i><span>Duyuru At</span></div>
+                            <div class="action-card" onclick="app.openLeaveModal()" style="color:var(--gold)"><i class="fas fa-bed"></i><span>İzin Tanımla</span></div>
+                            <div class="action-card" onclick="app.nav('ann')"><i class="fas fa-comment-alt"></i><span>Duyuru At</span></div>
                         </div>`;
                     } else if(!myLeave) {
-                        c.innerHTML += `<h3 style="margin-bottom:15px;">Aktif Görevlerin</h3>`;
+                        c.innerHTML += `<h3>Aktif Görevler</h3>`;
                         if(myTasks.length > 0) myTasks.forEach(t => {
-                            let rej = (t.status === 'Reddedildi' && t.description.includes('[REJECT_REASON]')) ? `<div style="color:var(--red); padding:10px; background:rgba(255,118,117,0.1); border-radius:10px; margin:10px 0;"><b>RED SEBEBİ:</b> ${t.description.split('[REJECT_REASON]')[1].split('[END_REASON]')[0]}</div>` : '';
+                            let rej = (t.status === 'Reddedildi' && t.description.includes('[REJECT_REASON]')) ? `<div style="color:var(--red); padding:10px; background:rgba(255,118,117,0.1); border-radius:10px; margin:10px 0;"><b>RED:</b> ${t.description.split('[REJECT_REASON]')[1].split('[END_REASON]')[0]}</div>` : '';
                             c.innerHTML += `<div class="card"><div class="badge">${t.status}</div><h3>${t.title}</h3>${rej}<p>${t.description.split('[REPORT_START]')[0].split('[REJECT_REASON]')[0]}</p><button class="btn-p" style="margin-top:15px;" onclick="app.openReportModal('${t.id}', '${t.title.replace(/'/g, "\\'")}')">RAPOR GÖNDER</button></div>`;
                         });
-                        else c.innerHTML += `<div class="card"><p>Şu an atanmış aktif göreviniz bulunmuyor.</p></div>`;
+                        else c.innerHTML += `<div class="card"><p>Atanmış görev yok.</p></div>`;
                     }
                 } else if(p === 'tasks') {
-                    c.innerHTML = `<h2>${app.user.role === 'admin' ? 'Tüm Kayıtlar' : 'Geçmiş'}</h2>`;
+                    c.innerHTML = `<h2>${app.user.role === 'admin' ? 'Kayıt Denetimi' : 'Görevlerim'}</h2>`;
                     [...app.db.tasks].reverse().forEach(t => {
                         if(app.user.role === 'admin' || t.assignee === app.user.username) {
                             let rHtml = '';
                             if(t.description.includes('[REPORT_START]')) {
                                 try {
                                     const r = JSON.parse(t.description.split('[REPORT_START]')[1].split('[REPORT_END]')[0]);
-                                    rHtml = `<div class="report-section"><h4>GÖNDERİLEN RAPOR</h4><p>${r.report}</p>${r.bug ? `<p style="color:var(--red)"><b>HATALAR:</b> ${r.bug}</p>`:''}${r.imgs && r.imgs.length ? `<button class="btn-mini" style="background:var(--p); width:100%; margin:10px 0;" onclick="app.toggleImgs(${t.id})">GÖRSELLERİ İNCELE</button><div id="imgs-${t.id}" class="img-grid" style="display:none;">${r.imgs.map(i=>`<img src="${i}" class="img-item" onclick="window.open(this.src)">`).join('')}</div>`:''}${app.user.role==='admin'&&t.status==='İnceleniyor'?`<div style="display:flex; gap:10px; margin-top:10px;"><button class="btn-mini" style="background:var(--green); color:black;" onclick="app.updateTaskStatus('${t.id}', 'Onaylandı')">ONAY</button><button class="btn-mini" style="background:var(--red); color:white;" onclick="app.openRejectModal('${t.id}')">REDDET</button></div>`:''}</div>`;
+                                    rHtml = `<div class="report-section"><h4>RAPOR</h4><p>${r.report}</p>${r.bug ? `<p style="color:var(--red)"><b>BUG:</b> ${r.bug}</p>`:''}${r.imgs && r.imgs.length ? `<button class="btn-mini" style="background:var(--p); width:100%; margin:10px 0;" onclick="app.toggleImgs(${t.id})">RESİMLERİ GÖR</button><div id="imgs-${t.id}" class="img-grid" style="display:none;">${r.imgs.map(i=>`<img src="${i}" class="img-item" onclick="window.open(this.src)">`).join('')}</div>`:''}${app.user.role==='admin'&&t.status==='İnceleniyor'?`<div style="display:flex; gap:10px; margin-top:10px;"><button class="btn-mini" style="background:var(--green); color:black;" onclick="app.updateTaskStatus('${t.id}', 'Onaylandı')">ONAYLA</button><button class="btn-mini" style="background:var(--red); color:white;" onclick="app.openRejectModal('${t.id}')">REDDET</button></div>`:''}</div>`;
                                 } catch(e) {}
                             }
-                            c.innerHTML += `<div class="card"><div class="badge">${t.status}</div><h3>${t.title}</h3><p>${t.description.split('[REPORT_START]')[0].split('[REJECT_REASON]')[0]}</p>${rHtml}<div class="info-row"><span><b>Geliştirici:</b> ${t.assignee}</span><span><b>Tarih:</b> ${new Date(t.date).toLocaleString('tr')}</span></div>${app.user.role==='admin'?`<i class="fas fa-trash del-btn" onclick="app.delTask('${t.id}')"></i>`:''}</div>`;
+                            c.innerHTML += `<div class="card"><div class="badge">${t.status}</div><h3>${t.title}</h3><p>${t.description.split('[REPORT_START]')[0].split('[REJECT_REASON]')[0]}</p>${rHtml}<div class="info-row"><span><b>Üye:</b> ${t.assignee}</span><span><b>Tarih:</b> ${new Date(t.date).toLocaleString('tr')}</span></div>${app.user.role==='admin'?`<i class="fas fa-trash del-btn" onclick="app.delItem('tasks', '${t.id}')"></i>`:''}</div>`;
                         }
                     });
                 } else if(p === 'ann') {
-                    c.innerHTML = `<h2>Duyuru Merkezi</h2>${app.user.role==='admin'?`<div class="card"><input id="an-title" class="input-p" placeholder="Başlık"><textarea id="an-text" class="input-p" placeholder="Mesaj"></textarea><button class="btn-p" onclick="app.handleNewAnn()">DUYURUYU PAYLAŞ</button></div>`:''}`;
+                    c.innerHTML = `<h2>Duyurular</h2>${app.user.role==='admin'?`<div class="card"><input id="an-title" class="input-p" placeholder="Başlık"><textarea id="an-text" class="input-p" placeholder="Mesaj"></textarea><button class="btn-p" onclick="app.handleNewAnn()">YAYINLA</button></div>`:''}`;
                     [...app.db.announcements].reverse().forEach(a => {
-                        c.innerHTML += `<div class="card"><h3>${a.title}</h3><p>${a.text}</p>${app.user.role==='admin'?`<i class="fas fa-trash del-btn" onclick="app.delAnn('${a.id}')"></i>`:''}</div>`;
+                        c.innerHTML += `<div class="card"><h3>${a.title}</h3><p>${a.text}</p>${app.user.role==='admin'?`<i class="fas fa-trash del-btn" onclick="app.delItem('announcements', '${a.id}')"></i>`:''}</div>`;
                     });
                 } else if(p === 'set') {
-                    c.innerHTML = `<div class="card" style="text-align:center;"><h2>Ayarlar</h2><p>LSDT v11.0 Ultra Premium</p></div><button class="btn-p" style="background:var(--red); margin-bottom:20px;" onclick="app.logout()">GÜVENLİ ÇIKIŞ</button>`;
-                    if(app.user.role==='admin') {
-                        c.innerHTML += `<h3 style="margin-bottom:15px;">Ekip Listesi</h3>`;
-                        app.db.users.forEach(u => { if(u.username!==app.user.username) c.innerHTML += `<div class="card" style="display:flex; justify-content:space-between; align-items:center;"><span>${u.name} (${u.category})</span><i class="fas fa-trash del-btn" style="position:static" onclick="app.delUser('${u.id}')"></i></div>`; });
-                    }
+                    c.innerHTML = `<h2>Ekip Yönetimi</h2>`;
+                    app.db.users.forEach(u => { c.innerHTML += `<div class="card" style="display:flex; justify-content:space-between; align-items:center;"><span>${u.name} (${u.category})</span>${app.user.role==='admin'&&u.username!==app.user.username?`<i class="fas fa-trash del-btn" style="position:static" onclick="app.delItem('users', '${u.id}')"></i>`:''}</div>`; });
                 }
             },
 
@@ -410,41 +351,41 @@
                 e.preventDefault();
                 const u = { name: document.getElementById('d-name').value, username: document.getElementById('d-user').value, password: document.getElementById('d-pass').value, role: app.sel.dCat==='Admin'?'admin':'dev', category: app.sel.dCat };
                 const r = await fetch(`${RENDER_URL}/api/users`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(u)});
-                if(r.ok) { app.toast('Eklendi'); app.close(); await app.sync(); app.nav('set'); } else app.toast('Hata!', true);
+                if(r.ok) { app.toast('Eklendi'); app.close(); await app.sync(); app.nav('set'); } else app.toast('Hata: ' + (await r.json()).error, true);
             },
 
             async handleNewTask(e) {
                 e.preventDefault(); if(!app.sel.tTo) return app.toast('Kişi seç!', true);
                 const t = { assignee: app.sel.tTo, title: document.getElementById('t-title').value, description: document.getElementById('t-desc').value + `\n\n[ADMIN: ${app.user.name}]`, status: 'Aktif', date: new Date().toISOString() };
                 const r = await fetch(`${RENDER_URL}/api/tasks`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(t)});
-                if(r.ok) { app.toast('Atandı'); app.close(); await app.sync(); app.nav('tasks'); } else app.toast('Hata!', true);
+                if(r.ok) { app.toast('Atandı'); app.close(); await app.sync(); app.nav('tasks'); } else app.toast('Hata: ' + (await r.json()).error, true);
             },
 
             async handleNewLeave(e) {
                 e.preventDefault(); if(!app.sel.lTo) return app.toast('Kişi seç!', true);
-                const l = { assignee: app.sel.lTo, title: 'İZİN KAYDI', description: `${document.getElementById('l-days').value} Gün İzin. Sebep: ${document.getElementById('l-reason').value}\n\n[ADMIN: ${app.user.name}]`, status: 'İzinde', date: new Date().toISOString() };
+                const l = { assignee: app.sel.lTo, title: 'İZİN', description: `${document.getElementById('l-days').value} Günlük İzin Onaylandı. Gerekçe: ${document.getElementById('l-reason').value}`, status: 'İzinde', date: new Date().toISOString() };
                 const r = await fetch(`${RENDER_URL}/api/tasks`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(l)});
-                if(r.ok) { app.toast('İzin Verildi'); app.close(); await app.sync(); app.nav('dash'); } else app.toast('Hata!', true);
+                if(r.ok) { app.toast('İzin verildi'); app.close(); await app.sync(); app.nav('tasks'); } else app.toast('Hata: ' + (await r.json()).error, true);
             },
 
             async handleNewReport(e) {
                 e.preventDefault();
                 const tid = document.getElementById('r-task-id').value, t = app.db.tasks.find(x => x.id == tid);
                 const d = { report: document.getElementById('r-text').value, bug: document.getElementById('r-bug').value, imgs: app.tempImages };
-                const ut = { id: Number(tid), status: 'İnceleniyor', description: t.description.split('[REPORT_START]')[0].split('[REJECT_REASON]')[0] + `\n\n[REPORT_START]${JSON.stringify(d)}[REPORT_END]` };
+                const ut = { id: tid, status: 'İnceleniyor', description: t.description.split('[REPORT_START]')[0].split('[REJECT_REASON]')[0] + `\n\n[REPORT_START]${JSON.stringify(d)}[REPORT_END]` };
                 const r = await fetch(`${RENDER_URL}/api/tasks`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(ut)});
-                if(r.ok) { app.toast('Rapor Gönderildi'); app.close(); await app.sync(); app.nav('dash'); } else app.toast('Hata!', true);
+                if(r.ok) { app.toast('Gönderildi'); app.close(); await app.sync(); app.nav('dash'); } else app.toast('Hata: ' + (await r.json()).error, true);
             },
 
             async updateTaskStatus(id, s) {
-                const r = await fetch(`${RENDER_URL}/api/tasks`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ id: Number(id), status: s })});
-                if(r.ok) { app.toast('Güncellendi'); await app.sync(); app.nav('tasks'); } else app.toast('Hata!', true);
+                const r = await fetch(`${RENDER_URL}/api/tasks`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ id: id, status: s })});
+                if(r.ok) { app.toast('Güncellendi'); await app.sync(); app.nav('tasks'); } else app.toast('Hata: ' + (await r.json()).error, true);
             },
 
             async confirmReject() {
                 const rMsg = document.getElementById('rej-reason').value; if(!rMsg) return app.toast('Sebep yaz!', true);
                 const t = app.db.tasks.find(x => x.id == app.sel.rejId);
-                const ut = { id: Number(app.sel.rejId), status: 'Reddedildi', description: t.description.split('[REPORT_START]')[0].split('[REJECT_REASON]')[0] + `\n\n[REJECT_REASON]${rMsg}[END_REASON]` };
+                const ut = { id: app.sel.rejId, status: 'Reddedildi', description: t.description.split('[REPORT_START]')[0].split('[REJECT_REASON]')[0] + `\n\n[REJECT_REASON]${rMsg}[END_REASON]` };
                 const re = await fetch(`${RENDER_URL}/api/tasks`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(ut)});
                 if(re.ok) { app.toast('Reddedildi'); app.close(); await app.sync(); app.nav('tasks'); } else app.toast('Hata!', true);
             },
@@ -453,12 +394,16 @@
                 const title = document.getElementById('an-title').value, text = document.getElementById('an-text').value;
                 if(!title || !text) return app.toast('Boş bırakma!', true);
                 const r = await fetch(`${RENDER_URL}/api/announcements`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ title, text })});
-                if(r.ok) { app.toast('Duyuruldu'); await app.sync(); app.nav('ann'); } else app.toast('Hata!', true);
+                if(r.ok) { app.toast('Yayınlandı'); await app.sync(); app.nav('ann'); } else app.toast('Hata!', true);
             },
 
-            async delTask(id) { if(confirm('Bu görevi silmek istediğinize emin misiniz?')) { const r = await fetch(`${RENDER_URL}/api/tasks/${Number(id)}`, {method:'DELETE'}); if(r.ok) { app.toast('Silindi'); await app.sync(); app.nav('tasks'); } else app.toast('Hata!', true); } },
-            async delAnn(id) { if(confirm('Bu duyuruyu silmek istediğinize emin misiniz?')) { const r = await fetch(`${RENDER_URL}/api/announcements/${Number(id)}`, {method:'DELETE'}); if(r.ok) { app.toast('Silindi'); await app.sync(); app.nav('ann'); } else app.toast('Hata!', true); } },
-            async delUser(id) { if(confirm('Bu kullanıcıyı silmek istediğinize emin misiniz?')) { const r = await fetch(`${RENDER_URL}/api/users/${id}`, {method:'DELETE'}); if(r.ok) { app.toast('Silindi'); await app.sync(); app.nav('set'); } else app.toast('Hata!', true); } },
+            async delItem(table, id) {
+                if(confirm('Silmek istediğinize emin misiniz?')) {
+                    const r = await fetch(`${RENDER_URL}/api/${table}/${id}`, {method:'DELETE'});
+                    if(r.ok) { app.toast('Silindi'); await app.sync(); app.nav(table === 'users' ? 'set' : (table === 'tasks' ? 'tasks' : 'ann')); } else app.toast('Hata: ' + (await r.json()).error, true);
+                }
+            },
+
             logout() { localStorage.removeItem('lsdt_rem'); location.reload(); },
             toast(m, b=false) { const e = document.getElementById('toast'); document.getElementById('toast-msg').innerText=m; e.style.background=b?'var(--red)':'var(--p-grad)'; e.style.transform='translateX(-50%) translateY(0)'; e.style.opacity='1'; setTimeout(()=>{e.style.transform='translateX(-50%) translateY(-200%)'; e.style.opacity='0';}, 3000); }
         };
