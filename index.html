@@ -38,7 +38,6 @@
         .input-p { width: 100%; padding: 18px; margin-bottom: 15px; background: rgba(255,255,255,0.1); border: 2px solid transparent; border-radius: 25px; color: white; font-size: 1rem; outline: none; transition: 0.3s; }
         .input-p:focus { border-color: var(--p); background: rgba(255,255,255,0.15); box-shadow: 0 0 20px rgba(162,155,254,0.2); }
         
-        /* Orijinal Mor Yuvarlak Seçenekler */
         .p-select { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; justify-content: center; }
         .p-opt { padding: 10px 18px; border-radius: 30px; background: rgba(108,92,231,0.1); border: 1px solid rgba(108,92,231,0.3); color: white; cursor: pointer; font-size: 0.8rem; font-weight: 700; transition: 0.3s; }
         .p-opt.active { background: var(--p-grad); border-color: transparent; box-shadow: 0 5px 15px rgba(108,92,231,0.4); transform: translateY(-2px); }
@@ -116,7 +115,7 @@
             <div class="setup-card">
                 <i class="fas fa-shield-alt fa-3x" style="color:var(--p); margin-bottom:20px;"></i>
                 <h2 style="font-size:1.8rem; margin-bottom:20px;">LSDT Sözleşmesi</h2>
-                <p style="color:var(--sub); margin-bottom:30px;">Bize Scam atmayacağınıza ve çalmayacağınıza söz veriyor musunuz?</p>
+                <p style="color:var(--sub); margin-bottom:30px;">Bize Scam atmayacağınıza ve çalıntı ürünler kullanmayacağınıza söz veriyor musunuz?</p>
                 <button class="btn-p" onclick="app.setupStep(4)">SÖZ VERİYORUM</button>
             </div>
         </div>
@@ -124,7 +123,7 @@
             <div class="setup-card">
                 <i class="fas fa-bell fa-3x" style="color:var(--p); margin-bottom:20px;"></i>
                 <h2 style="font-size:1.8rem; margin-bottom:20px;">Hazırsınız!</h2>
-                <p style="color:var(--sub); margin-bottom:30px;">Yeni görevlerden haberdar olmak için her şey hazır.</p>
+                <p style="color:var(--sub); margin-bottom:30px;">Yeni görevler ve duyurular için bildirimler her zaman açık kalsın.</p>
                 <button class="btn-p" onclick="app.requestNotif()">BAŞLAYALIM</button>
             </div>
         </div>
@@ -139,7 +138,7 @@
                 <form onsubmit="app.handleLogin(event)">
                     <input type="text" id="l-user" class="input-p" placeholder="Kullanıcı Adı" required>
                     <input type="password" id="l-pass" class="input-p" placeholder="Şifre" required>
-                    <div style="margin-bottom:15px; color:var(--sub); font-size:0.9rem; display:flex; align-items:center; justify-content:center; gap:10px; cursor:pointer;" onclick="document.getElementById('l-rem').click()">
+                    <div style="margin-bottom:15px; color:var(--sub); font-size:0.9rem; display:flex; align-items:center; justify-content:center; gap:10px;">
                         <input type="checkbox" id="l-rem" style="width:18px; height:18px; accent-color:var(--p);"> Beni Hatırla
                     </div>
                     <button type="submit" class="btn-p">GİRİŞ YAP <i class="fas fa-arrow-right"></i></button>
@@ -162,9 +161,9 @@
         <nav class="top-nav">
             <div style="display:flex; gap:15px; align-items:center;">
                 <div id="avatar" style="width:50px; height:50px; background:var(--p-grad); color:white; border-radius:50%; display:flex; justify-content:center; align-items:center; font-weight:900;">L</div>
-                <div><div id="u-name" style="font-weight:900; color:var(--p);">Geliştirici</div><div id="u-role" style="font-size:0.7rem; color:var(--sub);">ADMIN</div></div>
+                <div><div id="u-name" style="font-weight:900; color:var(--p);">Yükleniyor</div><div id="u-role" style="font-size:0.75rem; color:var(--sub); font-weight:800;">ADMIN</div></div>
             </div>
-            <div onclick="localStorage.removeItem('lsdt_rem'); location.reload()" style="color:var(--red); cursor:pointer;"><i class="fas fa-power-off fa-lg"></i></div>
+            <div onclick="location.reload()" style="color:var(--red); cursor:pointer;"><i class="fas fa-power-off fa-lg"></i></div>
         </nav>
         <main id="page-content"></main>
         <nav class="bottom-nav">
@@ -224,7 +223,7 @@
                   .to("#l-code", { opacity: 1, duration: 0.1 }).to("#l-code", { width: "180px", duration: 1, ease: "steps(14)" })
                   .to("#l-code", { opacity: 0, duration: 0.5, delay: 0.5 })
                   .to("#l-text", { opacity: 1, scale: 1, duration: 1, ease: "elastic.out(1, 0.5)" })
-                  .to("#loading-screen", { opacity: 0, duration: 0.8, delay: 1, onComplete: async () => {
+                  .to("#loading-screen", { opacity: 0, duration: 0.8, delay: 5.5, onComplete: async () => {
                       await app.sync();
                       const setup = localStorage.getItem('lsdt_setup');
                       const rem = localStorage.getItem('lsdt_rem');
@@ -236,13 +235,17 @@
                       } else app.show('login-screen');
                   }});
                 app.renderCats();
-                setInterval(() => app.sync(), 10000);
+                setInterval(() => app.sync(), 15000);
             },
 
             async sync() {
                 try {
                     const res = await fetch(`${RENDER_URL}/api/state`);
                     app.db = await res.json();
+                    if(app.user) {
+                        const updated = app.db.users.find(x => x.username === app.user.username);
+                        if(updated) app.user = updated;
+                    }
                 } catch(e) {}
             },
 
@@ -276,15 +279,19 @@
 
             loginAs(u) {
                 app.user = u;
-                document.getElementById('avatar').innerText = u.name[0];
-                document.getElementById('u-name').innerText = u.name;
-                document.getElementById('u-role').innerText = u.category;
+                document.getElementById('w-avatar').innerText = u.name[0];
+                document.getElementById('w-title').innerText = `Hoşgeldin, ${u.name.split(' ')[0]}`;
+                document.getElementById('w-sub').innerText = u.category;
                 app.show('welcome-screen');
-                const tl = gsap.timeline();
-                tl.to("#w-content", { scale: 1, opacity: 1, duration: 1, ease: "back.out" })
-                  .to("#welcome-screen", { opacity: 0, duration: 0.8, delay: 2, onComplete: () => {
-                      app.show('main-app'); app.nav('dash');
-                  }});
+                gsap.fromTo("#w-content", { scale: 0.8, opacity: 0 }, { scale: 1, opacity: 1, duration: 1, ease: "back.out" });
+                setTimeout(() => {
+                    gsap.to("#welcome-screen", { opacity: 0, duration: 0.8, onComplete: () => {
+                        document.getElementById('avatar').innerText = u.name[0];
+                        document.getElementById('u-name').innerText = u.name;
+                        document.getElementById('u-role').innerText = u.category;
+                        app.show('main-app'); app.nav('dash');
+                    }});
+                }, 3000);
             },
 
             nav(p) {
@@ -350,33 +357,38 @@
 
             async handleNewDev(e) {
                 e.preventDefault();
-                await fetch(`${RENDER_URL}/api/users`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({id:Date.now().toString(), name:document.getElementById('d-name').value, username:document.getElementById('d-user').value, password:document.getElementById('d-pass').value, role:app.sel.dCat === 'Admin' ? 'admin' : 'dev', category:app.sel.dCat})});
-                app.toast('Üye Eklendi'); app.close(); app.sync();
+                const newUser = {id: 'U'+Date.now(), name:document.getElementById('d-name').value, username:document.getElementById('d-user').value, password:document.getElementById('d-pass').value, role:app.sel.dCat === 'Admin' ? 'admin' : 'dev', category:app.sel.dCat};
+                await fetch(`${RENDER_URL}/api/users`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(newUser)});
+                app.toast('Üye Eklendi'); app.close(); await app.sync();
             },
 
             async handleNewTask(e) {
                 e.preventDefault();
-                await fetch(`${RENDER_URL}/api/tasks`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({id:Date.now().toString(), assignee:app.sel.tTo, title:document.getElementById('t-title').value, description:document.getElementById('t-desc').value, status:'Aktif'})});
-                app.toast('Görev Verildi'); app.close(); app.sync(); app.nav('tasks');
+                const newTask = {id: 'T'+Date.now(), assignee:app.sel.tTo, title:document.getElementById('t-title').value, description:document.getElementById('t-desc').value, status:'Aktif'};
+                await fetch(`${RENDER_URL}/api/tasks`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(newTask)});
+                app.toast('Görev Verildi'); app.close(); await app.sync(); app.nav('tasks');
             },
 
             async handleNewAnn() {
-                await fetch(`${RENDER_URL}/api/announcements`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({id:Date.now().toString(), title:document.getElementById('an-title').value, text:document.getElementById('an-text').value})});
-                app.toast('Duyuru Yayınlandı'); app.sync(); app.nav('ann');
+                const newAnn = {id: 'A'+Date.now(), title:document.getElementById('an-title').value, text:document.getElementById('an-text').value};
+                await fetch(`${RENDER_URL}/api/announcements`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(newAnn)});
+                app.toast('Duyuru Yayınlandı'); await app.sync(); app.nav('ann');
             },
 
             async handleNewLeave(e) {
                 e.preventDefault();
-                await fetch(`${RENDER_URL}/api/tasks`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({id:'L'+Date.now(), assignee:app.sel.lTo, title:'İZİN', description:document.getElementById('l-reason').value, status:'İzinde'})});
-                app.toast('İzin Verildi'); app.close(); app.sync();
+                const newLeave = {id: 'L'+Date.now(), assignee:app.sel.lTo, title:'İZİN', description:document.getElementById('l-reason').value, status:'İzinde'};
+                await fetch(`${RENDER_URL}/api/tasks`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(newLeave)});
+                app.toast('İzin Verildi'); app.close(); await app.sync(); app.nav('dash');
             },
 
-            async delTask(id) { if(confirm('Sil?')) { await fetch(`${RENDER_URL}/api/sync`, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({tasks: app.db.tasks.filter(t => t.id != id)})}); app.sync(); app.nav('tasks'); } },
-            async delAnn(id) { if(confirm('Sil?')) { await fetch(`${RENDER_URL}/api/sync`, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({announcements: app.db.anns.filter(a => a.id != id)})}); app.sync(); app.nav('ann'); } },
-            async delUser(id) { if(confirm('Sil?')) { await fetch(`${RENDER_URL}/api/sync`, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({users: app.db.users.filter(u => u.id != id)})}); app.sync(); app.nav('set'); } },
+            async delTask(id) { if(confirm('Sil?')) { await fetch(`${RENDER_URL}/api/tasks/${id}`, {method:'DELETE'}); await app.sync(); app.nav('tasks'); } },
+            async delAnn(id) { if(confirm('Sil?')) { await fetch(`${RENDER_URL}/api/announcements/${id}`, {method:'DELETE'}); await app.sync(); app.nav('ann'); } },
+            async delUser(id) { if(confirm('Sil?')) { await fetch(`${RENDER_URL}/api/users/${id}`, {method:'DELETE'}); await app.sync(); app.nav('set'); } },
 
             toast(m, bad=false) {
-                const el = document.getElementById('toast'); el.innerText = m;
+                const el = document.getElementById('toast'); el.querySelector('span') || (el.innerHTML = `<span></span>`);
+                el.querySelector('span').innerText = m;
                 el.style.background = bad ? 'var(--red)' : 'var(--p-grad)';
                 gsap.fromTo(el, {y:-100, opacity:0}, {y:0, opacity:1, duration:0.5});
                 setTimeout(() => gsap.to(el, {y:-100, opacity:0}), 3000);

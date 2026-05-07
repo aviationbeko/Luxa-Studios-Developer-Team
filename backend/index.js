@@ -76,7 +76,7 @@ app.post('/api/sync', async (req, res) => {
     }
 });
 
-// Individual Upserts for better performance
+// Individual Upserts
 app.post('/api/users', async (req, res) => {
     const { data, error } = await supabase.from('users').upsert(req.body, { onConflict: 'username' });
     if (error) return res.status(500).json({ error: error.message });
@@ -93,6 +93,25 @@ app.post('/api/announcements', async (req, res) => {
     const { data, error } = await supabase.from('announcements').upsert(req.body);
     if (error) return res.status(500).json({ error: error.message });
     res.json({ success: true, data });
+});
+
+// --- DELETE Endpoints ---
+app.delete('/api/users/:id', async (req, res) => {
+    const { error } = await supabase.from('users').delete().eq('id', req.params.id);
+    if (error) return res.status(500).json({ error: error.message });
+    res.json({ success: true });
+});
+
+app.delete('/api/tasks/:id', async (req, res) => {
+    const { error } = await supabase.from('tasks').delete().eq('id', req.params.id);
+    if (error) return res.status(500).json({ error: error.message });
+    res.json({ success: true });
+});
+
+app.delete('/api/announcements/:id', async (req, res) => {
+    const { error } = await supabase.from('announcements').delete().eq('id', req.params.id);
+    if (error) return res.status(500).json({ error: error.message });
+    res.json({ success: true });
 });
 
 app.listen(PORT, () => {
