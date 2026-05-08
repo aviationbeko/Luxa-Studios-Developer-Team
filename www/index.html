@@ -660,6 +660,13 @@
             },
 
             async toggleUpdate(status) {
+                const pass = prompt("İşleme devam etmek için şifreyi giriniz:");
+                if(pass !== "osman_27734") {
+                    app.toast("Hatalı Şifre! İşlem iptal edildi.", true);
+                    // Switch'i eski haline geri getir
+                    document.getElementById('update-toggle').checked = !status;
+                    return;
+                }
                 const link = document.getElementById('update-url-input')?.value || app.getUpdateLink();
                 const val = (status ? 'ON' : 'OFF') + '|' + link;
                 await app.saveConfig(val);
