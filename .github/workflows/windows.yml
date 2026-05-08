@@ -1,0 +1,34 @@
+name: Build Windows EXE
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout Source
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Setup Electron
+        run: |
+          npm install electron electron-builder --save-dev
+
+      - name: Configure package.json for Electron
+        run: node electron-setup.js
+
+      - name: Build EXE
+        run: npx electron-builder --win
+
+      - name: Upload Windows EXE
+        uses: actions/upload-artifact@v4
+        with:
+          name: LSDT-App-Windows-EXE
+          path: build_output/*.exe
