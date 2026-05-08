@@ -4,7 +4,7 @@
   "description": "LSDT Management App",
   "main": "index.html",
   "scripts": {
-    "build": "mkdir dist && cp -r www/* dist/ || xcopy www dist /E /I /H /Y"
+    "build": "mkdir -p dist && cp -r www/* dist/"
   },
   "dependencies": {
     "@capacitor/android": "^5.0.0",
