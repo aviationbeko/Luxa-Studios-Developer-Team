@@ -112,34 +112,26 @@ app.post('/api/announcements', async (req, res) => {
 app.post('/api/messages', async (req, res) => {
     try {
         const { sender, receiver, text } = req.body;
-        console.log(`New Message: from ${sender} to ${receiver}`);
-        
-        if (!sender || !receiver || !text) {
-            return res.status(400).json({ error: "Eksik alan: sender, receiver veya text boş olamaz." });
-        }
+        if (!sender || !receiver || !text) return res.status(400).json({ error: "Eksik veri" });
         
         const data = { 
             sender: String(sender), 
             receiver: String(receiver), 
-            text: String(text), 
-            date: new Date().toISOString() 
+            text: String(text),
+            date: new Date().toISOString()
         };
 
-        const { data: inserted, error } = await supabase.from('messages').insert([data]).select();
+        // Service Role yetkisiyle doğrudan ekleme yapıyoruz
+        const { data: inserted, error } = await supabase.from('messages').insert([data]);
         
         if (error) {
-            console.error("Supabase Error during Insert:", error);
-            return res.status(400).json({ 
-                error: "Veritabanı Kayıt Hatası", 
-                details: error.message,
-                code: error.code 
-            });
+            console.error("Mesaj Kayit Hatasi:", error);
+            return res.status(500).json({ error: "Veritabanı reddetti", details: error.message });
         }
         
-        res.json({ success: true, data: inserted });
+        res.json({ success: true });
     } catch (error) {
-        console.error("Critical Message POST Error:", error);
-        res.status(500).json({ error: "Sunucu Hatası", details: error.message });
+        res.status(500).json({ error: "Sunucu hatası", details: error.message });
     }
 });
 
