@@ -23,13 +23,12 @@ jobs:
           node-version: 20
           
       - name: Install Dependencies
-        run: |
-          npm install
+        run: npm install
           
       - name: Build Web App
         run: npm run build
         
-      - name: Capacitor Update & Sync
+      - name: Capacitor Sync
         run: |
           npx cap update android
           npx cap sync android
