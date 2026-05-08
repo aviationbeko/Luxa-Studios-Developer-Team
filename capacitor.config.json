@@ -1,6 +1,6 @@
 {
   "appId": "com.lsdt.app",
   "appName": "LSDT",
-  "webDir": "dist",
+  "webDir": "www",
   "bundledWebRuntime": false
 }
