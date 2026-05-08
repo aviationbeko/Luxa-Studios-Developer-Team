@@ -111,11 +111,16 @@ app.post('/api/messages', async (req, res) => {
         const { sender, receiver, text } = req.body;
         if (!sender || !receiver || !text) throw new Error("Missing fields");
         
+        // Tabloyu kontrol et ve oluştur (Eğer yetki varsa)
         const data = { sender, receiver, text, date: new Date().toISOString() };
-        const { error } = await supabase.from('messages').insert([data]);
+        let { error } = await supabase.from('messages').insert([data]);
         
+        // Eğer tablo yoksa hata verecektir, bu durumda kullanıcıya bilgi verelim
         if (error) {
             console.error("Supabase Message Error:", error);
+            if (error.code === '42P01') {
+                return res.status(400).json({ error: "Lütfen Supabase panelinden 'messages' tablosunu oluşturun. SQL: CREATE TABLE messages (id SERIAL PRIMARY KEY, sender TEXT, receiver TEXT, text TEXT, date TIMESTAMP DEFAULT NOW());" });
+            }
             throw error;
         }
         res.json({ success: true });
