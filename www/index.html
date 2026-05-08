@@ -438,15 +438,20 @@
                             : app.db.users.filter(u => u.role === 'admin');
                         
                         targets.forEach(t => {
-                            const myMsgs = app.db.messages || [];
-                            const unread = myMsgs.filter(m => m.sender === t.username && m.receiver === app.user.username).length;
-                            c.innerHTML += `<div class="chat-user-item" onclick="app.sel.chatTarget='${t.username}'; app.nav('msg')">
-                                <div style="width:45px; height:45px; background:var(--p-grad); border-radius:15px; display:flex; justify-content:center; align-items:center; font-weight:900; font-size:1.2rem; box-shadow: 0 5px 15px rgba(0,0,0,0.3);">${t.name[0]}</div>
+                            const lastMsg = (app.db.messages || []).filter(m => (m.sender === t.username && m.receiver === app.user.username) || (m.sender === app.user.username && m.receiver === t.username)).pop();
+                            const unread = (app.db.messages || []).filter(m => m.sender === t.username && m.receiver === app.user.username).length;
+                            
+                            c.innerHTML += `<div class="chat-user-item" onclick="app.sel.chatTarget='${t.username}'; app.nav('msg')" style="padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.05); margin-bottom: 0; background: transparent;">
+                                <div style="width:50px; height:50px; background:var(--p-grad); border-radius:50%; display:flex; justify-content:center; align-items:center; font-weight:900; font-size:1.4rem;">${t.name[0]}</div>
                                 <div style="flex:1;">
-                                    <b style="font-size:1rem; color:white;">${t.name}</b><br>
-                                    <small style="color:var(--p); font-weight:800; text-transform:uppercase; font-size:0.7rem;">${t.category}</small>
+                                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                                        <b style="font-size:1.1rem; color:white;">${t.name}</b>
+                                        ${unread > 0 ? `<span style="background:var(--red); padding:2px 8px; border-radius:10px; font-size:0.7rem;">${unread}</span>` : ''}
+                                    </div>
+                                    <div style="color:var(--p); font-size:0.8rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:200px; opacity:0.7;">
+                                        ${lastMsg ? lastMsg.text : 'Mesaj göndermek için dokunun...'}
+                                    </div>
                                 </div>
-                                ${unread > 0 ? `<div style="background:var(--red); color:white; font-size:0.7rem; padding:2px 8px; border-radius:10px; font-weight:900;">${unread} YENİ</div>` : `<i class="fas fa-chevron-right" style="opacity:0.3"></i>`}
                             </div>`;
                         });
                     }
@@ -564,8 +569,14 @@
             
             renderChat() {
                 const box = document.getElementById('chat-box'); if(!box) return;
-                const msgs = app.db.messages.filter(m => (m.sender === app.user.username && m.receiver === app.sel.chatTarget) || (m.sender === app.sel.chatTarget && m.receiver === app.user.username));
-                box.innerHTML = msgs.map(m => `<div class="msg ${m.sender === app.user.username ? 'sent' : 'received'}"><span class="msg-info">${m.sender === app.user.username ? 'Sen' : app.db.users.find(x=>x.username===m.sender)?.name}</span>${m.text}</div>`).join('');
+                const msgs = (app.db.messages || []).filter(m => (m.sender === app.user.username && m.receiver === app.sel.chatTarget) || (m.sender === app.sel.chatTarget && m.receiver === app.user.username));
+                box.innerHTML = msgs.map(m => {
+                    const isMe = m.sender === app.user.username;
+                    return `<div class="msg ${isMe ? 'sent' : 'received'}">
+                        <div style="font-size:0.75rem; font-weight:900; margin-bottom:5px; color:${isMe?'rgba(255,255,255,0.7)':'var(--p)'}">${isMe ? 'Siz' : app.db.users.find(x=>x.username===m.sender)?.name}</div>
+                        ${m.text}
+                    </div>`;
+                }).join('');
                 box.scrollTop = box.scrollHeight;
             },
 
