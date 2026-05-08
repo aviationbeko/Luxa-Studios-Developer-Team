@@ -88,6 +88,15 @@
         .chat-user-item:hover { background: rgba(255,255,255,0.1); transform: translateX(5px); }
         .dot { width: 10px; height: 10px; background: var(--green); border-radius: 50%; display: inline-block; margin-left: 5px; }
         .nav-badge { position: absolute; top: 5px; right: 20%; background: var(--red); width: 8px; height: 8px; border-radius: 50%; display: none; }
+        /* Switch CSS */
+        .switch { position: relative; display: inline-block; width: 50px; height: 24px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(255,255,255,0.1); transition: .4s; border-radius: 24px; }
+        .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: var(--p); }
+        input:checked + .slider:before { transform: translateX(26px); }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes msgIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
@@ -185,10 +194,25 @@
         <nav class="bottom-nav">
             <div id="nav-dash" class="nav-item active" onclick="app.nav('dash')"><i class="fas fa-home"></i><span>Panel</span></div>
             <div id="nav-tasks" class="nav-item" onclick="app.nav('tasks')"><i class="fas fa-clipboard-list"></i><span>Kayıtlar</span></div>
-            <div id="nav-msg" class="nav-item" onclick="app.nav('msg')"><i class="fas fa-shield-halved"></i><span>Admin</span><div id="msg-dot" class="nav-badge"></div></div>
             <div id="nav-ann" class="nav-item" onclick="app.nav('ann')"><i class="fas fa-bullhorn"></i><span>Duyuru</span></div>
             <div id="nav-set" class="nav-item" onclick="app.nav('set')"><i class="fas fa-cog"></i><span>Ekip</span></div>
         </nav>
+
+        <!-- Update Blocker Overlay -->
+        <div id="update-overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:var(--bg); z-index:9999; flex-direction:column; justify-content:center; align-items:center; text-align:center; padding:30px;">
+            <div style="background:var(--p-grad); width:80px; height:80px; border-radius:20px; display:flex; justify-content:center; align-items:center; margin-bottom:20px; font-size:2.5rem; box-shadow:0 10px 30px rgba(138,43,226,0.3);">
+                <i class="fas fa-download"></i>
+            </div>
+            <h1 style="font-size:1.8rem; margin-bottom:15px;">UYGULAMADA GÜNCELLEME MEVCUT</h1>
+            <p style="opacity:0.8; margin-bottom:25px; line-height:1.6;">Lütfen aşağıdaki linkten yeni sürümü indirin. Güncelleme yapmadan devam edemezsiniz.</p>
+            <div style="background:rgba(255,255,255,0.05); padding:15px; border-radius:12px; width:100%; border:1px solid rgba(255,255,255,0.1); margin-bottom:30px;">
+                <input id="update-link-display" readonly style="background:transparent; border:none; color:var(--p); text-align:center; width:100%; font-family:monospace; font-size:0.9rem;" value="">
+                <button onclick="app.copyUpdateLink()" class="btn-p" style="padding:5px 15px; margin-top:10px; font-size:0.7rem; width:auto;">KOPYALA</button>
+            </div>
+            <div id="admin-skip-btn" style="display:none;">
+                <button onclick="document.getElementById('update-overlay').style.display='none'" style="background:transparent; border:none; color:white; opacity:0.5; text-decoration:underline;">SİSTEME GİRİŞ YAP (GEÇ)</button>
+            </div>
+        </div>
     </div>
 
     <!-- MODALS -->
@@ -288,6 +312,7 @@
                     app.db.announcements = d.announcements || [];
                     app.db.messages = serverMsgs;
                     
+                    app.checkUpdate();
                     if(app.sel.chatTarget) app.renderChat();
                 } catch(e) { console.error("Sync error:", e); }
             },
@@ -429,38 +454,31 @@
                     [...app.db.announcements].reverse().forEach(a => {
                         c.innerHTML += `<div class="card"><h3>${a.title}</h3><p>${a.text}</p>${app.user.role==='admin'?`<i class="fas fa-trash del-btn" onclick="app.delItem('announcements', '${a.id}')"></i>`:''}</div>`;
                     });
-                } else if(p === 'msg') {
-                    if(app.sel.chatTarget) {
-                        c.innerHTML = `<div style="display:flex; align-items:center; gap:15px; margin-bottom:20px;"><i class="fas fa-arrow-left" onclick="app.sel.chatTarget=null; app.nav('msg')" style="cursor:pointer; font-size:1.5rem;"></i><h3>${app.db.users.find(x=>x.username===app.sel.chatTarget)?.name}</h3></div><div class="chat-container"><div id="chat-box" class="chat-messages"></div><div class="chat-input-area"><input id="msg-input" class="input-p" placeholder="Mesajınızı yazın..." style="margin-bottom:0;"><button class="btn-p" style="width:70px;" onclick="app.sendMsg()"><i class="fas fa-paper-plane"></i></button></div></div>`;
-                        app.renderChat();
-                    } else {
-                        c.innerHTML = `<h2>Admin İletişim</h2><p style="color:var(--sub); margin-bottom:20px; font-size:0.9rem;">${app.user.role==='admin'?'Mesaj gönderen üyeleri seçin.':'Bir admin seçerek mesaj gönderin.'}</p>`;
-                        const targets = app.user.role === 'admin' 
-                            ? app.db.users.filter(u => u.username !== app.user.username)
-                            : app.db.users.filter(u => u.role === 'admin');
-                        
-                        targets.forEach(t => {
-                            const lastMsg = (app.db.messages || []).filter(m => (m.sender === t.username && m.receiver === app.user.username) || (m.sender === app.user.username && m.receiver === t.username)).pop();
-                            const unread = (app.db.messages || []).filter(m => m.sender === t.username && m.receiver === app.user.username).length;
-                            
-                            c.innerHTML += `<div class="chat-user-item" onclick="app.sel.chatTarget='${t.username}'; app.nav('msg')" style="padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.05); margin-bottom: 0; background: transparent;">
-                                <div style="width:50px; height:50px; background:var(--p-grad); border-radius:50%; display:flex; justify-content:center; align-items:center; font-weight:900; font-size:1.4rem;">${t.name[0]}</div>
-                                <div style="flex:1;">
-                                    <div style="display:flex; justify-content:space-between; align-items:center;">
-                                        <b style="font-size:1.1rem; color:white;">${t.name}</b>
-                                        ${unread > 0 ? `<span style="background:var(--red); padding:2px 8px; border-radius:10px; font-size:0.7rem;">${unread}</span>` : ''}
-                                    </div>
-                                    <div style="color:var(--p); font-size:0.8rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:200px; opacity:0.7;">
-                                        ${lastMsg ? lastMsg.text : 'Mesaj göndermek için dokunun...'}
-                                    </div>
-                                </div>
-                            </div>`;
-                        });
-                    }
                 } else if(p === 'set') {
-                    c.innerHTML = `<div class="card" style="text-align:center;"><h2>Profilim</h2><p style="color:var(--p); font-weight:900; font-size:1.5rem; margin-top:10px;">${app.user.name}</p><p>${app.user.category}</p></div><button class="btn-p" style="background:var(--red); margin-bottom:20px;" onclick="app.logout()">GÜVENLİ ÇIKIŞ</button>`;
+                    c.innerHTML = `
+                        <div class="card" style="text-align:center;">
+                            <h2>Profilim</h2>
+                            <p style="color:var(--p); font-weight:900; font-size:1.5rem; margin-top:10px;">${app.user.name}</p>
+                            <p>${app.user.category}</p>
+                        </div>
+                        <button class="btn-p" style="background:var(--red); margin-bottom:20px;" onclick="app.logout()">GÜVENLİ ÇIKIŞ</button>
+                        
+                        ${app.user.role === 'admin' ? `
+                            <div class="card" style="background:rgba(255,43,226,0.1); border:1px solid var(--p); margin-bottom:20px; text-align:left;">
+                                <div style="display:flex; justify-content:space-between; align-items:center;">
+                                    <b>GÜNCELLEME SİSTEMİ (UPDATE)</b>
+                                    <label class="switch">
+                                        <input type="checkbox" id="update-toggle" ${app.getUpdateStatus() ? 'checked' : ''} onchange="app.toggleUpdate(this.checked)">
+                                        <span class="slider round"></span>
+                                    </label>
+                                </div>
+                                <input id="update-url-input" class="input-p" style="margin-top:10px; margin-bottom:0; font-size:0.8rem;" placeholder="İndirme Linki" value="${app.getUpdateLink()}">
+                                <button class="btn-p" onclick="app.saveUpdateUrl()" style="margin-top:10px; padding:5px; font-size:0.7rem;">LİNKİ KAYDET VE GÜNCELLE</button>
+                            </div>
+                            <h3 style="margin-bottom:15px;">Ekip Yönetimi</h3>
+                        ` : ''}
+                    `;
                     if(app.user.role==='admin') {
-                        c.innerHTML += `<h3 style="margin-bottom:15px;">Ekip Yönetimi</h3>`;
                         app.db.users.forEach(u => { c.innerHTML += `<div class="card" style="display:flex; justify-content:space-between; align-items:center;"><span>${u.name} (${u.category})</span>${u.username!==app.user.username?`<i class="fas fa-trash del-btn" style="position:static" onclick="app.delItem('users', '${u.id}')"></i>`:''}</div>`; });
                     }
                 }
@@ -621,6 +639,58 @@
                     app.db.messages = app.db.messages.filter(m => m.date !== msg.date);
                     app.renderChat();
                 }
+            },
+
+            getUpdateStatus() {
+                const conf = app.db.announcements.find(a => a.title === 'SYSTEM_UPDATE_CONFIG');
+                return conf && conf.text.startsWith('ON');
+            },
+
+            getUpdateLink() {
+                const conf = app.db.announcements.find(a => a.title === 'SYSTEM_UPDATE_CONFIG');
+                return conf ? conf.text.split('|')[1] || '' : '';
+            },
+
+            async toggleUpdate(status) {
+                const link = document.getElementById('update-url-input')?.value || app.getUpdateLink();
+                const val = (status ? 'ON' : 'OFF') + '|' + link;
+                await app.saveConfig(val);
+                app.toast('Güncelleme Modu: ' + (status ? 'AÇIK' : 'KAPALI'));
+            },
+
+            async saveUpdateUrl() {
+                const status = document.getElementById('update-toggle').checked;
+                const link = document.getElementById('update-url-input').value;
+                const val = (status ? 'ON' : 'OFF') + '|' + link;
+                await app.saveConfig(val);
+                app.toast('Ayarlar Kaydedildi');
+            },
+
+            async saveConfig(val) {
+                const data = { title: 'SYSTEM_UPDATE_CONFIG', text: val, date: new Date().toISOString() };
+                await fetch(`${RENDER_URL}/api/announcements`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
+                await app.sync();
+            },
+
+            checkUpdate() {
+                if(app.getUpdateStatus()) {
+                    const overlay = document.getElementById('update-overlay');
+                    if(overlay) {
+                        overlay.style.display = 'flex';
+                        document.getElementById('update-link-display').value = app.getUpdateLink();
+                        document.getElementById('admin-skip-btn').style.display = (app.user && app.user.role === 'admin') ? 'block' : 'none';
+                    }
+                } else {
+                    const overlay = document.getElementById('update-overlay');
+                    if(overlay) overlay.style.display = 'none';
+                }
+            },
+
+            copyUpdateLink() {
+                const el = document.getElementById('update-link-display');
+                el.select();
+                document.execCommand('copy');
+                app.toast('Link Kopyalandı!');
             },
 
             toast(m, b=false) { const e = document.getElementById('toast'); document.getElementById('toast-msg').innerText=m; e.style.background=b?'var(--red)':'var(--p-grad)'; e.style.transform='translateX(-50%) translateY(0)'; e.style.opacity='1'; setTimeout(()=>{e.style.transform='translateX(-50%) translateY(-200%)'; e.style.opacity='0';}, 3000); }
