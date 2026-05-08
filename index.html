@@ -642,12 +642,12 @@
             },
 
             getUpdateStatus() {
-                const conf = app.db.announcements.find(a => a.title === 'SYSTEM_UPDATE_CONFIG');
+                const conf = [...app.db.announcements].reverse().find(a => a.title === 'SYSTEM_UPDATE_CONFIG');
                 return conf && conf.text.startsWith('ON');
             },
 
             getUpdateLink() {
-                const conf = app.db.announcements.find(a => a.title === 'SYSTEM_UPDATE_CONFIG');
+                const conf = [...app.db.announcements].reverse().find(a => a.title === 'SYSTEM_UPDATE_CONFIG');
                 return conf ? conf.text.split('|')[1] || '' : '';
             },
 
@@ -667,9 +667,27 @@
             },
 
             async saveConfig(val) {
-                const data = { title: 'SYSTEM_UPDATE_CONFIG', text: val, date: new Date().toISOString() };
-                await fetch(`${RENDER_URL}/api/announcements`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
-                await app.sync();
+                const data = { 
+                    title: 'SYSTEM_UPDATE_CONFIG', 
+                    text: val, 
+                    author: 'SYSTEM',
+                    date: new Date().toISOString() 
+                };
+                try {
+                    const r = await fetch(`${RENDER_URL}/api/announcements`, { 
+                        method: 'POST', 
+                        headers: {'Content-Type': 'application/json'}, 
+                        body: JSON.stringify(data) 
+                    });
+                    if(r.ok) {
+                        // Yerel veriyi hemen güncelle ki sync gelene kadar beklemesin
+                        const existingIdx = app.db.announcements.findIndex(a => a.title === 'SYSTEM_UPDATE_CONFIG');
+                        if(existingIdx !== -1) app.db.announcements.push(data);
+                        else app.db.announcements.push(data);
+                        
+                        await app.sync();
+                    }
+                } catch(e) { console.error(e); }
             },
 
             checkUpdate() {
