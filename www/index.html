@@ -641,13 +641,21 @@
                 }
             },
 
+            getLatestConfig() {
+                const confs = app.db.announcements.filter(a => a.title === 'SYSTEM_UPDATE_CONFIG');
+                if(!confs || confs.length === 0) return null;
+                // En yeni tarihli olanı (Zaman damgası en büyük olanı) bul:
+                confs.sort((a,b) => new Date(b.date) - new Date(a.date));
+                return confs[0];
+            },
+
             getUpdateStatus() {
-                const conf = [...app.db.announcements].reverse().find(a => a.title === 'SYSTEM_UPDATE_CONFIG');
+                const conf = app.getLatestConfig();
                 return conf && conf.text.startsWith('ON');
             },
 
             getUpdateLink() {
-                const conf = [...app.db.announcements].reverse().find(a => a.title === 'SYSTEM_UPDATE_CONFIG');
+                const conf = app.getLatestConfig();
                 return conf ? conf.text.split('|')[1] || '' : '';
             },
 
