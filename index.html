@@ -466,11 +466,31 @@
 
             async handleNewReport(e) {
                 e.preventDefault();
-                const tid = document.getElementById('r-task-id').value, t = app.db.tasks.find(x => x.id == tid);
+                const tid = document.getElementById('r-task-id').value;
+                const t = app.db.tasks.find(x => x.id == tid);
+                if(!t) return app.toast('Görev bulunamadı', true);
+                
                 const d = { report: document.getElementById('r-text').value, bug: document.getElementById('r-bug').value, imgs: app.tempImages };
-                const ut = { id: tid, status: 'İnceleniyor', description: t.description.split('[REPORT_START]')[0].split('[REJECT_REASON]')[0] + `\n\n[REPORT_START]${JSON.stringify(d)}[REPORT_END]` };
-                const r = await fetch(`${RENDER_URL}/api/tasks`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(ut)});
-                if(r.ok) { app.toast('Gönderildi'); app.close(); await app.sync(); app.nav('dash'); } else app.toast('Hata: ' + (await r.json()).error, true);
+                const ut = { 
+                    id: tid, 
+                    status: 'İnceleniyor', 
+                    description: t.description.split('[REPORT_START]')[0].split('[REJECT_REASON]')[0].trim() + `\n\n[REPORT_START]${JSON.stringify(d)}[REPORT_END]` 
+                };
+
+                const r = await fetch(`${RENDER_URL}/api/tasks`, { 
+                    method:'POST', 
+                    headers:{'Content-Type':'application/json'}, 
+                    body:JSON.stringify(ut)
+                });
+                
+                if(r.ok) { 
+                    app.toast('Rapor Gönderildi'); 
+                    app.close(); 
+                    await app.sync(); 
+                    app.nav('dash'); 
+                } else {
+                    app.toast('Gönderim Hatası', true);
+                }
             },
 
             async updateTaskStatus(id, s) {
@@ -510,11 +530,27 @@
             },
 
             async sendMsg() {
-                const input = document.getElementById('msg-input'); const text = input.value.trim(); if(!text) return;
+                const input = document.getElementById('msg-input'); 
+                const text = input.value.trim(); 
+                if(!text || !app.sel.chatTarget) return;
+                
                 const msg = { sender: app.user.username, receiver: app.sel.chatTarget, text: text };
                 input.value = '';
-                const r = await fetch(`${RENDER_URL}/api/messages`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(msg)});
-                if(r.ok) await app.sync(); else app.toast('Gönderilemedi', true);
+                
+                try {
+                    const r = await fetch(`${RENDER_URL}/api/messages`, { 
+                        method:'POST', 
+                        headers:{'Content-Type':'application/json'}, 
+                        body:JSON.stringify(msg)
+                    });
+                    if(r.ok) {
+                        await app.sync();
+                    } else {
+                        app.toast('Mesaj iletilemedi', true);
+                    }
+                } catch(e) {
+                    app.toast('Bağlantı hatası', true);
+                }
             },
 
             toast(m, b=false) { const e = document.getElementById('toast'); document.getElementById('toast-msg').innerText=m; e.style.background=b?'var(--red)':'var(--p-grad)'; e.style.transform='translateX(-50%) translateY(0)'; e.style.opacity='1'; setTimeout(()=>{e.style.transform='translateX(-50%) translateY(-200%)'; e.style.opacity='0';}, 3000); }
