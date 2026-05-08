@@ -381,13 +381,45 @@
                     [...app.db.tasks].reverse().forEach(t => {
                         if(app.user.role === 'admin' || t.assignee === app.user.username) {
                             let rHtml = '';
-                            if(t.description.includes('[REPORT_START]')) {
+                            // Rapor ayrıştırma mantığı güçlendirildi
+                            if(t.description && t.description.includes('[REPORT_START]')) {
                                 try {
-                                    const r = JSON.parse(t.description.split('[REPORT_START]')[1].split('[REPORT_END]')[0]);
-                                    rHtml = `<div class="report-section"><h4>RAPOR</h4><p>${r.report}</p>${r.bug ? `<p style="color:var(--red)"><b>BUG:</b> ${r.bug}</p>`:''}${r.imgs && r.imgs.length ? `<button class="btn-mini" style="background:var(--p); width:100%; margin:10px 0;" onclick="app.toggleImgs('${t.id}')">GÖRSELLERİ İNCELE</button><div id="imgs-${t.id}" class="img-grid" style="display:none;">${r.imgs.map(i=>`<img src="${i}" class="img-item" onclick="app.viewImg('${i}')">`).join('')}</div>`:''}${app.user.role==='admin'&&t.status==='İnceleniyor'?`<div style="display:flex; gap:10px; margin-top:10px;"><button class="btn-mini" style="background:var(--green); color:black;" onclick="app.updateTaskStatus('${t.id}', 'Onaylandı')">ONAYLA</button><button class="btn-mini" style="background:var(--red); color:white;" onclick="app.openRejectModal('${t.id}')">REDDET</button></div>`:''}</div>`;
-                                } catch(e) {}
+                                    const parts = t.description.split('[REPORT_START]');
+                                    const reportContent = parts[1].split('[REPORT_END]')[0];
+                                    const r = JSON.parse(reportContent);
+                                    
+                                    rHtml = `<div class="report-section" style="border-left: 4px solid var(--green); background: rgba(0,255,0,0.05);">
+                                        <h4 style="color:var(--green)">GÖNDERİLEN RAPOR</h4>
+                                        <p style="margin: 10px 0;">${r.report}</p>
+                                        ${r.bug ? `<p style="color:var(--red); background:rgba(255,0,0,0.1); padding:8px; border-radius:10px;"><b>HATA BİLDİRİMİ:</b> ${r.bug}</p>`:''}
+                                        ${r.imgs && r.imgs.length ? `
+                                            <button class="btn-mini" style="background:var(--p); width:100%; margin:10px 0;" onclick="app.toggleImgs('${t.id}')">GÖRSELLERİ AÇ/KAPAT (${r.imgs.length})</button>
+                                            <div id="imgs-${t.id}" class="img-grid" style="display:none;">
+                                                ${r.imgs.map(i=>`<img src="${i}" class="img-item" onclick="app.viewImg('${i}')">`).join('')}
+                                            </div>
+                                        `:''}
+                                        ${app.user.role==='admin' && t.status==='İnceleniyor' ? `
+                                            <div style="display:flex; gap:10px; margin-top:10px;">
+                                                <button class="btn-mini" style="background:var(--green); color:black;" onclick="app.updateTaskStatus('${t.id}', 'Onaylandı')">ONAYLA</button>
+                                                <button class="btn-mini" style="background:var(--red); color:white;" onclick="app.openRejectModal('${t.id}')">REDDET</button>
+                                            </div>
+                                        `:''}
+                                    </div>`;
+                                } catch(e) { console.error("Report parse error:", e); }
                             }
-                            c.innerHTML += `<div class="card"><div class="badge">${t.status}</div><h3>${t.title}</h3><p>${t.description.split('[REPORT_START]')[0].split('[REJECT_REASON]')[0]}</p>${rHtml}<div class="info-row"><span><b>Üye:</b> ${t.assignee}</span><span><b>Tarih:</b> ${new Date(t.date).toLocaleString('tr')}</span></div>${app.user.role==='admin'?`<i class="fas fa-trash del-btn" onclick="app.delItem('tasks', '${t.id}')"></i>`:''}</div>`;
+                            
+                            const cleanDesc = t.description ? t.description.split('[REPORT_START]')[0].split('[REJECT_REASON]')[0].trim() : '';
+                            c.innerHTML += `<div class="card">
+                                <div class="badge" style="background:${t.status==='Onaylandı'?'var(--green)':(t.status==='Reddedildi'?'var(--red)':'var(--p-grad)')}">${t.status}</div>
+                                <h3>${t.title}</h3>
+                                <p style="opacity:0.8; margin-bottom:15px;">${cleanDesc}</p>
+                                ${rHtml}
+                                <div class="info-row" style="margin-top:15px; border-top:1px solid rgba(255,255,255,0.05); padding-top:10px;">
+                                    <span><i class="fas fa-user" style="margin-right:5px; color:var(--p)"></i>${t.assignee}</span>
+                                    <span><i class="fas fa-calendar-alt" style="margin-right:5px; color:var(--p)"></i>${new Date(t.date).toLocaleDateString('tr')}</span>
+                                </div>
+                                ${app.user.role==='admin'?`<i class="fas fa-trash del-btn" onclick="app.delItem('tasks', '${t.id}')"></i>`:''}
+                            </div>`;
                         }
                     });
                 } else if(p === 'ann') {
@@ -402,12 +434,20 @@
                     } else {
                         c.innerHTML = `<h2>Admin İletişim</h2><p style="color:var(--sub); margin-bottom:20px; font-size:0.9rem;">${app.user.role==='admin'?'Mesaj gönderen üyeleri seçin.':'Bir admin seçerek mesaj gönderin.'}</p>`;
                         const targets = app.user.role === 'admin' 
-                            ? app.db.users.filter(u => u.username !== app.user.username) // Adminler herkesi görebilir
-                            : app.db.users.filter(u => u.role === 'admin'); // Devler sadece adminleri görebilir
+                            ? app.db.users.filter(u => u.username !== app.user.username)
+                            : app.db.users.filter(u => u.role === 'admin');
                         
                         targets.forEach(t => {
-                            const unread = app.db.messages.filter(m => m.sender === t.username && m.receiver === app.user.username).length;
-                            c.innerHTML += `<div class="chat-user-item" onclick="app.sel.chatTarget='${t.username}'; app.nav('msg')"><div style="width:40px; height:40px; background:var(--p-grad); border-radius:50%; display:flex; justify-content:center; align-items:center; font-weight:900;">${t.name[0]}</div><div style="flex:1;"><b>${t.name}</b><br><small style="color:var(--p);">${t.category}</small></div>${unread > 0 ? `<div class="dot"></div>` : ''}</div>`;
+                            const myMsgs = app.db.messages || [];
+                            const unread = myMsgs.filter(m => m.sender === t.username && m.receiver === app.user.username).length;
+                            c.innerHTML += `<div class="chat-user-item" onclick="app.sel.chatTarget='${t.username}'; app.nav('msg')">
+                                <div style="width:45px; height:45px; background:var(--p-grad); border-radius:15px; display:flex; justify-content:center; align-items:center; font-weight:900; font-size:1.2rem; box-shadow: 0 5px 15px rgba(0,0,0,0.3);">${t.name[0]}</div>
+                                <div style="flex:1;">
+                                    <b style="font-size:1rem; color:white;">${t.name}</b><br>
+                                    <small style="color:var(--p); font-weight:800; text-transform:uppercase; font-size:0.7rem;">${t.category}</small>
+                                </div>
+                                ${unread > 0 ? `<div style="background:var(--red); color:white; font-size:0.7rem; padding:2px 8px; border-radius:10px; font-weight:900;">${unread} YENİ</div>` : `<i class="fas fa-chevron-right" style="opacity:0.3"></i>`}
+                            </div>`;
                         });
                     }
                 } else if(p === 'set') {

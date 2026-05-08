@@ -38,6 +38,15 @@ CREATE TABLE IF NOT EXISTS announcements (
     date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Messages Table (DM System)
+CREATE TABLE IF NOT EXISTS messages (
+    id SERIAL PRIMARY KEY,
+    sender TEXT NOT NULL,
+    receiver TEXT NOT NULL,
+    text TEXT NOT NULL,
+    date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Initial Admin User (Run this separately if needed)
 -- INSERT INTO users (username, password, name, role, category, points, avatar)
 -- VALUES ('Luxa Studios Admin', 'osman_27734', 'Luxa Studios Admin', 'admin', 'Admin', 0, 'L');
