@@ -17,15 +17,47 @@ jobs:
         with:
           node-version: 18
 
-      - name: Setup Electron
+      - name: Prepare package.json for Electron Builder
+        shell: node {0}
         run: |
-          npm install electron electron-builder --save-dev
+          const fs = require('fs');
+          const pkg = {
+            name: "lsdt-app",
+            version: "1.0.0",
+            description: "LSDT Management App by Luxa Studios",
+            author: "Luxa Studios",
+            main: "electron-main.js",
+            scripts: {
+              start: "electron ."
+            },
+            build: {
+              appId: "com.luxastudios.lsdt",
+              productName: "LSDT App",
+              win: {
+                target: "nsis",
+                icon: "www/icon.png"
+              },
+              directories: {
+                output: "build_output"
+              },
+              files: [
+                "electron-main.js",
+                "www/**/*"
+              ]
+            },
+            devDependencies: {
+              "electron": "^27.0.0",
+              "electron-builder": "^24.0.0"
+            }
+          };
+          fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2));
+          console.log('package.json prepared!');
 
-      - name: Configure package.json for Electron
-        run: node electron-setup.js
+      - name: Install Electron Dependencies
+        run: npm install
 
-      - name: Build EXE
-        run: npx electron-builder --win
+      - name: Build Windows EXE
+        run: npx electron-builder --win --publish never
 
       - name: Upload Windows EXE
         uses: actions/upload-artifact@v4

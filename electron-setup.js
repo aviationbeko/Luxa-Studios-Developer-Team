@@ -1,6 +1,7 @@
 const fs = require('fs');
 const pkg = JSON.parse(fs.readFileSync('package.json'));
 pkg.main = 'electron-main.js';
+pkg.author = 'Luxa Studios';
 pkg.build = {
   appId: 'com.lsdt.app',
   win: {
