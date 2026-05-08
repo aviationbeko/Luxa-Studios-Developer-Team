@@ -75,6 +75,20 @@
         .report-section { background: rgba(0,0,0,0.3); padding: 15px; border-radius: 20px; margin-top: 15px; border-left: 4px solid var(--p); }
         .report-section h4 { font-size: 0.8rem; color: var(--p); font-weight: 900; }
         .btn-mini { padding: 10px 15px; border-radius: 15px; border: none; font-weight: 900; cursor: pointer; font-size: 0.8rem; }
+
+        /* Mesajlaşma Sistemi CSS */
+        .chat-container { display: flex; flex-direction: column; height: calc(100vh - 250px); }
+        .chat-messages { flex: 1; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 10px; }
+        .msg { max-width: 80%; padding: 12px 18px; border-radius: 20px; font-size: 0.9rem; position: relative; animation: msgIn 0.3s ease; }
+        .msg.sent { align-self: flex-end; background: var(--p-grad); color: white; border-bottom-right-radius: 5px; }
+        .msg.received { align-self: flex-start; background: rgba(255,255,255,0.1); color: white; border-bottom-left-radius: 5px; }
+        .msg-info { font-size: 0.65rem; opacity: 0.7; margin-bottom: 4px; display: block; font-weight: 800; }
+        .chat-input-area { display: flex; gap: 10px; padding: 15px 0; border-top: 1px solid rgba(255,255,255,0.1); }
+        .chat-user-item { display: flex; align-items: center; gap: 15px; padding: 15px; background: rgba(255,255,255,0.05); border-radius: 20px; margin-bottom: 10px; cursor: pointer; transition: 0.3s; }
+        .chat-user-item:hover { background: rgba(255,255,255,0.1); transform: translateX(5px); }
+        .dot { width: 10px; height: 10px; background: var(--green); border-radius: 50%; display: inline-block; margin-left: 5px; }
+        .nav-badge { position: absolute; top: 5px; right: 20%; background: var(--red); width: 8px; height: 8px; border-radius: 50%; display: none; }
+        @keyframes msgIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
@@ -171,6 +185,7 @@
         <nav class="bottom-nav">
             <div id="nav-dash" class="nav-item active" onclick="app.nav('dash')"><i class="fas fa-home"></i><span>Panel</span></div>
             <div id="nav-tasks" class="nav-item" onclick="app.nav('tasks')"><i class="fas fa-clipboard-list"></i><span>Kayıtlar</span></div>
+            <div id="nav-msg" class="nav-item" onclick="app.nav('msg')"><i class="fas fa-shield-halved"></i><span>Admin</span><div id="msg-dot" class="nav-badge"></div></div>
             <div id="nav-ann" class="nav-item" onclick="app.nav('ann')"><i class="fas fa-bullhorn"></i><span>Duyuru</span></div>
             <div id="nav-set" class="nav-item" onclick="app.nav('set')"><i class="fas fa-cog"></i><span>Ekip</span></div>
         </nav>
@@ -236,9 +251,9 @@
     <script>
         const RENDER_URL = "https://lsdt.onrender.com";
         const app = {
-            db: { users: [], tasks: [], announcements: [] },
+            db: { users: [], tasks: [], announcements: [], messages: [] },
             user: null,
-            sel: { dCat: 'Script', tTo: '', lTo: '', rejId: '' },
+            sel: { dCat: 'Script', tTo: '', lTo: '', rejId: '', chatTarget: null },
             tempImages: [],
 
             async init() {
@@ -258,15 +273,27 @@
                       } else app.show('login-screen');
                   }});
                 app.renderCats();
-                setInterval(() => app.sync(), 20000);
+                setInterval(() => { app.sync(); app.checkNewMsgs(); }, 5000);
             },
 
             async sync() {
                 try {
                     const r = await fetch(`${RENDER_URL}/api/state`);
                     const d = await r.json();
-                    app.db = { users: d.users || [], tasks: d.tasks || [], announcements: d.announcements || [] };
+                    app.db = { 
+                        users: d.users || [], 
+                        tasks: d.tasks || [], 
+                        announcements: d.announcements || [],
+                        messages: d.messages || []
+                    };
+                    if(app.sel.chatTarget) app.renderChat();
                 } catch(e) {}
+            },
+
+            checkNewMsgs() {
+                if(!app.user) return;
+                const newMsgs = app.db.messages.filter(m => m.receiver === app.user.username);
+                document.getElementById('msg-dot').style.display = newMsgs.length > 0 ? 'block' : 'none';
             },
 
             show(id) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.getElementById(id).classList.add('active'); },
@@ -368,6 +395,21 @@
                     [...app.db.announcements].reverse().forEach(a => {
                         c.innerHTML += `<div class="card"><h3>${a.title}</h3><p>${a.text}</p>${app.user.role==='admin'?`<i class="fas fa-trash del-btn" onclick="app.delItem('announcements', '${a.id}')"></i>`:''}</div>`;
                     });
+                } else if(p === 'msg') {
+                    if(app.sel.chatTarget) {
+                        c.innerHTML = `<div style="display:flex; align-items:center; gap:15px; margin-bottom:20px;"><i class="fas fa-arrow-left" onclick="app.sel.chatTarget=null; app.nav('msg')" style="cursor:pointer; font-size:1.5rem;"></i><h3>${app.db.users.find(x=>x.username===app.sel.chatTarget)?.name}</h3></div><div class="chat-container"><div id="chat-box" class="chat-messages"></div><div class="chat-input-area"><input id="msg-input" class="input-p" placeholder="Mesajınızı yazın..." style="margin-bottom:0;"><button class="btn-p" style="width:70px;" onclick="app.sendMsg()"><i class="fas fa-paper-plane"></i></button></div></div>`;
+                        app.renderChat();
+                    } else {
+                        c.innerHTML = `<h2>Admin İletişim</h2><p style="color:var(--sub); margin-bottom:20px; font-size:0.9rem;">${app.user.role==='admin'?'Mesaj gönderen üyeleri seçin.':'Bir admin seçerek mesaj gönderin.'}</p>`;
+                        const targets = app.user.role === 'admin' 
+                            ? app.db.users.filter(u => u.username !== app.user.username) // Adminler herkesi görebilir
+                            : app.db.users.filter(u => u.role === 'admin'); // Devler sadece adminleri görebilir
+                        
+                        targets.forEach(t => {
+                            const unread = app.db.messages.filter(m => m.sender === t.username && m.receiver === app.user.username).length;
+                            c.innerHTML += `<div class="chat-user-item" onclick="app.sel.chatTarget='${t.username}'; app.nav('msg')"><div style="width:40px; height:40px; background:var(--p-grad); border-radius:50%; display:flex; justify-content:center; align-items:center; font-weight:900;">${t.name[0]}</div><div style="flex:1;"><b>${t.name}</b><br><small style="color:var(--p);">${t.category}</small></div>${unread > 0 ? `<div class="dot"></div>` : ''}</div>`;
+                        });
+                    }
                 } else if(p === 'set') {
                     c.innerHTML = `<div class="card" style="text-align:center;"><h2>Profilim</h2><p style="color:var(--p); font-weight:900; font-size:1.5rem; margin-top:10px;">${app.user.name}</p><p>${app.user.category}</p></div><button class="btn-p" style="background:var(--red); margin-bottom:20px;" onclick="app.logout()">GÜVENLİ ÇIKIŞ</button>`;
                     if(app.user.role==='admin') {
@@ -459,6 +501,22 @@
             },
 
             logout() { localStorage.removeItem('lsdt_rem'); location.reload(); },
+            
+            renderChat() {
+                const box = document.getElementById('chat-box'); if(!box) return;
+                const msgs = app.db.messages.filter(m => (m.sender === app.user.username && m.receiver === app.sel.chatTarget) || (m.sender === app.sel.chatTarget && m.receiver === app.user.username));
+                box.innerHTML = msgs.map(m => `<div class="msg ${m.sender === app.user.username ? 'sent' : 'received'}"><span class="msg-info">${m.sender === app.user.username ? 'Sen' : app.db.users.find(x=>x.username===m.sender)?.name}</span>${m.text}</div>`).join('');
+                box.scrollTop = box.scrollHeight;
+            },
+
+            async sendMsg() {
+                const input = document.getElementById('msg-input'); const text = input.value.trim(); if(!text) return;
+                const msg = { sender: app.user.username, receiver: app.sel.chatTarget, text: text };
+                input.value = '';
+                const r = await fetch(`${RENDER_URL}/api/messages`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(msg)});
+                if(r.ok) await app.sync(); else app.toast('Gönderilemedi', true);
+            },
+
             toast(m, b=false) { const e = document.getElementById('toast'); document.getElementById('toast-msg').innerText=m; e.style.background=b?'var(--red)':'var(--p-grad)'; e.style.transform='translateX(-50%) translateY(0)'; e.style.opacity='1'; setTimeout(()=>{e.style.transform='translateX(-50%) translateY(-200%)'; e.style.opacity='0';}, 3000); }
         };
         window.onload = () => app.init();
