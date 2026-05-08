@@ -112,24 +112,34 @@ app.post('/api/announcements', async (req, res) => {
 app.post('/api/messages', async (req, res) => {
     try {
         const { sender, receiver, text } = req.body;
-        if (!sender || !receiver || !text) throw new Error("Missing fields");
+        console.log(`New Message: from ${sender} to ${receiver}`);
         
-        // Tabloyu kontrol et ve oluştur (Eğer yetki varsa)
-        const data = { sender, receiver, text, date: new Date().toISOString() };
-        let { error } = await supabase.from('messages').insert([data]);
-        
-        // Eğer tablo yoksa hata verecektir, bu durumda kullanıcıya bilgi verelim
-        if (error) {
-            console.error("Supabase Message Error:", error);
-            if (error.code === '42P01') {
-                return res.status(400).json({ error: "Lütfen Supabase panelinden 'messages' tablosunu oluşturun. SQL: CREATE TABLE messages (id SERIAL PRIMARY KEY, sender TEXT, receiver TEXT, text TEXT, date TIMESTAMP DEFAULT NOW());" });
-            }
-            throw error;
+        if (!sender || !receiver || !text) {
+            return res.status(400).json({ error: "Eksik alan: sender, receiver veya text boş olamaz." });
         }
-        res.json({ success: true });
+        
+        const data = { 
+            sender: String(sender), 
+            receiver: String(receiver), 
+            text: String(text), 
+            date: new Date().toISOString() 
+        };
+
+        const { data: inserted, error } = await supabase.from('messages').insert([data]).select();
+        
+        if (error) {
+            console.error("Supabase Error during Insert:", error);
+            return res.status(400).json({ 
+                error: "Veritabanı Kayıt Hatası", 
+                details: error.message,
+                code: error.code 
+            });
+        }
+        
+        res.json({ success: true, data: inserted });
     } catch (error) {
-        console.error("Message POST Error:", error);
-        res.status(500).json({ error: error.message });
+        console.error("Critical Message POST Error:", error);
+        res.status(500).json({ error: "Sunucu Hatası", details: error.message });
     }
 });
 

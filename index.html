@@ -608,11 +608,12 @@
                     
                     const resData = await r.json();
                     if(!r.ok) {
-                        app.toast('Hata: ' + (resData.error || 'İletilemedi'), true);
+                        const errorMsg = resData.details || resData.error || 'Bilinmeyen Hata';
+                        app.toast('Hata: ' + errorMsg, true);
+                        console.error("Gonderim Hatasi:", resData);
                         app.db.messages = app.db.messages.filter(m => m.date !== msg.date);
                         app.renderChat();
                     } else {
-                        // Başarılıysa sunucuyla hemen eşitle
                         await app.sync();
                     }
                 } catch(e) {
