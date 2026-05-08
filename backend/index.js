@@ -108,11 +108,19 @@ app.post('/api/announcements', async (req, res) => {
 
 app.post('/api/messages', async (req, res) => {
     try {
-        const data = { ...req.body, date: new Date().toISOString() };
+        const { sender, receiver, text } = req.body;
+        if (!sender || !receiver || !text) throw new Error("Missing fields");
+        
+        const data = { sender, receiver, text, date: new Date().toISOString() };
         const { error } = await supabase.from('messages').insert([data]);
-        if (error) throw error;
+        
+        if (error) {
+            console.error("Supabase Message Error:", error);
+            throw error;
+        }
         res.json({ success: true });
     } catch (error) {
+        console.error("Message POST Error:", error);
         res.status(500).json({ error: error.message });
     }
 });

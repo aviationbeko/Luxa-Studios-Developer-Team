@@ -574,7 +574,16 @@
                 const text = input.value.trim(); 
                 if(!text || !app.sel.chatTarget) return;
                 
-                const msg = { sender: app.user.username, receiver: app.sel.chatTarget, text: text };
+                const msg = { 
+                    sender: app.user.username, 
+                    receiver: app.sel.chatTarget, 
+                    text: text,
+                    date: new Date().toISOString()
+                };
+                
+                // Optimistik Güncelleme: Beklemeden ekranda göster
+                app.db.messages.push(msg);
+                app.renderChat();
                 input.value = '';
                 
                 try {
@@ -583,13 +592,19 @@
                         headers:{'Content-Type':'application/json'}, 
                         body:JSON.stringify(msg)
                     });
-                    if(r.ok) {
-                        await app.sync();
-                    } else {
-                        app.toast('Mesaj iletilemedi', true);
+                    
+                    if(!r.ok) {
+                        const err = await r.json();
+                        console.error("Msg Error:", err);
+                        app.toast('Hata: Tablo oluşturulmamış olabilir!', true);
+                        // Hata varsa geri al
+                        app.db.messages = app.db.messages.filter(m => m !== msg);
+                        app.renderChat();
                     }
                 } catch(e) {
-                    app.toast('Bağlantı hatası', true);
+                    app.toast('Bağlantı kesildi', true);
+                    app.db.messages = app.db.messages.filter(m => m !== msg);
+                    app.renderChat();
                 }
             },
 
