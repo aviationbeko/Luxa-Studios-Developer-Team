@@ -280,14 +280,16 @@
                 try {
                     const r = await fetch(`${RENDER_URL}/api/state`);
                     const d = await r.json();
-                    app.db = { 
-                        users: d.users || [], 
-                        tasks: d.tasks || [], 
-                        announcements: d.announcements || [],
-                        messages: d.messages || []
-                    };
+                    
+                    // Sunucudan gelen mesajları al, ama henüz gitmemiş (optimistik) mesajları koru
+                    const serverMsgs = d.messages || [];
+                    app.db.users = d.users || [];
+                    app.db.tasks = d.tasks || [];
+                    app.db.announcements = d.announcements || [];
+                    app.db.messages = serverMsgs;
+                    
                     if(app.sel.chatTarget) app.renderChat();
-                } catch(e) {}
+                } catch(e) { console.error("Sync error:", e); }
             },
 
             checkNewMsgs() {
@@ -604,17 +606,18 @@
                         body:JSON.stringify(msg)
                     });
                     
+                    const resData = await r.json();
                     if(!r.ok) {
-                        const err = await r.json();
-                        console.error("Msg Error:", err);
-                        app.toast('Hata: Tablo oluşturulmamış olabilir!', true);
-                        // Hata varsa geri al
-                        app.db.messages = app.db.messages.filter(m => m !== msg);
+                        app.toast('Hata: ' + (resData.error || 'İletilemedi'), true);
+                        app.db.messages = app.db.messages.filter(m => m.date !== msg.date);
                         app.renderChat();
+                    } else {
+                        // Başarılıysa sunucuyla hemen eşitle
+                        await app.sync();
                     }
                 } catch(e) {
-                    app.toast('Bağlantı kesildi', true);
-                    app.db.messages = app.db.messages.filter(m => m !== msg);
+                    app.toast('Sunucuya bağlanılamadı', true);
+                    app.db.messages = app.db.messages.filter(m => m.date !== msg.date);
                     app.renderChat();
                 }
             },

@@ -33,10 +33,13 @@ app.get('/api/state', async (req, res) => {
         const { data: announcements, error: e3 } = await supabase.from('announcements').select('*');
         
         let messages = [];
-        try {
-            const { data: mData, error: e4 } = await supabase.from('messages').select('*');
-            if (!e4) messages = mData;
-        } catch (err) { console.log("Messages table not ready yet"); }
+        const { data: mData, error: e4 } = await supabase.from('messages').select('*');
+        if (e4) {
+            console.error("Messages Select Error:", e4);
+            // Tablo yoksa boş liste dön, ama hata varsa logla
+        } else {
+            messages = mData;
+        }
 
         if (e1 || e2 || e3) throw (e1 || e2 || e3);
         res.json({ users, tasks, announcements, messages });
