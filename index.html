@@ -113,8 +113,8 @@
         .msg-tick { font-size: 0.6rem; margin-left: 5px; opacity: 0.6; }
         .msg-tick.read { color: #60b4ff; opacity: 1; }
         .msg-img { max-width: 200px; border-radius: 14px; margin-top: 8px; cursor: pointer; display: block; }
-        #notif-banner { position: fixed; bottom: 85px; left: 50%; transform: translateX(-50%) translateY(180%); background: linear-gradient(135deg,#6a0dad,#9b30ff); color: white; padding: 14px 22px; border-radius: 20px; font-size: 0.85rem; font-weight: 800; z-index: 4000; transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1); max-width: 88%; display: flex; align-items: center; gap: 12px; box-shadow: 0 8px 30px rgba(100,0,200,0.4); pointer-events: none; }
-        #notif-banner.show { transform: translateX(-50%) translateY(0); pointer-events: all; }
+        #notif-banner { position: fixed; bottom: -120px; left: 50%; transform: translateX(-50%); background: linear-gradient(135deg,#6a0dad,#9b30ff); color: white; padding: 14px 22px; border-radius: 20px; font-size: 0.85rem; font-weight: 800; z-index: 4000; transition: bottom 0.4s cubic-bezier(0.34,1.56,0.64,1), opacity 0.3s ease; max-width: 88%; width: max-content; display: flex; align-items: center; gap: 12px; box-shadow: 0 8px 30px rgba(100,0,200,0.5); pointer-events: none; opacity: 0; cursor: pointer; }
+        #notif-banner.show { bottom: 90px; opacity: 1; pointer-events: all; }
     </style>
 </head>
 <body>
@@ -320,7 +320,7 @@
                       }});
                   });
                 app.renderCats();
-                setInterval(() => { app.sync(); app.checkNewMsgs(); }, 5000);
+                setInterval(() => app.sync(), 6000);
             },
 
             async sync() {
@@ -355,20 +355,21 @@
                 if(!badge) return;
                 const lastSeen = parseInt(localStorage.getItem('lsdt_msgs_seen') || '0');
                 const unread = (app.db.messages || []).filter(m => m.receiver === app.user.username && new Date(m.date).getTime() > lastSeen);
-                const prevCount = app._prevUnread || 0;
+                const prevCount = app._prevUnread ?? -1;
                 if(unread.length > 0) {
                     badge.style.display = 'flex';
                     badge.textContent = unread.length > 9 ? '9+' : unread.length;
                     // Yeni mesaj geldiyse bildirim gönder
-                    if(unread.length > prevCount) {
+                    if(unread.length > prevCount && prevCount >= 0) {
                         const newest = unread[unread.length - 1];
                         const senderName = (app.db.users.find(u => u.username === newest.sender)?.name) || newest.sender;
-                        // Tarayıcı push bildirimi
-                        if(Notification.permission === 'granted' && document.hidden) {
-                            new Notification(`💬 ${senderName}`, { body: newest.text.substring(0, 80), icon: 'https://img.icons8.com/fluency/48/lightning-bolt.png' });
+                        const msgText = newest.text.startsWith('data:image') ? '📷 Resim gönderdi' : newest.text.substring(0, 80);
+                        // Tarayıcı push bildirimi — her zaman gönder (document.hidden şartı YOK)
+                        if(Notification.permission === 'granted') {
+                            new Notification(`💬 ${senderName}`, { body: msgText, icon: 'https://img.icons8.com/fluency/48/lightning-bolt.png', tag: 'lsdt-msg' });
                         }
-                        // Uygulama içi banner (sekme açıksa)
-                        app.showMsgBanner(senderName, newest.text);
+                        // Uygulama içi banner
+                        app.showMsgBanner(senderName, msgText);
                     }
                 } else {
                     badge.style.display = 'none';
@@ -382,13 +383,20 @@
                 if(!b) {
                     b = document.createElement('div');
                     b.id = 'notif-banner';
-                    b.onclick = () => { app.nav('admin'); b.classList.remove('show'); };
                     document.body.appendChild(b);
                 }
-                b.innerHTML = `<i class="fas fa-comment-dots" style="font-size:1.2rem;"></i><div><div style="font-size:0.8rem;opacity:0.8;">Yeni mesaj — ${from}</div><div>${text.substring(0,50)}${text.length>50?'…':''}</div></div>`;
-                b.classList.add('show');
+                b.onclick = () => { app.nav('admin'); b.classList.remove('show'); };
+                b.innerHTML = `<i class="fas fa-comment-dots" style="font-size:1.3rem;"></i><div><div style="font-size:0.75rem;opacity:0.75;margin-bottom:2px;">Yeni mesaj — ${from}</div><div style="font-size:0.9rem;">${text}</div></div>`;
+                // Önce kaldır (önceki animasyon varsa sıfırla)
+                b.classList.remove('show');
                 clearTimeout(app._bannerTimer);
-                app._bannerTimer = setTimeout(() => b.classList.remove('show'), 4000);
+                // requestAnimationFrame ile geciktir ki CSS geçiş çalışsın
+                requestAnimationFrame(() => {
+                    requestAnimationFrame(() => {
+                        b.classList.add('show');
+                        app._bannerTimer = setTimeout(() => b.classList.remove('show'), 5000);
+                    });
+                });
             },
 
             show(id) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.getElementById(id).classList.add('active'); },
@@ -591,13 +599,9 @@
                                 <span class="stat-num" style="color:var(--green);">${doneTasks}</span>
                                 <span class="stat-label">✅ Tamamlanan</span>
                             </div>
-                            <div class="stat-card gold">
-                                <span class="stat-num" style="color:#f0a500;">${myPts}</span>
-                                <span class="stat-label">🏆 Toplam Puan</span>
-                            </div>
-                            <div class="stat-card red">
-                                <span class="stat-num" style="color:var(--red);">${myMsgs}</span>
-                                <span class="stat-label">💬 Mesaj</span>
+                            <div class="stat-card red" style="grid-column: span 2;">
+                                <span class="stat-num" style="color:var(--red); font-size:1.5rem;">${myMsgs}</span>
+                                <span class="stat-label">💬 Toplam Mesajlaşma</span>
                             </div>
                         </div>
 
