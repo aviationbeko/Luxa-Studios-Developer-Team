@@ -339,10 +339,19 @@
             <h3 id="r-task-title" style="margin-bottom:15px; color:var(--p);"></h3>
             <textarea id="r-text" class="input-p" placeholder="Yapılanlar..." style="height:120px;" required></textarea>
             <textarea id="r-bug" class="input-p" placeholder="Sorunlar..." style="height:80px;"></textarea>
+            <input type="url" id="r-link" class="input-p" placeholder="Dosya / Proje Linki (rbxl, Drive vb.) İsteğe Bağlı" style="margin-bottom:15px;">
             <div class="img-picker" onclick="document.getElementById('r-file').click()"><i class="fas fa-camera"></i> GÖRSEL EKLE</div>
             <input type="file" id="r-file" style="display:none;" multiple accept="image/*" onchange="app.handleFiles(this)">
             <div id="r-preview" class="img-grid"></div>
             <button type="submit" class="btn-p" style="margin-top:20px;">GÖNDER</button>
+        </form>
+    </div></div>
+
+    <div id="modal-calendar" class="modal"><div class="modal-content" style="max-width:800px; width:95%;">
+        <h2>Takvim & İzinler</h2>
+        <div id="calendar-view" style="margin-top:20px; display:flex; flex-direction:column; gap:10px; max-height: 60vh; overflow-y:auto;"></div>
+        <button type="button" class="btn-p" style="margin-top:20px;" onclick="app.close()">KAPAT</button>
+    </div></div>
             <button type="button" class="btn-p" style="background:none; margin-top:10px;" onclick="app.close()">VAZGEÇ</button>
         </form>
     </div></div>
@@ -504,6 +513,7 @@
                                 <h4 style="color:var(--green)">GÖNDERİLEN RAPOR</h4>
                                 <p style="margin:10px 0;">${r.report}</p>
                                 ${r.bug ? `<p style="color:var(--red);background:rgba(255,0,0,0.1);padding:8px;border-radius:10px;"><b>HATA:</b> ${r.bug}</p>` : ''}
+                                ${r.link ? `<a href="${r.link}" target="_blank" style="display:block; margin:10px 0; color:var(--p); text-decoration:none;"><i class="fas fa-external-link-alt"></i> Ekli Dosyayı / Linki Aç</a>` : ''}
                                 ${r.imgs && r.imgs.length ? `<button class="btn-mini" style="background:var(--p);width:100%;margin:10px 0;" onclick="app.toggleImgs('${t.id}')">GÖRSELLER (${r.imgs.length})</button><div id="imgs-${t.id}" class="img-grid" style="display:none;">${r.imgs.map(i=>`<img src="${i}" class="img-item" onclick="app.viewImg('${i}')">`).join('')}</div>` : ''}
                                 ${app.user.role==='admin' && t.status==='İnceleniyor' ? `<div style="display:flex;gap:10px;margin-top:10px;"><button class="btn-mini" style="background:var(--green);color:black;" onclick="app.updateTaskStatus('${t.id}','Onaylandı')">ONAYLA</button><button class="btn-mini" style="background:var(--red);color:white;" onclick="app.openRejectModal('${t.id}')">REDDET</button></div>` : ''}
                             </div>`;
@@ -521,9 +531,17 @@
                         else if(diffDays <= 2) deadlineBadge = `<span class="deadline-badge deadline-soon">⏰ ${diffDays === 0 ? 'Bugün!' : diffDays+' gün kaldı'}</span>`;
                         else deadlineBadge = `<span class="deadline-badge deadline-ok">⏰ ${diffDays} gün kaldı</span>`;
                     }
+                    let timeSpentBadge = '';
+                    if(t.description && t.description.includes('[TIME_SPENT: ')) {
+                        const ts = t.description.split('[TIME_SPENT: ')[1].split(']')[0];
+                        timeSpentBadge = `<span class="badge" style="background:var(--card);color:var(--sub);margin-left:5px;text-transform:none;">⏳ Tamamlanma Süresi: ${ts}</span>`;
+                    }
                     let cleanDesc = t.description ? t.description.split('[REPORT_START]')[0].split('[REJECT_REASON]')[0] : '';
                     if (cleanDesc.includes('[DEADLINE: ')) {
                         cleanDesc = cleanDesc.split('[DEADLINE: ')[0];
+                    }
+                    if (cleanDesc.includes('[TIME_SPENT: ')) {
+                        cleanDesc = cleanDesc.split('[TIME_SPENT: ')[0];
                     }
                     cleanDesc = cleanDesc.trim();
                     const rej = (t.status==='Reddedildi' && t.description?.includes('[REJECT_REASON]')) ? `<div style="color:var(--red);padding:10px;background:rgba(255,118,117,0.1);border-radius:10px;margin:10px 0;"><b>RED:</b> ${t.description.split('[REJECT_REASON]')[1].split('[END_REASON]')[0]}</div>` : '';
@@ -533,7 +551,7 @@
                             ${app.user.role==='admin'?`<i class="fas fa-trash del-btn" style="position:static;margin:0;" onclick="app.delItem('tasks','${t.id}')"></i>`:''}
                         </div>
                         <h3 style="margin:10px 0 5px;">${t.title}</h3>
-                        ${deadlineBadge}
+                        ${deadlineBadge}${timeSpentBadge}
                         ${rej}<p style="opacity:0.8;margin:10px 0;">${cleanDesc}</p>
                         ${rHtml}
                         <div class="info-row" style="margin-top:12px;border-top:1px solid rgba(255,255,255,0.05);padding-top:10px;">
@@ -542,6 +560,32 @@
                         </div>
                     </div>`;
                 });
+            },
+
+            renderCalendar() {
+                const cv = document.getElementById('calendar-view');
+                if(!cv) return;
+                let html = '';
+                const items = [...app.db.tasks].filter(t => t.status !== 'Reddedildi' && t.status !== 'Tamamlandı' && t.status !== 'Onaylandı');
+                items.sort((a,b) => new Date(a.date) - new Date(b.date));
+                items.forEach(t => {
+                    const isLeave = t.status === 'İzinde';
+                    const dlValue = t.description?.includes('[DEADLINE: ') ? t.description.split('[DEADLINE: ')[1].split(']')[0] : null;
+                    const dl = dlValue ? new Date(dlValue) : null;
+                    html += `<div style="padding:15px; background:var(--card); border-left:4px solid ${isLeave ? 'var(--red)' : 'var(--p)'}; border-radius:15px; display:flex; justify-content:space-between; align-items:center;">
+                        <div>
+                            <div style="font-weight:bold; font-size:1.1rem; color:${isLeave ? 'var(--red)' : 'var(--p)'};">${isLeave ? '🌴 İZİN: ' : '📋 '}${t.assignee}</div>
+                            <div style="font-size:0.85rem; color:var(--sub); margin-top:5px;">${t.title}</div>
+                        </div>
+                        <div style="text-align:right; font-size:0.8rem;">
+                            <div style="color:var(--text);">${new Date(t.date).toLocaleDateString('tr')}</div>
+                            ${dl ? `<div style="color:var(--gold); margin-top:5px;">Bitiş: ${dl.toLocaleDateString('tr')}</div>` : ''}
+                        </div>
+                    </div>`;
+                });
+                if(items.length === 0) html = `<div style="text-align:center; color:var(--sub);">Aktif kayıt bulunamadı.</div>`;
+                cv.innerHTML = html;
+                app.open('modal-calendar');
             },
 
             toggleAI() {
@@ -808,6 +852,7 @@
                 } else if(p === 'tasks') {
                     app.sel.taskSearch = app.sel.taskSearch || '';
                     c.innerHTML = `<h2>${app.user.role === 'admin' ? 'Kayıt Denetimi' : 'Görevlerim'}</h2>
+                        <button class="btn-p" style="margin-bottom:15px; background:var(--card); color:var(--text); border:1px solid rgba(255,255,255,0.1);" onclick="app.renderCalendar()"><i class="fas fa-calendar-alt"></i> Takvim & İzinleri Gör</button>
                         <div style="position:relative;margin-bottom:15px;">
                             <i class="fas fa-search" style="position:absolute;left:18px;top:50%;transform:translateY(-50%);color:var(--sub);font-size:0.9rem;"></i>
                             <input id="task-search-input" class="input-p" style="padding-left:45px;margin-bottom:0;border-radius:20px;" placeholder="Görev ara..." value="${app.sel.taskSearch}" oninput="app.sel.taskSearch=this.value; app.renderTaskList()">
@@ -1036,7 +1081,7 @@
                 const t = app.db.tasks.find(x => x.id == tid);
                 if(!t) return app.toast('Görev bulunamadı', true);
                 
-                const d = { report: document.getElementById('r-text').value, bug: document.getElementById('r-bug').value, imgs: app.tempImages };
+                const d = { report: document.getElementById('r-text').value, bug: document.getElementById('r-bug').value, link: document.getElementById('r-link').value, imgs: app.tempImages };
                 const ut = { 
                     id: tid, 
                     status: 'İnceleniyor', 
@@ -1060,7 +1105,17 @@
             },
 
             async updateTaskStatus(id, s) {
-                const r = await fetch(`${RENDER_URL}/api/tasks`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ id: id, status: s })});
+                const t = app.db.tasks.find(x => x.id == id);
+                let updatePayload = { id: id, status: s };
+                if (s === 'Onaylandı') {
+                    const start = new Date(t.created_at || t.date).getTime();
+                    const hours = Math.floor((Date.now() - start) / (1000 * 60 * 60));
+                    const mins = Math.floor((Date.now() - start) / (1000 * 60)) % 60;
+                    if(!t.description.includes('[TIME_SPENT:')) {
+                        updatePayload.description = t.description + `\n\n[TIME_SPENT: ${hours} Saat ${mins} Dakika]`;
+                    }
+                }
+                const r = await fetch(`${RENDER_URL}/api/tasks`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(updatePayload)});
                 if(r.ok) { app.toast('Güncellendi'); await app.sync(); app.nav('tasks'); } else app.toast('Hata: ' + (await r.json()).error, true);
             },
 
