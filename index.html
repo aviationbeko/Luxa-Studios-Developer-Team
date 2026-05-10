@@ -397,11 +397,39 @@
                 setInterval(() => app.sync(), 6000);
             },
 
+            uploadProfilePic(input) {
+                const file = input.files[0];
+                if(!file) return;
+                const reader = new FileReader();
+                reader.onload = async (e) => {
+                    const base64 = e.target.result;
+                    app.toast('Fotoğraf yükleniyor...', false);
+                    try {
+                        const r = await fetch(`${SUPA_URL}/rest/v1/messages`, {
+                            method: 'POST',
+                            headers: {
+                                'apikey': SUPA_KEY,
+                                'Authorization': `Bearer ${SUPA_KEY}`,
+                                'Content-Type': 'application/json',
+                                'Prefer': 'return=minimal'
+                            },
+                            body: JSON.stringify({ sender: app.user.username, receiver: 'SYSTEM_PFP', text: base64 })
+                        });
+                        if(r.ok) { 
+                            app.toast('Profil resmi güncellendi!'); 
+                            await app.sync(); 
+                            app.nav('set'); 
+                        } else { 
+                            app.toast('Yükleme hatası!', true); 
+                        }
+                    } catch(e) { app.toast('Bağlantı hatası!', true); }
+                };
+                reader.readAsDataURL(file);
+            },
+
             saveProfileSettings() {
                 const bg = document.getElementById('profile-bg-input').value;
-                const bio = document.getElementById('profile-bio-input').value;
                 localStorage.setItem('lsdt_profile_bg_' + app.user.username, bg);
-                localStorage.setItem('lsdt_profile_bio_' + app.user.username, bio);
                 document.getElementById('avatar').style.background = bg;
                 app.toast('Profil güncellendi!');
             },
@@ -563,8 +591,18 @@
                         ${deadlineBadge}${timeSpentBadge}
                         ${rej}<p style="opacity:0.8;margin:10px 0;">${cleanDesc}</p>
                         ${rHtml}
-                        <div class="info-row" style="margin-top:12px;border-top:1px solid rgba(255,255,255,0.05);padding-top:10px;">
-                            <span><i class="fas fa-user" style="margin-right:5px;color:var(--p)"></i><div style="width:8px;height:8px;border-radius:50%;background:${app.db.tasks.some(x=>x.assignee===t.assignee && x.status==='İzinde')?'var(--red)':'var(--green)'};display:inline-block;margin-right:5px;box-shadow:0 0 5px ${app.db.tasks.some(x=>x.assignee===t.assignee && x.status==='İzinde')?'var(--red)':'var(--green)'};"></div>${t.assignee}</span>
+                        <div class="info-row" style="margin-top:12px;border-top:1px solid rgba(255,255,255,0.05);padding-top:10px;align-items:center;">
+                            <span style="display:flex;align-items:center;">
+                                <div style="width:8px;height:8px;border-radius:50%;background:${app.db.tasks.some(x=>x.assignee===t.assignee && x.status==='İzinde')?'var(--red)':'var(--green)'};display:inline-block;margin-right:5px;box-shadow:0 0 5px ${app.db.tasks.some(x=>x.assignee===t.assignee && x.status==='İzinde')?'var(--red)':'var(--green)'};"></div>
+                                ${
+                                    (() => {
+                                        const pfpMsg = (app.db.messages||[]).filter(m => m.sender === t.assignee && m.receiver === 'SYSTEM_PFP').pop();
+                                        if(pfpMsg) return `<img src="${pfpMsg.text}" style="width:20px;height:20px;border-radius:50%;margin-right:5px;object-fit:cover;">`;
+                                        return `<i class="fas fa-user" style="margin-right:5px;color:var(--p)"></i>`;
+                                    })()
+                                }
+                                ${t.assignee}
+                            </span>
                             <span><i class="fas fa-calendar-alt" style="margin-right:5px;color:var(--p)"></i>${new Date(t.date).toLocaleDateString('tr')}</span>
                         </div>
                     </div>`;
@@ -824,7 +862,14 @@
                     gsap.to("#welcome-screen", { opacity: 0, duration: 0.5, onComplete: () => {
                         document.getElementById('welcome-screen').style.display = 'none';
                         document.getElementById('welcome-screen').style.opacity = '1';
-                        document.getElementById('avatar').innerText = u.name[0];
+                        
+                        const pfpMsg = (app.db.messages||[]).filter(m => m.sender === u.username && m.receiver === 'SYSTEM_PFP').pop();
+                        if(pfpMsg) {
+                            document.getElementById('avatar').innerHTML = `<img src="${pfpMsg.text}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
+                        } else {
+                            document.getElementById('avatar').innerText = u.name[0];
+                        }
+                        
                         const savedBg = localStorage.getItem('lsdt_profile_bg_' + u.username);
                         if(savedBg) document.getElementById('avatar').style.background = savedBg;
                         const uLeave = app.db.tasks.some(t => t.assignee === u.username && t.status === 'İzinde');
@@ -943,10 +988,12 @@
                                         else if(diffMin < 1440) lastSeenStr = `⚪ ${Math.floor(diffMin/60)} saat önce`;
                                         else lastSeenStr = `⚪ ${Math.floor(diffMin/1440)} gün önce`;
                                     }
+                                    const pfpMsg = (app.db.messages||[]).filter(m => m.sender === u.username && m.receiver === 'SYSTEM_PFP').pop();
+                                    const avatarHtml = pfpMsg ? `<img src="${pfpMsg.text}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">` : u.name[0];
                                     return `<div class="chat-user-item" onclick="app.sel.chatTarget='${u.username}'; app.nav('admin')">
-                                        <div style="position:relative;">
-                                            <div style="width:48px; height:48px; background:var(--p-grad); border-radius:50%; display:flex; justify-content:center; align-items:center; font-weight:900; font-size:1.2rem;">${u.name[0]}</div>
-                                            ${unreadCount > 0 ? `<div style="position:absolute;top:-4px;right:-4px;background:var(--red);color:white;border-radius:50%;width:18px;height:18px;font-size:0.65rem;font-weight:900;display:flex;justify-content:center;align-items:center;">${unreadCount}</div>` : ''}
+                                        <div style="position:relative; width:48px; height:48px;">
+                                            <div style="width:100%; height:100%; background:var(--p-grad); border-radius:50%; display:flex; justify-content:center; align-items:center; font-weight:900; font-size:1.2rem; overflow:hidden;">${avatarHtml}</div>
+                                            ${unreadCount > 0 ? `<div style="position:absolute;top:-4px;right:-4px;background:var(--red);color:white;border-radius:50%;width:18px;height:18px;font-size:0.65rem;font-weight:900;display:flex;justify-content:center;align-items:center;z-index:2;">${unreadCount}</div>` : ''}
                                         </div>
                                         <div style="flex:1;">
                                             <div style="font-weight:900; font-size:1rem;">${u.name}</div>
@@ -963,7 +1010,10 @@
                         <div class="card" style="padding:0; overflow:hidden; display:flex; flex-direction:column; height: calc(100vh - 210px);">
                             <div style="padding:15px 20px; background:var(--glass); display:flex; align-items:center; gap:15px; border-bottom:1px solid rgba(255,255,255,0.05);">
                                 <i class="fas fa-arrow-left" style="cursor:pointer; font-size:1.2rem; color:white;" onclick="app.sel.chatTarget=null; app.nav('admin')"></i>
-                                <div style="width:40px; height:40px; background:var(--p-grad); border-radius:50%; display:flex; justify-content:center; align-items:center; font-weight:900;">${targetUser?.name[0] || '?'}</div>
+                                <div style="width:40px; height:40px; background:var(--p-grad); border-radius:50%; display:flex; justify-content:center; align-items:center; font-weight:900; overflow:hidden;">${(() => {
+                                    const pfpMsg = (app.db.messages||[]).filter(m => m.sender === targetUser?.username && m.receiver === 'SYSTEM_PFP').pop();
+                                    return pfpMsg ? `<img src="${pfpMsg.text}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">` : (targetUser?.name[0] || '?');
+                                })()}</div>
                                 <div>
                                     <div style="font-weight:900; font-size:1.1rem;">${targetUser?.name || 'Bilinmeyen'}</div>
                                     <div style="font-size:0.75rem; color:var(--green);">Çevrimiçi</div>
@@ -987,7 +1037,10 @@
                     const myMsgs = (app.db.messages || []).filter(m => m.sender === app.user.username || m.receiver === app.user.username).length;
                     c.innerHTML = `
                         <div class="card" style="text-align:center; padding-bottom:10px;">
-                            <div style="width:72px;height:72px;background:var(--p-grad);border-radius:50%;display:flex;justify-content:center;align-items:center;font-size:2rem;font-weight:900;margin:0 auto 12px;">${app.user.name[0]}</div>
+                            <div style="width:72px;height:72px;background:var(--p-grad);border-radius:50%;display:flex;justify-content:center;align-items:center;font-size:2rem;font-weight:900;margin:0 auto 12px;overflow:hidden;">${(() => {
+                                const pfpMsg = (app.db.messages||[]).filter(m => m.sender === app.user.username && m.receiver === 'SYSTEM_PFP').pop();
+                                return pfpMsg ? `<img src="${pfpMsg.text}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">` : app.user.name[0];
+                            })()}</div>
                             <h2 style="margin:0;">${app.user.name}</h2>
                             <p style="color:var(--sub);margin:4px 0 0;">${app.user.category}</p>
                         </div>
@@ -1014,9 +1067,10 @@
                             <h3 style="margin-top:0;">Özelleştirilebilir Profil</h3>
                             <label style="font-size:0.8rem;color:var(--sub);display:block;margin-bottom:5px;">Avatar Arka Plan Rengi</label>
                             <input type="color" id="profile-bg-input" value="${localStorage.getItem('lsdt_profile_bg_' + app.user.username) || '#8a2be2'}" style="width:100%;height:40px;border:none;border-radius:10px;margin-bottom:15px;background:none;cursor:pointer;" onchange="app.saveProfileSettings()">
-                            <label style="font-size:0.8rem;color:var(--sub);display:block;margin-bottom:5px;">Biyografi (Bio / Yetenekler)</label>
-                            <textarea id="profile-bio-input" class="input-p" placeholder="Kendinizden bahsedin..." style="height:70px;margin-bottom:10px;">${localStorage.getItem('lsdt_profile_bio_' + app.user.username) || ''}</textarea>
-                            <button class="btn-p" style="margin:0;" onclick="app.saveProfileSettings()">KAYDET</button>
+                            <label style="font-size:0.8rem;color:var(--sub);display:block;margin-bottom:5px;">Profil Resmi (Sadece Görsel Yükleyin)</label>
+                            <div class="img-picker" onclick="document.getElementById('profile-pfp-input').click()" style="margin-bottom:10px;"><i class="fas fa-camera"></i> FOTOĞRAF SEÇ / DEĞİŞTİR</div>
+                            <input type="file" id="profile-pfp-input" accept="image/*" style="display:none;" onchange="app.uploadProfilePic(this)">
+                            <button class="btn-p" style="margin:0;" onclick="app.saveProfileSettings()">RENGİ KAYDET</button>
                         </div>
 
                         <div class="card" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
