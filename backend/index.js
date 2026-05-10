@@ -101,29 +101,45 @@ app.post('/api/announcements', async (req, res) => {
     }
 });
 
+// GET messages endpoint (ayrı fetch yerine /api/state ile geliyor ama yedek olarak bırakıyoruz)
+app.get('/api/messages', async (req, res) => {
+    try {
+        const { data, error } = await supabase.from('messages').select('*').order('date', { ascending: true });
+        if (error) throw error;
+        res.json(data);
+    } catch (error) {
+        console.error("Messages Fetch Error:", error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
 app.post('/api/messages', async (req, res) => {
     try {
         const { sender, receiver, text } = req.body;
-        if (!sender || !receiver || !text) return res.status(400).json({ error: "Eksik veri" });
-        
-        const data = { 
-            sender: String(sender), 
-            receiver: String(receiver), 
-            text: String(text),
-            date: new Date().toISOString()
+        if (!sender || !receiver || !text) {
+            return res.status(400).json({ error: "Eksik veri: sender, receiver, text zorunlu" });
+        }
+
+        // Sadece izin verilen alanları gönder, date Supabase'deki DEFAULT ile gelsin
+        const data = {
+            sender: String(sender).trim(),
+            receiver: String(receiver).trim(),
+            text: String(text).trim()
         };
 
-        // Service Role yetkisiyle doğrudan ekleme yapıyoruz
-        const { data: inserted, error } = await supabase.from('messages').insert([data]);
-        
+        console.log("Mesaj insert edilecek:", data);
+
+        const { error } = await supabase.from('messages').insert([data]);
+
         if (error) {
-            console.error("Mesaj Kayit Hatasi:", error);
-            return res.status(500).json({ error: "Veritabanı reddetti", details: error.message });
+            console.error("Mesaj Kayit Hatasi:", JSON.stringify(error));
+            return res.status(500).json({ error: "Veritabani reddetti", details: error.message, code: error.code });
         }
-        
+
         res.json({ success: true });
     } catch (error) {
-        res.status(500).json({ error: "Sunucu hatası", details: error.message });
+        console.error("POST /api/messages Critical Error:", error);
+        res.status(500).json({ error: "Sunucu hatasi", details: error.message });
     }
 });
 

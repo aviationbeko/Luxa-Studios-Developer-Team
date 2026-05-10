@@ -87,7 +87,7 @@
         .chat-user-item { display: flex; align-items: center; gap: 15px; padding: 15px; background: rgba(255,255,255,0.05); border-radius: 20px; margin-bottom: 10px; cursor: pointer; transition: 0.3s; }
         .chat-user-item:hover { background: rgba(255,255,255,0.1); transform: translateX(5px); }
         .dot { width: 10px; height: 10px; background: var(--green); border-radius: 50%; display: inline-block; margin-left: 5px; }
-        .nav-badge { position: absolute; top: 5px; right: 20%; background: var(--red); width: 8px; height: 8px; border-radius: 50%; display: none; }
+        .nav-badge { position: absolute; top: -2px; right: 8%; background: var(--red); min-width: 18px; height: 18px; padding: 0 5px; border-radius: 50px; display: none; justify-content: center; align-items: center; font-size: 0.65rem; font-weight: 900; color: white; border: 2px solid #05020a; box-shadow: 0 0 8px rgba(255,60,60,0.6); }
         /* Switch CSS */
         .switch { position: relative; display: inline-block; width: 50px; height: 24px; }
         .switch input { opacity: 0; width: 0; height: 0; }
@@ -308,23 +308,32 @@
                 try {
                     const r = await fetch(`${RENDER_URL}/api/state`);
                     const d = await r.json();
-                    
-                    // Sunucudan gelen mesajları al, ama henüz gitmemiş (optimistik) mesajları koru
-                    const serverMsgs = d.messages || [];
                     app.db.users = d.users || [];
                     app.db.tasks = d.tasks || [];
                     app.db.announcements = d.announcements || [];
-                    app.db.messages = serverMsgs;
-                    
+                    // Mesajlar: sunucudan geldiyse kullan, gelmediyse lokali koru (messages tablosu henüz yoksa)
+                    if(Array.isArray(d.messages)) {
+                        app.db.messages = d.messages;
+                    }
                     app.checkUpdate();
+                    app.checkNewMsgs();
                     if(app.sel.chatTarget) app.renderChat();
                 } catch(e) { console.error("Sync error:", e); }
             },
 
             checkNewMsgs() {
                 if(!app.user) return;
-                const newMsgs = app.db.messages.filter(m => m.receiver === app.user.username);
-                document.getElementById('msg-dot').style.display = newMsgs.length > 0 ? 'block' : 'none';
+                const badge = document.getElementById('msg-dot');
+                if(!badge) return;
+                const lastSeen = parseInt(localStorage.getItem('lsdt_msgs_seen') || '0');
+                const unread = (app.db.messages || []).filter(m => m.receiver === app.user.username && new Date(m.date).getTime() > lastSeen);
+                if(unread.length > 0) {
+                    badge.style.display = 'flex';
+                    badge.textContent = unread.length > 9 ? '9+' : unread.length;
+                } else {
+                    badge.style.display = 'none';
+                    badge.textContent = '';
+                }
             },
 
             show(id) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.getElementById(id).classList.add('active'); },
@@ -459,6 +468,9 @@
                         c.innerHTML += `<div class="card"><h3>${a.title}</h3><p>${a.text}</p>${app.user.role==='admin'?`<i class="fas fa-trash del-btn" onclick="app.delItem('announcements', '${a.id}')"></i>`:''}</div>`;
                     });
                 } else if(p === 'admin') {
+                    // Admin sekmesi açılınca okundu olarak işaretle
+                    localStorage.setItem('lsdt_msgs_seen', Date.now().toString());
+                    app.checkNewMsgs();
                     c.innerHTML = `<h2>İletişim & Destek</h2>`;
                     if(!app.sel.chatTarget) {
                         const targets = app.user.role === 'admin' ? app.db.users.filter(u => u.username !== app.user.username) : app.db.users.filter(u => u.role === 'admin');
@@ -495,7 +507,7 @@
                             <div class="chat-messages" id="chat-box" style="flex:1; overflow-y:auto; padding:20px; display:flex; flex-direction:column; gap:15px; background:rgba(0,0,0,0.15);"></div>
                             <div style="padding:15px; background:rgba(255,255,255,0.02); border-top:1px solid rgba(255,255,255,0.05); display:flex; gap:10px;">
                                 <input id="msg-input" class="input-p" style="margin-bottom:0; flex:1; border-radius:20px; padding:15px 20px; background:rgba(0,0,0,0.3);" placeholder="Mesajınızı yazın..." onkeypress="if(event.key==='Enter') app.sendMsg()">
-                                <button class="btn-p" style="width:55px; height:55px; border-radius:50%; display:flex; justify-content:center; align-items:center; padding:0;" onclick="app.sendMsg()"><i class="fas fa-paper-plane" style="font-size:1.2rem; margin-left: -3px;"></i></button>
+                                <button id="msg-send-btn" class="btn-p" style="width:55px; height:55px; border-radius:50%; display:flex; justify-content:center; align-items:center; padding:0; flex-shrink:0;" onclick="app.sendMsg()"><i class="fas fa-paper-plane" style="font-size:1.2rem; margin-left:-3px;"></i></button>
                             </div>
                         </div>`;
                         setTimeout(() => app.renderChat(), 50);
@@ -636,54 +648,52 @@
             renderChat() {
                 const box = document.getElementById('chat-box'); if(!box) return;
                 const msgs = (app.db.messages || []).filter(m => (m.sender === app.user.username && m.receiver === app.sel.chatTarget) || (m.sender === app.sel.chatTarget && m.receiver === app.user.username));
+                // Mevcut scroll pozisyonunu koru (flicker önleme)
+                const atBottom = box.scrollHeight - box.scrollTop <= box.clientHeight + 50;
                 box.innerHTML = msgs.map(m => {
                     const isMe = m.sender === app.user.username;
+                    const senderName = isMe ? 'Siz' : (app.db.users.find(x=>x.username===m.sender)?.name || m.sender);
+                    const timeStr = m.date ? new Date(m.date).toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'}) : '';
                     return `<div class="msg ${isMe ? 'sent' : 'received'}">
-                        <div style="font-size:0.75rem; font-weight:900; margin-bottom:5px; color:${isMe?'rgba(255,255,255,0.7)':'var(--p)'}">${isMe ? 'Siz' : app.db.users.find(x=>x.username===m.sender)?.name}</div>
+                        <span class="msg-info">${senderName} · ${timeStr}</span>
                         ${m.text}
                     </div>`;
                 }).join('');
-                box.scrollTop = box.scrollHeight;
+                if(atBottom) box.scrollTop = box.scrollHeight;
             },
 
             async sendMsg() {
-                const input = document.getElementById('msg-input'); 
-                const text = input.value.trim(); 
+                const input = document.getElementById('msg-input');
+                const text = input.value.trim();
                 if(!text || !app.sel.chatTarget) return;
-                
-                const msg = { 
-                    sender: app.user.username, 
-                    receiver: app.sel.chatTarget, 
-                    text: text,
-                    date: new Date().toISOString()
-                };
-                
-                // Optimistik Güncelleme: Beklemeden ekranda göster
-                app.db.messages.push(msg);
-                app.renderChat();
+                // Butonu devre dışı bırak (çift gönderimi engelle)
+                const btn = document.getElementById('msg-send-btn');
+                if(btn) btn.disabled = true;
                 input.value = '';
-                
+
+                const msg = { sender: app.user.username, receiver: app.sel.chatTarget, text: text };
+
                 try {
-                    const r = await fetch(`${RENDER_URL}/api/messages`, { 
-                        method:'POST', 
-                        headers:{'Content-Type':'application/json'}, 
-                        body:JSON.stringify(msg)
+                    const r = await fetch(`${RENDER_URL}/api/messages`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(msg)
                     });
-                    
                     const resData = await r.json();
                     if(!r.ok) {
                         const errorMsg = resData.details || resData.error || 'Bilinmeyen Hata';
-                        app.toast('Hata: ' + errorMsg, true);
-                        console.error("Gonderim Hatasi:", resData);
-                        app.db.messages = app.db.messages.filter(m => m.date !== msg.date);
-                        app.renderChat();
+                        app.toast('Gönderilemedi: ' + errorMsg, true);
+                        input.value = text; // Metni geri koy
                     } else {
+                        // Sunucu onayladı, şimdi senkronize et
                         await app.sync();
                     }
                 } catch(e) {
                     app.toast('Sunucuya bağlanılamadı', true);
-                    app.db.messages = app.db.messages.filter(m => m.date !== msg.date);
-                    app.renderChat();
+                    input.value = text; // Metni geri koy
+                } finally {
+                    if(btn) btn.disabled = false;
+                    input.focus();
                 }
             },
 
