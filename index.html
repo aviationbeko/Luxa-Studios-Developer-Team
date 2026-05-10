@@ -21,48 +21,28 @@
             --glass: rgba(162, 155, 254, 0.15);
             --p-grad: linear-gradient(135deg, #6c5ce7, #a29bfe);
         }
-        
-        .rtf-toolbar { display:flex; gap:5px; margin-bottom:5px; background:rgba(0,0,0,0.1); padding:5px; border-radius:10px; }
-        body.light-mode .rtf-toolbar { background:rgba(0,0,0,0.05); }
-        .rtf-btn { background:none; border:none; color:var(--text); cursor:pointer; padding:5px 8px; border-radius:5px; font-size:0.9rem; transition:0.2s; }
-        .rtf-btn:hover { background:var(--p-grad); color:#fff; }
-        /* hide google translate bar */
-        .goog-te-banner-frame.skiptranslate { display: none !important; }
-        body { top: 0px !important; }
-
-        /* ===== LIGHT MODE ===== */
-        body.light-mode {
-            --bg: linear-gradient(135deg, #f0edff, #e8e0ff);
-            --bg-dark: #f0edff;
-            --card: rgba(108, 92, 231, 0.06);
-            --text: #1a0a2e;
-            --sub: #5a5a7a;
-            --glass: rgba(108,92,231,0.12);
-        }
-        body.light-mode .screen { background: var(--bg); }
-        body.light-mode .card { background: rgba(255,255,255,0.85); border-color: rgba(108,92,231,0.15); color: var(--text); }
-        body.light-mode .input-p { background: rgba(255,255,255,0.9); color: var(--text); border-color: rgba(108,92,231,0.25); }
-        body.light-mode .top-nav { background: rgba(255,255,255,0.7); border-bottom-color: rgba(108,92,231,0.15); }
-        body.light-mode .bottom-nav { background: rgba(255,255,255,0.85); border-top-color: rgba(108,92,231,0.15); }
-        body.light-mode .nav-item { color: #888; }
-        body.light-mode .nav-item.active { color: var(--p-dark); }
-        body.light-mode #ai-popup { background: #f8f5ff; border-color: rgba(108,92,231,0.3); }
-        body.light-mode .ai-bubble.bot { background: rgba(108,92,231,0.08); border-color: rgba(108,92,231,0.2); color: var(--text); }
-        body.light-mode .modal-content { background: #f8f5ff; color: var(--text); }
-        /* Theme toggle */
-        .theme-toggle { display:flex; align-items:center; gap:10px; cursor:pointer; }
-        .theme-toggle-track { width:50px; height:26px; background:var(--glass); border-radius:13px; position:relative; transition:0.3s; border:1px solid rgba(255,255,255,0.15); }
-        body.light-mode .theme-toggle-track { background:rgba(108,92,231,0.2); }
-        .theme-toggle-thumb { width:20px; height:20px; background:var(--p-grad); border-radius:50%; position:absolute; top:2px; left:2px; transition:0.3s; display:flex; justify-content:center; align-items:center; font-size:0.7rem; }
-        body.light-mode .theme-toggle-thumb { transform:translateX(24px); }
-        /* Pinned announcement */
-        .ann-pinned { border-left:4px solid var(--gold) !important; background:rgba(241,196,15,0.06) !important; }
-        .ann-pinned .pin-icon { color:var(--gold); font-size:0.8rem; margin-right:6px; }
-        /* Ann search */
-        .ann-search-wrap { position:relative; margin-bottom:15px; }
-        .ann-search-wrap i { position:absolute; left:18px; top:50%; transform:translateY(-50%); color:var(--sub); font-size:0.9rem; }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Outfit', sans-serif; -webkit-tap-highlight-color: transparent; }
         body { background: var(--bg-dark); color: var(--text); height: 100vh; width: 100vw; overflow: hidden; }
+        
+        body.light-mode {
+            --bg-dark: #f5f6fa;
+            --bg: radial-gradient(circle at top right, #e2dff5, #f5f6fa);
+            --card: rgba(0, 0, 0, 0.05);
+            --text: #2d3436;
+            --sub: #636e72;
+            --glass: rgba(108, 92, 231, 0.15);
+        }
+        body.light-mode .card, body.light-mode .glass-card, body.light-mode .modal-content, body.light-mode .ai-popup { background: #ffffff; border: 1px solid rgba(0,0,0,0.1); box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
+        body.light-mode .input-p { background: rgba(0,0,0,0.05); color: #2d3436; border: 2px solid rgba(0,0,0,0.1); }
+        body.light-mode .input-p:focus { background: rgba(0,0,0,0.02); border-color: var(--p); }
+        body.light-mode .input-p::placeholder { color: #b2bec3; }
+        body.light-mode .top-nav, body.light-mode .bottom-nav { background: rgba(255, 255, 255, 0.9); border-color: rgba(0,0,0,0.05); }
+        body.light-mode .nav-item { color: #636e72; }
+        body.light-mode .nav-item.active { color: var(--p); }
+        body.light-mode .ai-bubble.bot { background: rgba(0,0,0,0.05); }
+        body.light-mode .msg.received { background: #ffffff; border: 1px solid rgba(0,0,0,0.1); }
+        body.light-mode .msg-info { color: #b2bec3; }
+
         .screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: none; flex-direction: column; z-index: 10; background: var(--bg); }
         .screen.active { display: flex !important; }
         .setup-step { display: none; width: 100%; height: 100%; justify-content: center; align-items: center; flex-direction: column; }
@@ -333,13 +313,7 @@
         <form onsubmit="app.handleNewTask(event)">
             <div id="t-to-wrap" class="p-select"></div>
             <input type="text" id="t-title" class="input-p" placeholder="Başlık" required>
-            <div class="rtf-toolbar">
-                            <button type="button" class="rtf-btn" onclick="app.rtf('t-desc','**','**')"><i class="fas fa-bold"></i></button>
-                            <button type="button" class="rtf-btn" onclick="app.rtf('t-desc','*','*')"><i class="fas fa-italic"></i></button>
-                            <button type="button" class="rtf-btn" onclick="app.rtf('t-desc','`','`')"><i class="fas fa-code"></i></button>
-                            <button type="button" class="rtf-btn" onclick="app.rtf('t-desc','\n• ','')"><i class="fas fa-list-ul"></i></button>
-                        </div>
-                        <textarea id="t-desc" class="input-p" placeholder="Detaylar" style="height:100px;margin-bottom:10px;" required></textarea>
+            <textarea id="t-desc" class="input-p" placeholder="Detaylar" style="height:100px;" required></textarea>
             <label style="color:var(--sub);font-size:0.8rem;font-weight:700;display:block;margin-bottom:6px;">⏰ Son Teslim Tarihi (İsteğe Bağlı)</label>
             <input type="date" id="t-deadline" class="input-p" style="margin-bottom:15px;">
             <button type="submit" class="btn-p">GÖREVİ VER</button>
@@ -363,13 +337,7 @@
         <form onsubmit="app.handleNewReport(event)">
             <input type="hidden" id="r-task-id">
             <h3 id="r-task-title" style="margin-bottom:15px; color:var(--p);"></h3>
-            <div class="rtf-toolbar">
-                            <button type="button" class="rtf-btn" onclick="app.rtf('r-text','**','**')"><i class="fas fa-bold"></i></button>
-                            <button type="button" class="rtf-btn" onclick="app.rtf('r-text','*','*')"><i class="fas fa-italic"></i></button>
-                            <button type="button" class="rtf-btn" onclick="app.rtf('r-text','`','`')"><i class="fas fa-code"></i></button>
-                            <button type="button" class="rtf-btn" onclick="app.rtf('r-text','\n• ','')"><i class="fas fa-list-ul"></i></button>
-                        </div>
-                        <textarea id="r-text" class="input-p" placeholder="Yapılanlar..." style="height:120px;margin-bottom:10px;" required></textarea>
+            <textarea id="r-text" class="input-p" placeholder="Yapılanlar..." style="height:120px;" required></textarea>
             <textarea id="r-bug" class="input-p" placeholder="Sorunlar..." style="height:80px;"></textarea>
             <div class="img-picker" onclick="document.getElementById('r-file').click()"><i class="fas fa-camera"></i> GÖRSEL EKLE</div>
             <input type="file" id="r-file" style="display:none;" multiple accept="image/*" onchange="app.handleFiles(this)">
@@ -397,6 +365,7 @@
             tempImages: [],
 
             async init() {
+                if(localStorage.getItem('lsdt_theme') === 'light') document.body.classList.add('light-mode');
                 const tl = gsap.timeline();
                 tl.fromTo("#l-cube", { y: -50, opacity: 0 }, { y: 0, opacity: 1, duration: 1 })
                   .to("#l-code", { opacity: 1, width: "180px", duration: 1, ease: "steps(15)" })
@@ -416,8 +385,17 @@
                       }});
                   });
                 app.renderCats();
-                if(localStorage.getItem('lsdt_theme') === 'light') document.body.classList.add('light-mode');
                 setInterval(() => app.sync(), 6000);
+            },
+
+            toggleTheme(isLight) {
+                if(isLight) {
+                    document.body.classList.add('light-mode');
+                    localStorage.setItem('lsdt_theme', 'light');
+                } else {
+                    document.body.classList.remove('light-mode');
+                    localStorage.setItem('lsdt_theme', 'dark');
+                }
             },
 
             async sync() {
@@ -533,13 +511,21 @@
                     }
                     // Deadline badge
                     let deadlineBadge = '';
-                    if(t.deadline) {
-                        const dl = new Date(t.deadline); const now = new Date(); const diffDays = Math.ceil((dl-now)/(1000*60*60*24));
+                    let dlValue = t.deadline || null;
+                    if(t.description && t.description.includes('[DEADLINE: ')) {
+                        dlValue = t.description.split('[DEADLINE: ')[1].split(']')[0];
+                    }
+                    if(dlValue) {
+                        const dl = new Date(dlValue); const now = new Date(); const diffDays = Math.ceil((dl-now)/(1000*60*60*24));
                         if(diffDays < 0) deadlineBadge = `<span class="deadline-badge deadline-over">⏰ ${Math.abs(diffDays)} gün gecikti!</span>`;
                         else if(diffDays <= 2) deadlineBadge = `<span class="deadline-badge deadline-soon">⏰ ${diffDays === 0 ? 'Bugün!' : diffDays+' gün kaldı'}</span>`;
                         else deadlineBadge = `<span class="deadline-badge deadline-ok">⏰ ${diffDays} gün kaldı</span>`;
                     }
-                    const cleanDesc = t.description ? t.description.split('[REPORT_START]')[0].split('[REJECT_REASON]')[0].trim() : '';
+                    let cleanDesc = t.description ? t.description.split('[REPORT_START]')[0].split('[REJECT_REASON]')[0] : '';
+                    if (cleanDesc.includes('[DEADLINE: ')) {
+                        cleanDesc = cleanDesc.split('[DEADLINE: ')[0];
+                    }
+                    cleanDesc = cleanDesc.trim();
                     const rej = (t.status==='Reddedildi' && t.description?.includes('[REJECT_REASON]')) ? `<div style="color:var(--red);padding:10px;background:rgba(255,118,117,0.1);border-radius:10px;margin:10px 0;"><b>RED:</b> ${t.description.split('[REJECT_REASON]')[1].split('[END_REASON]')[0]}</div>` : '';
                     container.innerHTML += `<div class="card">
                         <div style="display:flex;align-items:flex-start;justify-content:space-between;">
@@ -723,44 +709,6 @@
                 return fallbacks[Math.floor(Math.random()*fallbacks.length)];
             },
 
-            renderAnns() {
-                const list = document.getElementById('ann-list');
-                if(!list) return;
-                const q = (document.getElementById('ann-search')?.value || '').toLowerCase();
-                const pinned = app.db.announcements.filter(a => a.title && a.title.startsWith('[PIN]') && a.title !== 'SYSTEM_UPDATE_CONFIG');
-                const normal = app.db.announcements.filter(a => !a.title?.startsWith('[PIN]') && a.title !== 'SYSTEM_UPDATE_CONFIG');
-                const all = [...pinned.reverse(), ...normal.reverse()].filter(a => {
-                    if(!q) return true;
-                    return (a.title||'').toLowerCase().includes(q) || (a.text||'').toLowerCase().includes(q);
-                });
-                if(!all.length) { list.innerHTML = `<div class='card' style='text-align:center;color:var(--sub);'>📢 Sonuç bulunamadı.</div>`; return; }
-                list.innerHTML = '';
-                all.forEach(a => {
-                    const isPinned = a.title?.startsWith('[PIN]');
-                    const displayTitle = isPinned ? a.title.replace('[PIN]','').trim() : a.title;
-                    const d = new Date(a.created_at||a.date||0);
-                    const dateStr = isNaN(d.getTime()) ? '' : `<span style='font-size:0.75rem;color:var(--sub);margin-top:4px;display:block;'>${d.toLocaleDateString('tr-TR')} ${d.toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'})}</span>`;
-                    const pinBtn = app.user.role==='admin' ? `<button onclick="app.togglePin('${a.id}','${isPinned}')" style='background:none;border:1px solid var(--gold);color:var(--gold);padding:4px 10px;border-radius:12px;font-size:0.75rem;cursor:pointer;margin-right:8px;'>${isPinned?'📌 Sabiti Kaldır':'📌 Sabitle'}</button>` : '';
-                    const delBtn = app.user.role==='admin' ? `<i class='fas fa-trash del-btn' onclick="app.delItem('announcements','${a.id}')"></i>` : '';
-                    list.innerHTML += `<div class='card ${isPinned?'ann-pinned':''}'>${isPinned?'<span class="pin-icon">📌</span>':''}<h3>${displayTitle}</h3><p>${app.parseRTF(a.text)}</p>${dateStr}<div style='margin-top:10px;'>${pinBtn}${delBtn}</div></div>`;
-                });
-            },
-
-            async togglePin(id, isPinned) {
-                const a = app.db.announcements.find(x => x.id == id);
-                if(!a) return;
-                const cleanTitle = isPinned === 'true' ? a.title.replace('[PIN]','').trim() : '[PIN] ' + a.title;
-                const r = await fetch(`${RENDER_URL}/api/announcements`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({id: id, title: cleanTitle, text: a.text}) });
-                if(r.ok) { await app.sync(); app.renderAnns(); app.toast(isPinned==='true' ? 'Sabitleme kaldırıldı' : 'Duyuru sabitlendi!'); }
-            },
-
-            toggleTheme() {
-                const isLight = document.body.classList.toggle('light-mode');
-                localStorage.setItem('lsdt_theme', isLight ? 'light' : 'dark');
-                const lbl = document.getElementById('theme-label');
-                if(lbl) lbl.innerHTML = isLight ? '☀️ Aydınlık Mod' : '🌙 Karanlık Mod';
-            },
-
             checkNewAnns() {
                 const lastSeen = parseInt(localStorage.getItem('lsdt_anns_seen') || '0');
                 const newAnns = (app.db.announcements||[]).filter(a => new Date(a.created_at||a.date||0).getTime() > lastSeen);
@@ -772,23 +720,6 @@
                     app.showMsgBanner(`📢 Yeni Duyuru: ${latest.title}`, 'Duyurular');
                 }
                 app._prevAnnCount = (app.db.announcements||[]).length;
-            },
-
-            
-            rtf(id, pre, post) {
-                const el = document.getElementById(id);
-                if(!el) return;
-                const s = el.selectionStart, e = el.selectionEnd, v = el.value;
-                el.value = v.substring(0, s) + pre + v.substring(s, e) + post + v.substring(e);
-                el.selectionStart = el.selectionEnd = s + pre.length + (e - s);
-                el.focus();
-            },
-            parseRTF(txt) {
-                if(!txt) return '';
-                return txt.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>')
-                          .replace(/\*(.*?)\*/g, '<i>$1</i>')
-                          .replace(/`(.*?)`/g, '<code style="background:rgba(255,255,255,0.1);color:#fff;padding:2px 4px;border-radius:4px;">$1</code>')
-                          .replace(/\n/g, '<br>');
             },
 
             show(id) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.getElementById(id).classList.add('active'); },
@@ -912,33 +843,16 @@
                         box.scrollTop = box.scrollHeight;
                     }
                 } else if(p === 'ann') {
+                    // Duyuru görüldü — dot sıfırla
                     localStorage.setItem('lsdt_anns_seen', Date.now().toString());
-                    const annDot2 = document.getElementById('ann-dot');
-                    if(annDot2) { annDot2.style.display = 'none'; annDot2.textContent = ''; }
-                    c.innerHTML = `
-                        <div style='display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;'>
-                            <h2 style='margin:0;'>Duyurular</h2>
-                        </div>
-                        ${app.user.role==='admin' ? `<div class='card'>
-                            <input id='an-title' class='input-p' placeholder='Baslik'>
-                            <div class='rtf-toolbar' style='margin-bottom:8px;'>
-                                <button type='button' class='rtf-btn' onclick="app.rtf('an-text','**','**')"><i class='fas fa-bold'></i></button>
-                                <button type='button' class='rtf-btn' onclick="app.rtf('an-text','*','*')"><i class='fas fa-italic'></i></button>
-                                <button type='button' class='rtf-btn' onclick="app.rtf('an-text','\`','\`')"><i class='fas fa-code'></i></button>
-                                <button type='button' class='rtf-btn' onclick="app.rtf('an-text','\\n• ','')"><i class='fas fa-list-ul'></i></button>
-                            </div>
-                            <textarea id='an-text' class='input-p' placeholder='Mesaj' style='height:90px;'></textarea>
-                            <div style='display:flex;gap:10px;align-items:center;margin-bottom:10px;'>
-                                <input type='checkbox' id='an-pin' style='width:16px;height:16px;accent-color:var(--gold);'>
-                                <label for='an-pin' style='font-size:0.85rem;color:var(--gold);font-weight:700;'>&#128204; Sabitlenmis yayinla</label>
-                            </div>
-                            <button class='btn-p' onclick='app.handleNewAnn()'>YAYINLA</button>
-                        </div>` : ''}
-                        <div class='ann-search-wrap'>
-                            <i class='fas fa-search'></i>
-                            <input class='input-p' id='ann-search' style='padding-left:46px;margin-bottom:0;' placeholder='Duyurularda ara...' oninput='app.renderAnns()'>
-                        </div>
-                        <div id='ann-list'></div>`;
+                    const annDot = document.getElementById('ann-dot');
+                    if(annDot) { annDot.style.display = 'none'; annDot.textContent = ''; }
+                    c.innerHTML = `<h2>Duyurular</h2>
+                        <input type="text" id="ann-search" class="input-p" placeholder="🔍 Duyuru Ara..." onkeyup="app.renderAnns()" style="margin-bottom:15px; padding:12px 15px;">
+                        ${app.user.role==='admin'?`<div class="card"><input id="an-title" class="input-p" placeholder="Başlık"><textarea id="an-text" class="input-p" placeholder="Mesaj"></textarea>
+                        <label style="display:flex;align-items:center;gap:8px;margin-bottom:15px;color:var(--sub);font-size:0.85rem;cursor:pointer;"><input type="checkbox" id="an-pin"> 📌 Başa Tuttur (Sabitle)</label>
+                        <button class="btn-p" onclick="app.handleNewAnn()">YAYINLA</button></div>`:''}
+                        <div id="ann-list"></div>`;
                     app.renderAnns();
                 } else if(p === 'admin') {
                     // Admin sekmesi açılınca okundu olarak işaretle
@@ -1027,30 +941,18 @@
                             </div>
                         </div>
 
-                        <div class='card' style='display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;cursor:pointer;' onclick='app.toggleTheme()'>
-                            <div>
-                                <b style='font-size:0.95rem;' id='theme-label'>&#127769; Karanlik Mod</b>
-                                <p style='font-size:0.75rem;color:var(--sub);margin:4px 0 0;'>Tema degistir</p>
-                            </div>
-                            <div class='theme-toggle'>
-                                <div class='theme-toggle-track'>
-                                    <div class='theme-toggle-thumb' id='theme-thumb'>&#9728;&#65039;</div>
-                                </div>
-                            </div>
-                        </div>
-
-                        
                         <div class="card" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
                             <div>
-                                <b style="font-size:0.95rem;">🌐 Çeviri / Language</b>
-                                <p style="font-size:0.75rem;color:var(--sub);margin:4px 0 0;">Sistem Dilini Değiştir</p>
+                                <b style="font-size:0.95rem;">🎨 Tema Görünümü</b>
+                                <p style="font-size:0.75rem;color:var(--sub);margin:4px 0 0;">Aydınlık veya Karanlık Mod</p>
                             </div>
-                            <div style="display:flex;gap:5px;">
-                                <button class="btn-p" style="padding:6px 12px;font-size:0.8rem;margin:0;background:var(--sub);" onclick="app.changeLang('tr')">TR</button>
-                                <button class="btn-p" style="padding:6px 12px;font-size:0.8rem;margin:0;" onclick="app.changeLang('en')">EN</button>
-                            </div>
+                            <label class="switch">
+                                <input type="checkbox" id="theme-toggle" ${document.body.classList.contains('light-mode') ? 'checked' : ''} onchange="app.toggleTheme(this.checked)">
+                                <span class="slider round"></span>
+                            </label>
                         </div>
-<div class="card" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+
+                        <div class="card" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
                             <div>
                                 <b style="font-size:0.95rem;">🔔 Bildirimler</b>
                                 <p style="font-size:0.75rem;color:var(--sub);margin:4px 0 0;">Yeni mesajlarda uyarı al</p>
@@ -1113,9 +1015,10 @@
             },
 
             async handleNewTask(e) {
-                e.preventDefault(); if(!app.sel.tTo) return app.toast('Kışi seç!', true);
-                // deadline: Supabase sütunu olmadığından gönderilmiyor
-                const t = { assignee: app.sel.tTo, title: document.getElementById('t-title').value, description: document.getElementById('t-desc').value + `\n\n[ADMIN: ${app.user.name}]`, status: 'Aktif', date: new Date().toISOString() };
+                e.preventDefault(); if(!app.sel.tTo) return app.toast('Kişi seç!', true);
+                const deadline = document.getElementById('t-deadline').value;
+                const dlTag = deadline ? `\n\n[DEADLINE: ${deadline}]` : '';
+                const t = { assignee: app.sel.tTo, title: document.getElementById('t-title').value, description: document.getElementById('t-desc').value + dlTag + `\n\n[ADMIN: ${app.user.name}]`, status: 'Aktif', date: new Date().toISOString() };
                 const r = await fetch(`${RENDER_URL}/api/tasks`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(t)});
                 if(r.ok) { app.toast('Atandı'); app.close(); await app.sync(); app.nav('tasks'); } else app.toast('Hata: ' + (await r.json()).error, true);
             },
@@ -1170,31 +1073,18 @@
             },
 
             async handleNewAnn() {
-                const raw = document.getElementById('an-title').value;
-                const x = document.getElementById('an-text').value;
                 const isPinned = document.getElementById('an-pin')?.checked;
-                const t = isPinned ? '[PIN] ' + raw : raw;
-                if(!raw||!x) return app.toast('Doldurun!', true);
-                const r = await fetch(`${RENDER_URL}/api/announcements`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({title:t, text:x, author:app.user.name}) });
-                if(r.ok) { app.toast(isPinned ? '📌 Sabitlendi!' : 'Yayınlandı'); await app.sync(); app.nav('ann'); } else app.toast('Hata!', true);
+                let title = document.getElementById('an-title').value, text = document.getElementById('an-text').value;
+                if(!title || !text) return app.toast('Boş bırakma!', true);
+                if(isPinned) title = '📌 ' + title;
+                const r = await fetch(`${RENDER_URL}/api/announcements`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ title, text })});
+                if(r.ok) { app.toast('Yayınlandı'); await app.sync(); app.nav('ann'); } else app.toast('Hata!', true);
             },
 
             async delItem(table, id) {
                 if(confirm('Silmek istediğinize emin misiniz?')) {
                     const r = await fetch(`${RENDER_URL}/api/${table}/${id}`, {method:'DELETE'});
                     if(r.ok) { app.toast('Silindi'); await app.sync(); app.nav(table === 'users' ? 'set' : (table === 'tasks' ? 'tasks' : 'ann')); } else app.toast('Hata: ' + (await r.json()).error, true);
-                }
-            },
-
-            
-            changeLang(lang) {
-                const sel = document.querySelector('.goog-te-combo');
-                if(sel) { 
-                    sel.value = lang; 
-                    sel.dispatchEvent(new Event('change')); 
-                    app.toast(lang === 'en' ? 'Language: English' : 'Dil: Türkçe');
-                } else {
-                    app.toast('Çeviri sistemi yükleniyor...', true);
                 }
             },
 
@@ -1221,6 +1111,39 @@
                     </div>`;
                 }).join('');
                 if(atBottom) box.scrollTop = box.scrollHeight;
+            },
+
+            renderAnns() {
+                const list = document.getElementById('ann-list');
+                if(!list) return;
+                const query = document.getElementById('ann-search')?.value.toLowerCase() || '';
+                let anns = [...app.db.announcements];
+                
+                anns.sort((a,b) => {
+                    const aPin = a.title.startsWith('📌');
+                    const bPin = b.title.startsWith('📌');
+                    if(aPin && !bPin) return -1;
+                    if(!aPin && bPin) return 1;
+                    return new Date(b.created_at||b.date||0) - new Date(a.created_at||a.date||0);
+                });
+
+                let html = '';
+                let count = 0;
+                anns.forEach(a => {
+                    if(query && !a.title.toLowerCase().includes(query) && !a.text.toLowerCase().includes(query)) return;
+                    count++;
+                    const d = new Date(a.created_at||a.date||0);
+                    const dateStr = isNaN(d)?'':`<span style="font-size:0.75rem;color:var(--sub);margin-top:4px;display:block;">${d.toLocaleDateString('tr')} ${d.toLocaleTimeString('tr',{hour:'2-digit',minute:'2-digit'})}</span>`;
+                    const isPinned = a.title.startsWith('📌');
+                    const titleClean = isPinned ? a.title.replace('📌 ', '') : a.title;
+                    html += `<div class="card" ${isPinned ? 'style="border-left:4px solid var(--gold);"' : ''}>
+                        <h3 style="display:flex;align-items:center;gap:8px;margin-bottom:5px;">${isPinned?'<i class="fas fa-thumbtack" style="color:var(--gold);"></i>':''} ${titleClean}</h3>
+                        <p style="white-space:pre-wrap;">${a.text}</p>${dateStr}
+                        ${app.user.role==='admin'?`<i class="fas fa-trash del-btn" onclick="app.delItem('announcements', '${a.id}')"></i>`:''}
+                    </div>`;
+                });
+                if(count === 0) html = `<div class="card" style="text-align:center;color:var(--sub);">📢 Duyuru bulunamadı.</div>`;
+                list.innerHTML = html;
             },
 
             async sendImgMsg(input) {
@@ -1376,18 +1299,6 @@
                 app.toast('Link Kopyalandı!');
             },
 
-            
-            changeLang(lang) {
-                const sel = document.querySelector('.goog-te-combo');
-                if(sel) { 
-                    sel.value = lang; 
-                    sel.dispatchEvent(new Event('change')); 
-                    app.toast(lang === 'en' ? 'Language: English' : 'Dil: Türkçe');
-                } else {
-                    app.toast('Çeviri sistemi yükleniyor...', true);
-                }
-            },
-
             logout() {
                 app.user = null;
                 app.sel.chatTarget = null;
@@ -1406,16 +1317,7 @@
 
             toast(m, b=false) { const e = document.getElementById('toast'); document.getElementById('toast-msg').innerText=m; e.style.background=b?'var(--red)':'var(--p-grad)'; e.style.transform='translateX(-50%) translateY(0)'; e.style.opacity='1'; setTimeout(()=>{e.style.transform='translateX(-50%) translateY(-200%)'; e.style.opacity='0';}, 3000); }
         };
-        document.addEventListener('DOMContentLoaded', () => app.init());
+        window.onload = () => app.init();
     </script>
-
-    <div id="google_translate_element" style="display:none;"></div>
-    <script type="text/javascript">
-        function googleTranslateElementInit() {
-            new google.translate.TranslateElement({pageLanguage: 'tr', includedLanguages: 'en,tr', autoDisplay: false}, 'google_translate_element');
-        }
-    </script>
-    <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit" async defer></script>
-
 </body>
 </html>
