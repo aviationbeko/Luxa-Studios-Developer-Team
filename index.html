@@ -275,6 +275,8 @@
 
     <script>
         const RENDER_URL = "https://lsdt.onrender.com";
+        const SUPA_URL = "https://iczzynikkupxlvrrdihv.supabase.co";
+        const SUPA_KEY = "sb_publishable_neFoM9r6SQkKD7GF7zQ_jg_OyV-SBHd";
         const app = {
             db: { users: [], tasks: [], announcements: [], messages: [] },
             user: null,
@@ -306,15 +308,24 @@
 
             async sync() {
                 try {
+                    // Kullanıcılar, görevler, duyurular Render'dan
                     const r = await fetch(`${RENDER_URL}/api/state`);
                     const d = await r.json();
                     app.db.users = d.users || [];
                     app.db.tasks = d.tasks || [];
                     app.db.announcements = d.announcements || [];
-                    // Mesajlar: sunucudan geldiyse kullan, gelmediyse lokali koru (messages tablosu henüz yoksa)
-                    if(Array.isArray(d.messages)) {
-                        app.db.messages = d.messages;
-                    }
+
+                    // Mesajlar doğrudan Supabase'den (Render bypass)
+                    try {
+                        const mr = await fetch(`${SUPA_URL}/rest/v1/messages?select=*&order=date.asc`, {
+                            headers: {
+                                'apikey': SUPA_KEY,
+                                'Authorization': `Bearer ${SUPA_KEY}`
+                            }
+                        });
+                        if(mr.ok) app.db.messages = await mr.json();
+                    } catch(me) { console.warn("Mesaj sync hatası:", me); }
+
                     app.checkUpdate();
                     app.checkNewMsgs();
                     if(app.sel.chatTarget) app.renderChat();
@@ -666,7 +677,7 @@
                 const input = document.getElementById('msg-input');
                 const text = input.value.trim();
                 if(!text || !app.sel.chatTarget) return;
-                // Butonu devre dışı bırak (çift gönderimi engelle)
+
                 const btn = document.getElementById('msg-send-btn');
                 if(btn) btn.disabled = true;
                 input.value = '';
@@ -674,23 +685,29 @@
                 const msg = { sender: app.user.username, receiver: app.sel.chatTarget, text: text };
 
                 try {
-                    const r = await fetch(`${RENDER_URL}/api/messages`, {
+                    // Doğrudan Supabase REST API'sine yaz (Render bypass)
+                    const r = await fetch(`${SUPA_URL}/rest/v1/messages`, {
                         method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
+                        headers: {
+                            'apikey': SUPA_KEY,
+                            'Authorization': `Bearer ${SUPA_KEY}`,
+                            'Content-Type': 'application/json',
+                            'Prefer': 'return=minimal'
+                        },
                         body: JSON.stringify(msg)
                     });
-                    const resData = await r.json();
+
                     if(!r.ok) {
-                        const errorMsg = resData.details || resData.error || 'Bilinmeyen Hata';
-                        app.toast('Gönderilemedi: ' + errorMsg, true);
-                        input.value = text; // Metni geri koy
+                        const errText = await r.text();
+                        console.error("Supabase mesaj hatası:", errText);
+                        app.toast('Gönderilemedi!', true);
+                        input.value = text;
                     } else {
-                        // Sunucu onayladı, şimdi senkronize et
                         await app.sync();
                     }
                 } catch(e) {
-                    app.toast('Sunucuya bağlanılamadı', true);
-                    input.value = text; // Metni geri koy
+                    app.toast('Bağlantı hatası!', true);
+                    input.value = text;
                 } finally {
                     if(btn) btn.disabled = false;
                     input.focus();
