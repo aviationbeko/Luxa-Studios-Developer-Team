@@ -99,6 +99,22 @@
 
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes msgIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+        .stat-card { background: var(--glass); border: 1px solid rgba(255,255,255,0.1); border-radius: 24px; padding: 20px 15px; text-align: center; position: relative; overflow: hidden; }
+        .stat-card::before { content: ''; position: absolute; top: -20px; right: -20px; width: 70px; height: 70px; border-radius: 50%; opacity: 0.15; }
+        .stat-card.purple::before { background: var(--p); }
+        .stat-card.gold::before { background: #f0a500; }
+        .stat-card.green::before { background: var(--green); }
+        .stat-card.red::before { background: var(--red); }
+        .stat-num { font-size: 2rem; font-weight: 900; display: block; line-height: 1; margin-bottom: 6px; }
+        .stat-label { font-size: 0.72rem; color: var(--sub); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+        .online-dot { width: 11px; height: 11px; background: var(--green); border-radius: 50%; border: 2px solid #05020a; display: inline-block; flex-shrink: 0; box-shadow: 0 0 6px var(--green); }
+        .offline-dot { width: 11px; height: 11px; background: rgba(255,255,255,0.2); border-radius: 50%; border: 2px solid #05020a; display: inline-block; flex-shrink: 0; }
+        .msg-tick { font-size: 0.6rem; margin-left: 5px; opacity: 0.6; }
+        .msg-tick.read { color: #60b4ff; opacity: 1; }
+        .msg-img { max-width: 200px; border-radius: 14px; margin-top: 8px; cursor: pointer; display: block; }
+        #notif-banner { position: fixed; bottom: 85px; left: 50%; transform: translateX(-50%) translateY(180%); background: linear-gradient(135deg,#6a0dad,#9b30ff); color: white; padding: 14px 22px; border-radius: 20px; font-size: 0.85rem; font-weight: 800; z-index: 4000; transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1); max-width: 88%; display: flex; align-items: center; gap: 12px; box-shadow: 0 8px 30px rgba(100,0,200,0.4); pointer-events: none; }
+        #notif-banner.show { transform: translateX(-50%) translateY(0); pointer-events: all; }
     </style>
 </head>
 <body>
@@ -339,13 +355,40 @@
                 if(!badge) return;
                 const lastSeen = parseInt(localStorage.getItem('lsdt_msgs_seen') || '0');
                 const unread = (app.db.messages || []).filter(m => m.receiver === app.user.username && new Date(m.date).getTime() > lastSeen);
+                const prevCount = app._prevUnread || 0;
                 if(unread.length > 0) {
                     badge.style.display = 'flex';
                     badge.textContent = unread.length > 9 ? '9+' : unread.length;
+                    // Yeni mesaj geldiyse bildirim gönder
+                    if(unread.length > prevCount) {
+                        const newest = unread[unread.length - 1];
+                        const senderName = (app.db.users.find(u => u.username === newest.sender)?.name) || newest.sender;
+                        // Tarayıcı push bildirimi
+                        if(Notification.permission === 'granted' && document.hidden) {
+                            new Notification(`💬 ${senderName}`, { body: newest.text.substring(0, 80), icon: 'https://img.icons8.com/fluency/48/lightning-bolt.png' });
+                        }
+                        // Uygulama içi banner (sekme açıksa)
+                        app.showMsgBanner(senderName, newest.text);
+                    }
                 } else {
                     badge.style.display = 'none';
                     badge.textContent = '';
                 }
+                app._prevUnread = unread.length;
+            },
+
+            showMsgBanner(from, text) {
+                let b = document.getElementById('notif-banner');
+                if(!b) {
+                    b = document.createElement('div');
+                    b.id = 'notif-banner';
+                    b.onclick = () => { app.nav('admin'); b.classList.remove('show'); };
+                    document.body.appendChild(b);
+                }
+                b.innerHTML = `<i class="fas fa-comment-dots" style="font-size:1.2rem;"></i><div><div style="font-size:0.8rem;opacity:0.8;">Yeni mesaj — ${from}</div><div>${text.substring(0,50)}${text.length>50?'…':''}</div></div>`;
+                b.classList.add('show');
+                clearTimeout(app._bannerTimer);
+                app._bannerTimer = setTimeout(() => b.classList.remove('show'), 4000);
             },
 
             show(id) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.getElementById(id).classList.add('active'); },
@@ -517,7 +560,9 @@
                                 </div>
                             </div>
                             <div class="chat-messages" id="chat-box" style="flex:1; overflow-y:auto; padding:20px; display:flex; flex-direction:column; gap:15px; background:rgba(0,0,0,0.15);"></div>
-                            <div style="padding:15px; background:rgba(255,255,255,0.02); border-top:1px solid rgba(255,255,255,0.05); display:flex; gap:10px;">
+                            <div style="padding:15px; background:rgba(255,255,255,0.02); border-top:1px solid rgba(255,255,255,0.05); display:flex; gap:10px; align-items:center;">
+                                <input type="file" id="msg-img-input" accept="image/*" style="display:none;" onchange="app.sendImgMsg(this)">
+                                <button class="btn-p" style="width:46px;height:46px;border-radius:50%;display:flex;justify-content:center;align-items:center;padding:0;flex-shrink:0;background:rgba(255,255,255,0.08);" onclick="document.getElementById('msg-img-input').click()"><i class="fas fa-image" style="font-size:1.1rem;"></i></button>
                                 <input id="msg-input" class="input-p" style="margin-bottom:0; flex:1; border-radius:20px; padding:15px 20px; background:rgba(0,0,0,0.3);" placeholder="Mesajınızı yazın..." onkeypress="if(event.key==='Enter') app.sendMsg()">
                                 <button id="msg-send-btn" class="btn-p" style="width:55px; height:55px; border-radius:50%; display:flex; justify-content:center; align-items:center; padding:0; flex-shrink:0;" onclick="app.sendMsg()"><i class="fas fa-paper-plane" style="font-size:1.2rem; margin-left:-3px;"></i></button>
                             </div>
@@ -525,14 +570,47 @@
                         setTimeout(() => app.renderChat(), 50);
                     }
                 } else if(p === 'set') {
+                    const myTasks = app.db.tasks.filter(t => t.assignee === app.user.username);
+                    const activeTasks = myTasks.filter(t => t.status === 'active' || t.status === 'pending').length;
+                    const doneTasks = myTasks.filter(t => t.status === 'done' || t.status === 'completed').length;
+                    const myPts = app.user.points || 0;
+                    const myMsgs = (app.db.messages || []).filter(m => m.sender === app.user.username || m.receiver === app.user.username).length;
                     c.innerHTML = `
-                        <div class="card" style="text-align:center;">
-                            <h2>Profilim</h2>
-                            <p style="color:var(--p); font-weight:900; font-size:1.5rem; margin-top:10px;">${app.user.name}</p>
-                            <p>${app.user.category}</p>
+                        <div class="card" style="text-align:center; padding-bottom:10px;">
+                            <div style="width:72px;height:72px;background:var(--p-grad);border-radius:50%;display:flex;justify-content:center;align-items:center;font-size:2rem;font-weight:900;margin:0 auto 12px;">${app.user.name[0]}</div>
+                            <h2 style="margin:0;">${app.user.name}</h2>
+                            <p style="color:var(--sub);margin:4px 0 0;">${app.user.category}</p>
                         </div>
+
+                        <div class="stat-grid">
+                            <div class="stat-card purple">
+                                <span class="stat-num" style="color:var(--p);">${activeTasks}</span>
+                                <span class="stat-label">⚡ Aktif Görev</span>
+                            </div>
+                            <div class="stat-card green">
+                                <span class="stat-num" style="color:var(--green);">${doneTasks}</span>
+                                <span class="stat-label">✅ Tamamlanan</span>
+                            </div>
+                            <div class="stat-card gold">
+                                <span class="stat-num" style="color:#f0a500;">${myPts}</span>
+                                <span class="stat-label">🏆 Toplam Puan</span>
+                            </div>
+                            <div class="stat-card red">
+                                <span class="stat-num" style="color:var(--red);">${myMsgs}</span>
+                                <span class="stat-label">💬 Mesaj</span>
+                            </div>
+                        </div>
+
+                        <div class="card" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+                            <div>
+                                <b style="font-size:0.95rem;">🔔 Bildirimler</b>
+                                <p style="font-size:0.75rem;color:var(--sub);margin:4px 0 0;">Yeni mesajlarda uyarı al</p>
+                            </div>
+                            <button class="btn-p" style="padding:10px 18px;font-size:0.8rem;margin:0;" onclick="app.enableNotif()">AKTİF ET</button>
+                        </div>
+
                         <button class="btn-p" style="background:var(--red); margin-bottom:20px;" onclick="app.logout()">GÜVENLİ ÇIKIŞ</button>
-                        
+
                         ${app.user.role === 'admin' ? `
                             <div class="card" style="background:rgba(255,43,226,0.1); border:1px solid var(--p); margin-bottom:20px; text-align:left;">
                                 <div style="display:flex; justify-content:space-between; align-items:center;">
@@ -660,18 +738,51 @@
             renderChat() {
                 const box = document.getElementById('chat-box'); if(!box) return;
                 const msgs = (app.db.messages || []).filter(m => (m.sender === app.user.username && m.receiver === app.sel.chatTarget) || (m.sender === app.sel.chatTarget && m.receiver === app.user.username));
-                // Mevcut scroll pozisyonunu koru (flicker önleme)
+                const lastSeen = parseInt(localStorage.getItem('lsdt_msgs_seen') || '0');
                 const atBottom = box.scrollHeight - box.scrollTop <= box.clientHeight + 50;
                 box.innerHTML = msgs.map(m => {
                     const isMe = m.sender === app.user.username;
                     const senderName = isMe ? 'Siz' : (app.db.users.find(x=>x.username===m.sender)?.name || m.sender);
                     const timeStr = m.date ? new Date(m.date).toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'}) : '';
+                    const isRead = isMe && new Date(m.date).getTime() <= lastSeen;
+                    const tick = isMe ? `<span class="msg-tick ${isRead?'read':''}"><i class="fas fa-check-double"></i></span>` : '';
+                    const isImage = m.text && m.text.startsWith('data:image');
+                    const content = isImage
+                        ? `<img class="msg-img" src="${m.text}" onclick="app.viewImg('${m.text}')" />`
+                        : m.text;
                     return `<div class="msg ${isMe ? 'sent' : 'received'}">
-                        <span class="msg-info">${senderName} · ${timeStr}</span>
-                        ${m.text}
+                        <span class="msg-info">${senderName} · ${timeStr}${tick}</span>
+                        ${content}
                     </div>`;
                 }).join('');
                 if(atBottom) box.scrollTop = box.scrollHeight;
+            },
+
+            async sendImgMsg(input) {
+                const file = input.files[0];
+                if(!file || !app.sel.chatTarget) return;
+                const reader = new FileReader();
+                reader.onload = async (e) => {
+                    const base64 = e.target.result;
+                    const btn = document.getElementById('msg-send-btn');
+                    if(btn) btn.disabled = true;
+                    try {
+                        const r = await fetch(`${SUPA_URL}/rest/v1/messages`, {
+                            method: 'POST',
+                            headers: {
+                                'apikey': SUPA_KEY,
+                                'Authorization': `Bearer ${SUPA_KEY}`,
+                                'Content-Type': 'application/json',
+                                'Prefer': 'return=minimal'
+                            },
+                            body: JSON.stringify({ sender: app.user.username, receiver: app.sel.chatTarget, text: base64 })
+                        });
+                        if(r.ok) { await app.sync(); }
+                        else { app.toast('Resim gönderilemedi!', true); }
+                    } catch(e) { app.toast('Bağlantı hatası!', true); }
+                    finally { if(btn) btn.disabled = false; input.value = ''; }
+                };
+                reader.readAsDataURL(file);
             },
 
             async sendMsg() {
