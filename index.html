@@ -99,14 +99,23 @@
 
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes msgIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        /* AI Asistan */
-        .ai-bubble { max-width:88%; padding:14px 18px; border-radius:22px; font-size:0.88rem; line-height:1.6; animation:msgIn 0.3s ease; }
-        .ai-bubble.user { align-self:flex-end; background:var(--p-grad); color:white; border-bottom-right-radius:5px; }
-        .ai-bubble.bot { align-self:flex-start; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.1); color:white; border-bottom-left-radius:5px; }
-        .ai-chip { display:inline-block; background:rgba(138,43,226,0.2); border:1px solid rgba(138,43,226,0.4); color:var(--p); padding:8px 14px; border-radius:20px; font-size:0.8rem; cursor:pointer; margin:4px; transition:0.2s; font-weight:700; }
+        /* AI FAB + Modal */
+        #ai-fab { position:fixed; bottom:88px; right:18px; width:58px; height:58px; background:var(--p-grad); border-radius:50%; display:none; justify-content:center; align-items:center; font-size:1.6rem; cursor:pointer; z-index:3000; box-shadow:0 6px 25px rgba(138,43,226,0.6); transition:transform 0.2s; border:none; color:white; }
+        #ai-fab:hover { transform:scale(1.1); }
+        #ai-fab.open { transform:rotate(20deg) scale(1.05); }
+        #ai-popup { position:fixed; bottom:160px; right:15px; width:min(340px, calc(100vw - 30px)); max-height:70vh; background:#13002b; border:1px solid rgba(138,43,226,0.35); border-radius:24px; z-index:3500; display:none; flex-direction:column; box-shadow:0 24px 60px rgba(0,0,0,0.8); overflow:hidden; transform:scale(0.9) translateY(20px); opacity:0; transition:transform 0.25s cubic-bezier(0.34,1.56,0.64,1), opacity 0.2s ease; pointer-events:none; }
+        #ai-popup.show { display:flex; transform:scale(1) translateY(0); opacity:1; pointer-events:all; }
+        #ai-popup-header { padding:16px 20px; background:var(--p-grad); display:flex; align-items:center; gap:12px; flex-shrink:0; }
+        #ai-box-popup { flex:1; overflow-y:auto; padding:16px; display:flex; flex-direction:column; gap:10px; min-height:200px; }
+        #ai-input-row { padding:12px; border-top:1px solid rgba(255,255,255,0.06); display:flex; gap:8px; flex-shrink:0; }
+        /* AI bubbles */
+        .ai-bubble { max-width:88%; padding:12px 16px; border-radius:20px; font-size:0.85rem; line-height:1.5; animation:msgIn 0.3s ease; word-break:break-word; }
+        .ai-bubble.user { align-self:flex-end; background:var(--p-grad); color:white; border-bottom-right-radius:4px; }
+        .ai-bubble.bot { align-self:flex-start; background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.1); color:white; border-bottom-left-radius:4px; }
+        .ai-chip { display:inline-block; background:rgba(138,43,226,0.2); border:1px solid rgba(138,43,226,0.4); color:var(--p); padding:7px 13px; border-radius:18px; font-size:0.78rem; cursor:pointer; margin:3px; transition:0.2s; font-weight:700; }
         .ai-chip:hover { background:rgba(138,43,226,0.4); transform:translateY(-2px); }
-        .ai-typing { display:flex; gap:5px; align-items:center; padding:14px 18px; }
-        .ai-typing span { width:8px; height:8px; background:var(--p); border-radius:50%; animation:typingDot 1.2s infinite; }
+        .ai-typing { display:flex; gap:5px; align-items:center; padding:12px 16px; }
+        .ai-typing span { width:7px; height:7px; background:var(--p); border-radius:50%; animation:typingDot 1.2s infinite; }
         .ai-typing span:nth-child(2) { animation-delay:0.2s; }
         .ai-typing span:nth-child(3) { animation-delay:0.4s; }
         @keyframes typingDot { 0%,60%,100% { transform:translateY(0); opacity:0.4; } 30% { transform:translateY(-6px); opacity:1; } }
@@ -227,10 +236,27 @@
         <nav class="bottom-nav">
             <div id="nav-dash" class="nav-item active" onclick="app.nav('dash')"><i class="fas fa-home"></i><span>Panel</span></div>
             <div id="nav-tasks" class="nav-item" onclick="app.nav('tasks')"><i class="fas fa-clipboard-list"></i><span>Kayıtlar</span></div>
-            <div id="nav-ai" class="nav-item" onclick="app.nav('ai')"><i class="fas fa-robot"></i><span>AI</span></div>
+            <div id="nav-ann" class="nav-item" onclick="app.nav('ann')" style="position:relative;"><i class="fas fa-bullhorn"></i><span>Duyuru</span><div id="ann-dot" class="nav-badge"></div></div>
             <div id="nav-admin" class="nav-item" onclick="app.nav('admin')" style="position:relative;"><i class="fas fa-headset"></i><span>İletişim</span><div id="msg-dot" class="nav-badge"></div></div>
             <div id="nav-set" class="nav-item" onclick="app.nav('set')"><i class="fas fa-cog"></i><span>Ekip</span></div>
         </nav>
+
+        <!-- AI FAB Butonu -->
+        <button id="ai-fab" onclick="app.toggleAI()">🤖</button>
+
+        <!-- AI Popup Modal -->
+        <div id="ai-popup">
+            <div id="ai-popup-header">
+                <div style="width:38px;height:38px;background:rgba(255,255,255,0.2);border-radius:50%;display:flex;justify-content:center;align-items:center;font-size:1.3rem;flex-shrink:0;">🤖</div>
+                <div style="flex:1;"><div style="font-weight:900;font-size:1rem;">LSDT Asistan</div><div style="font-size:0.72rem;opacity:0.8;">Sana özel yanıtlar</div></div>
+                <button onclick="app.toggleAI()" style="background:rgba(255,255,255,0.15);border:none;color:white;width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:1rem;display:flex;justify-content:center;align-items:center;"><i class="fas fa-times"></i></button>
+            </div>
+            <div id="ai-box-popup"></div>
+            <div id="ai-input-row">
+                <input id="ai-popup-input" class="input-p" style="margin-bottom:0;flex:1;border-radius:18px;padding:12px 16px;background:rgba(0,0,0,0.4);font-size:0.85rem;" placeholder="Bir şey sor..." onkeypress="if(event.key==='Enter') app.aiAsk()">
+                <button class="btn-p" style="width:44px;height:44px;border-radius:50%;padding:0;flex-shrink:0;display:flex;justify-content:center;align-items:center;" onclick="app.aiAsk()"><i class="fas fa-paper-plane"></i></button>
+            </div>
+        </div>
 
         <!-- Update Blocker Overlay -->
         <div id="update-overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:var(--bg); z-index:9999; flex-direction:column; justify-content:center; align-items:center; text-align:center; padding:30px;">
@@ -363,6 +389,7 @@
 
                     app.checkUpdate();
                     app.checkNewMsgs();
+                    app.checkNewAnns();
                     if(app.sel.chatTarget) app.renderChat();
                 } catch(e) { console.error("Sync error:", e); }
             },
@@ -478,28 +505,64 @@
                 });
             },
 
+            toggleAI() {
+                const fab = document.getElementById('ai-fab');
+                const popup = document.getElementById('ai-popup');
+                const isOpen = popup.classList.contains('show');
+                if(isOpen) {
+                    popup.classList.remove('show');
+                    fab.classList.remove('open');
+                    setTimeout(() => { if(!popup.classList.contains('show')) popup.style.display='none'; }, 250);
+                } else {
+                    popup.style.display = 'flex';
+                    app._aiHistory = app._aiHistory || [];
+                    const box = document.getElementById('ai-box-popup');
+                    if(box && box.children.length === 0) {
+                        // İlk açılış — karşılama + hızlı sorular
+                        const greet = document.createElement('div');
+                        greet.className = 'ai-bubble bot';
+                        greet.innerHTML = `👋 Merhaba <b>${app.user?.name || ''}</b>! LSDT hakkında her şeyi sorabilirsin.`;
+                        box.appendChild(greet);
+                        const chips = document.createElement('div');
+                        chips.style.cssText = 'display:flex;flex-wrap:wrap;gap:5px;margin-top:4px;';
+                        chips.innerHTML = `
+                            <span class="ai-chip" onclick="app.aiAsk('Son duyuru ne?')">📢 Son Duyuru</span>
+                            <span class="ai-chip" onclick="app.aiAsk('Adminler kimler?')">👑 Adminler</span>
+                            <span class="ai-chip" onclick="app.aiAsk('Görevlerim neler?')">📋 Görevlerim</span>
+                            <span class="ai-chip" onclick="app.aiAsk('Rapor durumum?')">📊 Raporlarım</span>
+                            <span class="ai-chip" onclick="app.aiAsk('Ekip kaç kişi?')">👥 Ekip</span>
+                            <span class="ai-chip" onclick="app.aiAsk('Reddedilen görevim var mı?')">❌ Reddedilenler</span>`;
+                        box.appendChild(chips);
+                        app._aiHistory.forEach(h => { const d=document.createElement('div'); d.className=`ai-bubble ${h.role}`; d.innerHTML=h.text; box.appendChild(d); });
+                        box.scrollTop = box.scrollHeight;
+                    }
+                    requestAnimationFrame(() => {
+                        requestAnimationFrame(() => {
+                            popup.classList.add('show');
+                            fab.classList.add('open');
+                            document.getElementById('ai-popup-input')?.focus();
+                        });
+                    });
+                }
+            },
+
             aiAsk(preset) {
-                const input = document.getElementById('ai-input');
+                const input = document.getElementById('ai-popup-input');
                 const q = (preset || input?.value || '').trim();
                 if(!q) return;
                 if(input) input.value = '';
-                const box = document.getElementById('ai-box');
+                const box = document.getElementById('ai-box-popup');
                 if(!box) return;
                 app._aiHistory = app._aiHistory || [];
-
-                // Kullanıcı mesajı
                 const uDiv = document.createElement('div');
                 uDiv.className = 'ai-bubble user'; uDiv.textContent = q;
                 box.appendChild(uDiv);
                 app._aiHistory.push({role:'user', text: q});
-
-                // Typing indicator
                 const typingDiv = document.createElement('div');
                 typingDiv.className = 'ai-bubble bot ai-typing';
                 typingDiv.innerHTML = '<span></span><span></span><span></span>';
                 box.appendChild(typingDiv);
                 box.scrollTop = box.scrollHeight;
-
                 setTimeout(() => {
                     typingDiv.remove();
                     const answer = app.aiThink(q);
@@ -508,34 +571,116 @@
                     box.appendChild(bDiv);
                     app._aiHistory.push({role:'bot', text: answer});
                     box.scrollTop = box.scrollHeight;
-                }, 900 + Math.random() * 600);
+                }, 700 + Math.random() * 500);
             },
 
             aiThink(q) {
                 const ql = q.toLowerCase();
-                const kb = [
-                    { keys:['luau','script','kod','yazılır','scripting'], ans:`<b>🎮 Luau Script Temelleri</b><br><br>Luau, Roblox'un özel Lua tabanlı dilidir.<br><br><b>Temel yapı:</b><br><code>local part = workspace.Part<br>part.BrickColor = BrickColor.new("Bright red")<br>part.Touched:Connect(function(hit)<br>&nbsp;&nbsp;print("Dokunuldu:", hit.Name)<br>end)</code><br><br>💡 <b>İpuçları:</b> Her zaman <code>local</code> kullan, global değişkenden kaçın. Script'i ServerScriptService'e, LocalScript'i StarterPlayerScripts'e koy.` },
-                    { keys:['remoteevent','remote event','client','server','iletişim'], ans:`<b>🔗 RemoteEvent Kullanımı</b><br><br>Client → Server veya Server → Client iletişimi için kullanılır.<br><br><b>ReplicatedStorage'a RemoteEvent ekle, sonra:</b><br><code>-- SERVER (Script):<br>local re = game.ReplicatedStorage.MyEvent<br>re.OnServerEvent:Connect(function(player, data)<br>&nbsp;&nbsp;print(player.Name, data)<br>end)<br><br>-- CLIENT (LocalScript):<br>local re = game.ReplicatedStorage.MyEvent<br>re:FireServer("Merhaba!")</code><br><br>⚠️ Güvenlik: Server'da her zaman gelen veriyi doğrula!` },
-                    { keys:['datastore','data store','veri','kaydet','save'], ans:`<b>💾 DataStore Kullanımı</b><br><br><code>local DS = game:GetService("DataStoreService")<br>local store = DS:GetDataStore("OyuncuData")<br><br>-- Kaydet:<br>store:SetAsync(player.UserId, {coins=100})<br><br>-- Yükle:<br>local data = store:GetAsync(player.UserId)<br>if data then print(data.coins) end</code><br><br>⚠️ <b>Önemli:</b> pcall() ile hataları yakala! DataStore bazen başarısız olabilir.` },
-                    { keys:['tween','animasyon','hareket','lerp','geçiş'], ans:`<b>🎞️ TweenService Animasyonu</b><br><br><code>local TS = game:GetService("TweenService")<br>local part = workspace.Part<br>local info = TweenInfo.new(<br>&nbsp;&nbsp;1, -- süre (saniye)<br>&nbsp;&nbsp;Enum.EasingStyle.Quad,<br>&nbsp;&nbsp;Enum.EasingDirection.Out<br>)<br>local tween = TS:Create(part, info, {<br>&nbsp;&nbsp;Position = Vector3.new(0,10,0),<br>&nbsp;&nbsp;Transparency = 0.5<br>})<br>tween:Play()</code><br><br>💡 TweenService birden fazla özelliği aynı anda animate edebilir!` },
-                    { keys:['gui','ui','frame','button','textlabel','arayüz','tasarım'], ans:`<b>🎨 GUI Tasarım İpuçları</b><br><br>✅ <b>Profesyonel GUI için:</b><br>• UICorner ile köşeleri yuvarla (CornerRadius: 0.1)<br>• UIStroke ile outline ekle<br>• UIGradient ile renk geçişi yap<br>• AnchorPoint = Vector2.new(0.5, 0.5) ile ortaya hizala<br>• UIAspectRatioConstraint ile farklı ekranlarda düzgün görünür<br><br>💡 <b>Animasyon:</b> TweenService ile butonlara hover efekti ekle<br><code>btn.MouseEnter:Connect(function()<br>&nbsp;&nbsp;-- scale up tween<br>end)</code>` },
-                    { keys:['vfx','efekt','particle','parçacık','efekti'], ans:`<b>✨ VFX - Görsel Efektler</b><br><br>🔥 <b>ParticleEmitter:</b> Ateş, duman, ışıltı efektleri<br>• Texture: "rbxassetid://..." ile özel doku<br>• Rate: saniyede kaç parçacık<br>• Lifetime: kaç saniye yaşar<br>• Speed: hız<br><br>💡 <b>Beam:</b> İki parça arasında ışın efekti<br>💡 <b>Trail:</b> Hareket eden objede iz bırakır<br>💡 <b>SelectionBox + Highlight:</b> Objeyi parlat<br><br>⚡ <b>İpucu:</b> Birden fazla ParticleEmitter katmanla, daha zengin görünüm elde et!` },
-                    { keys:['modelleme','model','mesh','blender','3d'], ans:`<b>🧊 3D Modelleme İpuçları</b><br><br>📌 <b>Roblox Studio'da:</b><br>• Part'ları Union/Negate ile karmaşık şekiller oluştur<br>• MeshPart: Blender'dan .obj/.fbx import<br>• SpecialMesh ile temel mesh şekilleri<br><br>📌 <b>Blender'dan Import:</b><br>1. Modeli Blender'da oluştur<br>2. .fbx olarak export et<br>3. Studio'ya Asset olarak yükle<br>4. MeshPart olarak import et<br><br>💡 <b>Polygon sayısını düşük tut!</b> Mobil için 1000-3000 tri ideal.` },
-                    { keys:['rapor','report','nasıl yaz'], ans:`<b>📋 Rapor Yazma Kılavuzu</b><br><br>İyi bir LSDT raporu şunları içermeli:<br><br>✅ <b>Yapılanlar:</b> Bu süreçte ne yaptın?<br>✅ <b>Tamamlanan özellikler:</b> Somut çıktılar<br>✅ <b>Karşılaşılan sorunlar:</b> Varsa hatalar<br>✅ <b>Sonraki adım:</b> Devam planı<br><br>📌 <b>Örnek:</b><br>"Bu hafta ana menü GUI'sini tasarladım. Login ekranı ve karakter seçim sayfası tamamlandı. Font import sorunu yaşadım, çözüldü. Sıradaki görev: inventory sistemi."<br><br>💡 Görseller ekle — Admin değerlendirmeyi daha kolay yapar!` },
-                    { keys:['sfx','ses','sound','müzik','audio'], ans:`<b>🔊 SFX & Ses Sistemi</b><br><br><code>-- Ses çalmak:\nlocal sound = Instance.new("Sound")\nsound.SoundId = "rbxassetid://142376088"\nsound.Volume = 0.8\nsound.Parent = workspace\nsound:Play()\n\n-- 3D Ses (objede):\nlocal s = Instance.new("Sound")\ns.Parent = workspace.Part -- objeye bağla\ns.RollOffMaxDistance = 50\ns:Play()</code><br><br>💡 <b>İpuçları:</b><br>• SoundService → MusicVolume ile müzik ses seviyesi<br>• Looped = true ile döngüsel müzik<br>• PlayOnRemove için EffectService kullan` },
-                    { keys:['hata','error','bug','sorun','düzelt'], ans:`<b>🐛 Hata Ayıklama (Debug) İpuçları</b><br><br>🔍 <b>Output penceresini izle</b> — Her hata satır numarası verir<br><br>📌 <b>Yaygın hatalar:</b><br>• <code>attempt to index nil</code> → Obje bulunamadı. WaitForChild() kullan<br>• <code>Script timeout</code> → Sonsuz döngü var, wait() ekle<br>• <code>bad argument</code> → Yanlış parametre tipi<br><br>💡 <b>print() kullan!</b><br><code>print("Değer:", degisken) -- konsolda göster<br>warn("Uyarı mesajı") -- sarı renkte çıkar</code><br><br>⚡ Plugin öneri: <b>Roblox LSP</b> ile otomatik hata tespiti` },
-                    { keys:['lsdt','görev','ekip','kural','politika'], ans:`<b>📌 LSDT Kuralları & Politikaları</b><br><br>✅ <b>Görev kuralları:</b><br>• Görev tamamlandığında rapor gönder<br>• Teslim tarihine dikkat et<br>• Sorun varsa admin ile iletişime geç<br><br>✅ <b>İletişim:</b><br>• İletişim sekmesinden mesajlaşabilirsin<br>• Resim gönderme desteği mevcut<br><br>✅ <b>Raporlar:</b><br>• Görev → Rapor Gönder butonu<br>• Detaylı açıklama + görsel ekle<br>• Hata varsa hata bölümünü doldur<br><br>❓ Başka bir konuda yardım lazımsa sor!` },
-                ];
-                for(const entry of kb) {
-                    if(entry.keys.some(k => ql.includes(k))) return entry.ans;
+                const db = app.db;
+                const me = app.user;
+
+                // Son duyuru
+                if(ql.includes('duyuru') || ql.includes('announcement')) {
+                    const anns = db.announcements || [];
+                    if(!anns.length) return '📢 Henüz duyuru yok.';
+                    const last = [...anns].reverse()[0];
+                    const all = [...anns].reverse().slice(0,3).map(a=>`• <b>${a.title}</b>: ${a.text.substring(0,60)}${a.text.length>60?'...':''}`).join('<br>');
+                    return `📢 <b>Son Duyuru:</b><br><b>${last.title}</b><br>${last.text}<br><br><b>Son 3 duyuru:</b><br>${all}`;
                 }
-                // Genel fallback
+
+                // Adminler kimler
+                if(ql.includes('admin') || ql.includes('lider') || ql.includes('yönetici')) {
+                    const admins = (db.users||[]).filter(u=>u.role==='admin');
+                    if(!admins.length) return '👑 Admin bulunamadı.';
+                    return `👑 <b>Adminler (${admins.length} kişi):</b><br>` + admins.map(a=>`• <b>${a.name}</b> — ${a.category}`).join('<br>');
+                }
+
+                // Ekip / kaç kişi
+                if(ql.includes('ekip') || ql.includes('kaç kişi') || ql.includes('üye') || ql.includes('developer')) {
+                    const devs = (db.users||[]).filter(u=>u.role==='dev');
+                    const admins = (db.users||[]).filter(u=>u.role==='admin');
+                    return `👥 <b>Ekip Durumu:</b><br>• Toplam: <b>${db.users?.length||0} kişi</b><br>• Admin: <b>${admins.length}</b><br>• Developer: <b>${devs.length}</b><br><br>` + (db.users||[]).map(u=>`${u.role==='admin'?'👑':'🔧'} ${u.name} — ${u.category}`).join('<br>');
+                }
+
+                // Görevlerim
+                if(ql.includes('görev') && (ql.includes('benim') || ql.includes('lerim') || ql.includes('neler'))) {
+                    const myTasks = (db.tasks||[]).filter(t=>t.assignee===me.username && t.status!=='İzinde');
+                    if(!myTasks.length) return `📋 Şu an sana atanmış görev yok.`;
+                    return `📋 <b>Görevlerin (${myTasks.length}):</b><br>` + myTasks.map(t=>{
+                        const icon = t.status==='Onaylandı'?'✅':t.status==='Reddedildi'?'❌':t.status==='İnceleniyor'?'🔍':'⏳';
+                        return `${icon} <b>${t.title}</b> — ${t.status}`;
+                    }).join('<br>');
+                }
+
+                // Rapor / inceleme durumu
+                if(ql.includes('rapor') || ql.includes('inceleme') || ql.includes('durum')) {
+                    const myTasks = (db.tasks||[]).filter(t=>t.assignee===me.username);
+                    const reviewing = myTasks.filter(t=>t.status==='İnceleniyor');
+                    const approved = myTasks.filter(t=>t.status==='Onaylandı');
+                    const rejected = myTasks.filter(t=>t.status==='Reddedildi');
+                    return `📊 <b>Rapor Durumun:</b><br>🔍 İncelemede: <b>${reviewing.length}</b><br>✅ Onaylanan: <b>${approved.length}</b><br>❌ Reddedilen: <b>${rejected.length}</b><br>⏳ Aktif: <b>${myTasks.filter(t=>t.status==='Aktif').length}</b>`;
+                }
+
+                // Reddedilen
+                if(ql.includes('reddedil') || ql.includes('red')) {
+                    const rejected = (db.tasks||[]).filter(t=>t.assignee===me.username && t.status==='Reddedildi');
+                    if(!rejected.length) return `✅ Reddedilen görevin yok, harika!`;
+                    return `❌ <b>Reddedilen Görevler (${rejected.length}):</b><br>` + rejected.map(t=>{
+                        const reason = t.description?.includes('[REJECT_REASON]') ? t.description.split('[REJECT_REASON]')[1].split('[END_REASON]')[0] : 'Sebep belirtilmemiş';
+                        return `• <b>${t.title}</b><br>&nbsp;&nbsp;Sebep: ${reason}`;
+                    }).join('<br>');
+                }
+
+                // İzin durumu
+                if(ql.includes('izin') || ql.includes('tatil')) {
+                    const myLeave = (db.tasks||[]).find(t=>t.assignee===me.username && t.status==='İzinde');
+                    return myLeave ? `🏖️ Şu an izindesin! Detay: ${myLeave.description.split('[REPORT_START]')[0]}` : `💼 Şu an aktif olarak çalışıyorsun, izin statün yok.`;
+                }
+
+                // Toplam görev / istatistik
+                if(ql.includes('istatistik') || ql.includes('kaç görev') || ql.includes('toplam')) {
+                    const allTasks = db.tasks||[];
+                    const active = allTasks.filter(t=>t.status==='Aktif').length;
+                    const done = allTasks.filter(t=>t.status==='Onaylandı').length;
+                    const review = allTasks.filter(t=>t.status==='İnceleniyor').length;
+                    return `📈 <b>LSDT Genel İstatistik:</b><br>⏳ Aktif Görev: <b>${active}</b><br>🔍 İncelemede: <b>${review}</b><br>✅ Tamamlanan: <b>${done}</b><br>👥 Üye Sayısı: <b>${db.users?.length||0}</b><br>📢 Duyuru Sayısı: <b>${db.announcements?.length||0}</b>`;
+                }
+
+                // Profil / ben kimim
+                if(ql.includes('ben kim') || ql.includes('profilim') || ql.includes('hesabım')) {
+                    return `👤 <b>Profil Bilgin:</b><br>• Ad: <b>${me.name}</b><br>• Kullanıcı: <b>${me.username}</b><br>• Rol: <b>${me.category}</b><br>• Yetki: <b>${me.role==='admin'?'Admin 👑':'Developer 🔧'}</b>`;
+                }
+
+                // Deadline / yaklaşan
+                if(ql.includes('deadline') || ql.includes('son teslim') || ql.includes('süre') || ql.includes('yaklaşan')) {
+                    const tasks = (db.tasks||[]).filter(t=>t.assignee===me.username && t.deadline && t.status==='Aktif');
+                    if(!tasks.length) return `⏰ Deadline'ı tanımlı aktif görevin yok.`;
+                    const sorted = tasks.sort((a,b)=>new Date(a.deadline)-new Date(b.deadline));
+                    return `⏰ <b>Yaklaşan Deadline'lar:</b><br>` + sorted.map(t=>{
+                        const diff = Math.ceil((new Date(t.deadline)-new Date())/(1000*60*60*24));
+                        const icon = diff<0?'🔴':diff<=2?'🟡':'🟢';
+                        return `${icon} <b>${t.title}</b> — ${diff<0?`${Math.abs(diff)} gün gecikti!`:diff+' gün kaldı'}`;
+                    }).join('<br>');
+                }
+
                 const fallbacks = [
-                    `🤔 "<b>${q}</b>" konusunda şu an bilgim sınırlı. Daha spesifik sorabilirsin veya şu konuları deneyebilirsin: Luau Script, GUI, VFX, DataStore, RemoteEvent, Modelleme, Rapor yazımı.`,
-                    `💡 Bu konu hakkında daha fazla bilgi için <b>Roblox Developer Docs</b>'u öneririm: <i>create.roblox.com/docs</i>. Başka bir konuda yardımcı olabilir miyim?`,
-                    `🎯 Soruyu biraz daha açar mısın? Örneğin hangi sistem için: Script, GUI, VFX, DataStore, Server/Client mı?`
+                    `🤔 Bu konuda daha fazla bilgim yok. Şunları sorabilirsin: <b>son duyuru, adminler, görevlerim, rapor durumum, ekip kaç kişi, reddedilen görevler, deadline'larım.</b>`,
+                    `💡 Anladığım konular: duyurular, ekip bilgisi, görev durumu, rapor inceleme, izin durumu. Hangisini merak ediyorsun?`,
                 ];
-                return fallbacks[Math.floor(Math.random() * fallbacks.length)];
+                return fallbacks[Math.floor(Math.random()*fallbacks.length)];
+            },
+
+            checkNewAnns() {
+                const lastSeen = parseInt(localStorage.getItem('lsdt_anns_seen') || '0');
+                const newAnns = (app.db.announcements||[]).filter(a => new Date(a.created_at||a.date||0).getTime() > lastSeen);
+                const dot = document.getElementById('ann-dot');
+                if(dot) { dot.style.display = newAnns.length > 0 ? 'flex' : 'none'; if(newAnns.length>0) dot.textContent=newAnns.length; }
+                if(newAnns.length > 0 && app._prevAnnCount !== undefined && (app.db.announcements||[]).length > app._prevAnnCount) {
+                    const latest = newAnns[newAnns.length-1];
+                    if(Notification.permission==='granted') { new Notification('📢 Yeni Duyuru — LSDT', { body: latest.title + ': ' + (latest.text||'').substring(0,60), icon:'https://cdn-icons-png.flaticon.com/512/3176/3176272.png' }); }
+                    app.showMsgBanner(`📢 Yeni Duyuru: ${latest.title}`, 'Duyurular');
+                }
+                app._prevAnnCount = (app.db.announcements||[]).length;
             },
 
             show(id) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.getElementById(id).classList.add('active'); },
@@ -590,6 +735,9 @@
                         document.getElementById('avatar').innerText = u.name[0];
                         document.getElementById('u-name').innerText = u.name;
                         document.getElementById('u-role').innerText = u.category;
+                        // AI FAB'u göster
+                        const fab = document.getElementById('ai-fab');
+                        if(fab) fab.style.display = 'flex';
                         app.show('main-app'); app.nav('dash');
                     }});
                 }, 2000);
@@ -656,9 +804,16 @@
                         box.scrollTop = box.scrollHeight;
                     }
                 } else if(p === 'ann') {
+                    // Duyuru görüldü — dot sıfırla
+                    localStorage.setItem('lsdt_anns_seen', Date.now().toString());
+                    const annDot = document.getElementById('ann-dot');
+                    if(annDot) { annDot.style.display = 'none'; annDot.textContent = ''; }
                     c.innerHTML = `<h2>Duyurular</h2>${app.user.role==='admin'?`<div class="card"><input id="an-title" class="input-p" placeholder="Başlık"><textarea id="an-text" class="input-p" placeholder="Mesaj"></textarea><button class="btn-p" onclick="app.handleNewAnn()">YAYINLA</button></div>`:''}`;
+                    if(!app.db.announcements.length) c.innerHTML += `<div class="card" style="text-align:center;color:var(--sub);">📢 Henüz duyuru yok.</div>`;
                     [...app.db.announcements].reverse().forEach(a => {
-                        c.innerHTML += `<div class="card"><h3>${a.title}</h3><p>${a.text}</p>${app.user.role==='admin'?`<i class="fas fa-trash del-btn" onclick="app.delItem('announcements', '${a.id}')"></i>`:''}</div>`;
+                        const d = new Date(a.created_at||a.date||0);
+                        const dateStr = isNaN(d)?'':`<span style="font-size:0.75rem;color:var(--sub);margin-top:4px;display:block;">${d.toLocaleDateString('tr')} ${d.toLocaleTimeString('tr',{hour:'2-digit',minute:'2-digit'})}</span>`;
+                        c.innerHTML += `<div class="card"><h3>${a.title}</h3><p>${a.text}</p>${dateStr}${app.user.role==='admin'?`<i class="fas fa-trash del-btn" onclick="app.delItem('announcements', '${a.id}')"></i>`:''}</div>`;
                     });
                 } else if(p === 'admin') {
                     // Admin sekmesi açılınca okundu olarak işaretle
@@ -1056,6 +1211,22 @@
                 el.select();
                 document.execCommand('copy');
                 app.toast('Link Kopyalandı!');
+            },
+
+            logout() {
+                app.user = null;
+                app.sel.chatTarget = null;
+                app._aiHistory = [];
+                localStorage.removeItem('lsdt_rem');
+                // AI FAB'u gizle
+                const fab = document.getElementById('ai-fab');
+                if(fab) { fab.style.display = 'none'; fab.classList.remove('open'); }
+                const popup = document.getElementById('ai-popup');
+                if(popup) { popup.classList.remove('show'); popup.style.display = 'none'; }
+                // Popup kutusunu temizle
+                const box = document.getElementById('ai-box-popup');
+                if(box) box.innerHTML = '';
+                app.show('login-screen');
             },
 
             toast(m, b=false) { const e = document.getElementById('toast'); document.getElementById('toast-msg').innerText=m; e.style.background=b?'var(--red)':'var(--p-grad)'; e.style.transform='translateX(-50%) translateY(0)'; e.style.opacity='1'; setTimeout(()=>{e.style.transform='translateX(-50%) translateY(-200%)'; e.style.opacity='0';}, 3000); }
