@@ -87,7 +87,8 @@
         .chat-user-item { display: flex; align-items: center; gap: 15px; padding: 15px; background: rgba(255,255,255,0.05); border-radius: 20px; margin-bottom: 10px; cursor: pointer; transition: 0.3s; }
         .chat-user-item:hover { background: rgba(255,255,255,0.1); transform: translateX(5px); }
         .dot { width: 10px; height: 10px; background: var(--green); border-radius: 50%; display: inline-block; margin-left: 5px; }
-        .nav-badge { position: absolute; top: -2px; right: 8%; background: var(--red); min-width: 18px; height: 18px; padding: 0 5px; border-radius: 50px; display: none; justify-content: center; align-items: center; font-size: 0.65rem; font-weight: 900; color: white; border: 2px solid #05020a; box-shadow: 0 0 8px rgba(255,60,60,0.6); }
+        .nav-badge { position: absolute; top: -5px; right: 5%; background: var(--red); min-width: 22px; height: 22px; padding: 0 6px; border-radius: 50px; display: none; justify-content: center; align-items: center; font-size: 0.72rem; font-weight: 900; color: white; border: 2.5px solid #05020a; box-shadow: 0 0 12px rgba(255,60,60,0.7); animation: badgePulse 1.5s ease-in-out infinite; }
+        @keyframes badgePulse { 0%,100% { box-shadow: 0 0 8px rgba(255,60,60,0.5); } 50% { box-shadow: 0 0 18px rgba(255,60,60,0.9); } }
         /* Switch CSS */
         .switch { position: relative; display: inline-block; width: 50px; height: 24px; }
         .switch input { opacity: 0; width: 0; height: 0; }
