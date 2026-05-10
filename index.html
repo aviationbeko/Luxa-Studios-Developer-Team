@@ -378,45 +378,62 @@
                 const rem = localStorage.getItem('lsdt_rem');
                 if(rem && localStorage.getItem('lsdt_setup')) {
                     const u = JSON.parse(rem);
-                    app.show('loading-screen');
-                    document.getElementById('l-code').style.opacity = 1;
-                    document.getElementById('l-cube').style.opacity = 1;
-                    document.getElementById('l-text').style.opacity = 1;
-                    document.getElementById('l-code').innerText = ">_ sunucuya hizli baglaniliyor...";
-                    await app.sync();
-                    const f = app.db.users.find(x => x.username === u.username && x.password === u.password);
-                    if(f) {
-                        document.getElementById('loading-screen').classList.remove('active');
-                        app.user = f;
-                        const pfpMsg = (app.db.messages||[]).filter(m => m.sender === f.username && m.receiver === 'SYSTEM_PFP').pop();
-                        if(pfpMsg) document.getElementById('avatar').innerHTML = `<img src="${pfpMsg.text}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
-                        else document.getElementById('avatar').innerText = f.name[0];
-                        const savedBg = localStorage.getItem('lsdt_profile_bg_' + f.username);
-                        if(savedBg) document.getElementById('avatar').style.background = savedBg;
-                        const uLeave = app.db.tasks.some(t => t.assignee === f.username && t.status === 'İzinde');
-                        const statusDot = `<div style="width:10px;height:10px;border-radius:50%;background:${uLeave?'var(--red)':'var(--green)'};display:inline-block;margin-right:6px;box-shadow:0 0 5px ${uLeave?'var(--red)':'var(--green)'};"></div>`;
-                        document.getElementById('u-name').innerHTML = statusDot + f.name;
-                        document.getElementById('u-role').innerText = f.category;
-                        
-                        const motds = [
-                            "Büyük oyunlar küçük kod satırlarıyla başlar.",
-                            "Buglar sadece çözülmeyi bekleyen bulmacalardır.",
-                            "Bugün yazdığın kod, yarın milyonların oynayacağı oyun olabilir.",
-                            "Her hata, daha iyi bir geliştirici olman için bir fırsattır.",
-                            "Stüdyoda sihir yaratmaya hazır mısın?",
-                            "İlham gelmesini bekleme, kodu yazmaya başla ilham arkadan gelir."
-                        ];
-                        document.getElementById('w-motd').innerText = '"' + motds[Math.floor(Math.random() * motds.length)] + '"';
-                        
-                        app.show('welcome-screen');
-                        document.getElementById('w-sub').innerText = f.name;
+                    app.user = u;
+                    
+                    // Hemen Loading Ekranını Kapatıp Hoşgeldin'e Geç (Render Uyanmasını Bekleme!)
+                    document.getElementById('loading-screen').classList.remove('active');
+                    app.show('welcome-screen');
+                    document.getElementById('welcome-screen').style.display = 'flex';
+                    
+                    // MOTD Ekle
+                    const motds = [
+                        "Büyük oyunlar küçük kod satırlarıyla başlar.",
+                        "Buglar sadece çözülmeyi bekleyen bulmacalardır.",
+                        "Bugün yazdığın kod, yarın milyonların oynayacağı oyun olabilir.",
+                        "Her hata, daha iyi bir geliştirici olman için bir fırsattır.",
+                        "Stüdyoda sihir yaratmaya hazır mısın?",
+                        "İlham gelmesini bekleme, kodu yazmaya başla ilham arkadan gelir."
+                    ];
+                    document.getElementById('w-motd').innerText = '"' + motds[Math.floor(Math.random() * motds.length)] + '"';
+                    document.getElementById('w-title').innerText = "SELAM, " + u.name.split(' ')[0].toUpperCase();
+                    document.getElementById('w-sub').innerText = u.category;
+                    
+                    // Avatar Ayarla
+                    const pfpMsg = (app.db.messages||[]).filter(m => m.sender === u.username && m.receiver === 'SYSTEM_PFP').pop();
+                    if(pfpMsg) document.getElementById('w-avatar').innerHTML = `<img src="${pfpMsg.text}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
+                    else document.getElementById('w-avatar').innerText = u.name[0];
+                    const savedBg = localStorage.getItem('lsdt_profile_bg_' + u.username);
+                    if(savedBg) document.getElementById('w-avatar').style.background = savedBg;
 
-                        const fab = document.getElementById('ai-fab');
-                        if(fab) fab.style.display = 'flex';
-                        app.show('main-app'); app.nav('dash');
-                    } else {
-                        app.show('login-screen');
-                    }
+                    // Hoşgeldin Animasyonu
+                    gsap.to("#w-content", { opacity: 1, scale: 1, duration: 0.8 });
+                    
+                    setTimeout(() => {
+                        gsap.to("#welcome-screen", { opacity: 0, duration: 0.5, onComplete: () => {
+                            document.getElementById('welcome-screen').style.display = 'none';
+                            document.getElementById('welcome-screen').style.opacity = '1';
+                            
+                            if(pfpMsg) document.getElementById('avatar').innerHTML = `<img src="${pfpMsg.text}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
+                            else document.getElementById('avatar').innerText = u.name[0];
+                            if(savedBg) document.getElementById('avatar').style.background = savedBg;
+                            
+                            const fab = document.getElementById('ai-fab');
+                            if(fab) fab.style.display = 'flex';
+                            
+                            // Arayüze Geç
+                            app.show('main-app'); 
+                            app.nav('dash');
+                            
+                            // Arka Planda Sync Yap
+                            app.sync().then(() => {
+                                // Sync bitince profil rozetini güncelle
+                                const uLeave = app.db.tasks.some(t => t.assignee === u.username && t.status === 'İzinde');
+                                const statusDot = `<div style="width:10px;height:10px;border-radius:50%;background:${uLeave?'var(--red)':'var(--green)'};display:inline-block;margin-right:6px;box-shadow:0 0 5px ${uLeave?'var(--red)':'var(--green)'};"></div>`;
+                                document.getElementById('u-name').innerHTML = statusDot + u.name;
+                                document.getElementById('u-role').innerText = u.category;
+                            });
+                        }});
+                    }, 2000);
                     app.renderCats();
                     setInterval(() => app.sync(), 6000);
                     return;
