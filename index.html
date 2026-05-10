@@ -397,6 +397,15 @@
                 setInterval(() => app.sync(), 6000);
             },
 
+            saveProfileSettings() {
+                const bg = document.getElementById('profile-bg-input').value;
+                const bio = document.getElementById('profile-bio-input').value;
+                localStorage.setItem('lsdt_profile_bg_' + app.user.username, bg);
+                localStorage.setItem('lsdt_profile_bio_' + app.user.username, bio);
+                document.getElementById('avatar').style.background = bg;
+                app.toast('Profil güncellendi!');
+            },
+
             toggleTheme(isLight) {
                 if(isLight) {
                     document.body.classList.add('light-mode');
@@ -555,7 +564,7 @@
                         ${rej}<p style="opacity:0.8;margin:10px 0;">${cleanDesc}</p>
                         ${rHtml}
                         <div class="info-row" style="margin-top:12px;border-top:1px solid rgba(255,255,255,0.05);padding-top:10px;">
-                            <span><i class="fas fa-user" style="margin-right:5px;color:var(--p)"></i>${t.assignee}</span>
+                            <span><i class="fas fa-user" style="margin-right:5px;color:var(--p)"></i><div style="width:8px;height:8px;border-radius:50%;background:${app.db.tasks.some(x=>x.assignee===t.assignee && x.status==='İzinde')?'var(--red)':'var(--green)'};display:inline-block;margin-right:5px;box-shadow:0 0 5px ${app.db.tasks.some(x=>x.assignee===t.assignee && x.status==='İzinde')?'var(--red)':'var(--green)'};"></div>${t.assignee}</span>
                             <span><i class="fas fa-calendar-alt" style="margin-right:5px;color:var(--p)"></i>${new Date(t.date).toLocaleDateString('tr')}</span>
                         </div>
                     </div>`;
@@ -816,7 +825,11 @@
                         document.getElementById('welcome-screen').style.display = 'none';
                         document.getElementById('welcome-screen').style.opacity = '1';
                         document.getElementById('avatar').innerText = u.name[0];
-                        document.getElementById('u-name').innerText = u.name;
+                        const savedBg = localStorage.getItem('lsdt_profile_bg_' + u.username);
+                        if(savedBg) document.getElementById('avatar').style.background = savedBg;
+                        const uLeave = app.db.tasks.some(t => t.assignee === u.username && t.status === 'İzinde');
+                        const statusDot = `<div style="width:10px;height:10px;border-radius:50%;background:${uLeave?'var(--red)':'var(--green)'};display:inline-block;margin-right:6px;box-shadow:0 0 5px ${uLeave?'var(--red)':'var(--green)'};"></div>`;
+                        document.getElementById('u-name').innerHTML = statusDot + u.name;
                         document.getElementById('u-role').innerText = u.category;
                         // AI FAB'u göster
                         const fab = document.getElementById('ai-fab');
@@ -852,7 +865,7 @@
                 } else if(p === 'tasks') {
                     app.sel.taskSearch = app.sel.taskSearch || '';
                     c.innerHTML = `<h2>${app.user.role === 'admin' ? 'Kayıt Denetimi' : 'Görevlerim'}</h2>
-                        <button class="btn-p" style="margin-bottom:15px; background:var(--card); color:var(--text); border:1px solid rgba(255,255,255,0.1);" onclick="app.renderCalendar()"><i class="fas fa-calendar-alt"></i> Takvim & İzinleri Gör</button>
+                        ${app.user.role === 'admin' ? `<button class="btn-p" style="margin-bottom:15px; background:var(--card); color:var(--text); border:1px solid rgba(255,255,255,0.1);" onclick="app.renderCalendar()"><i class="fas fa-calendar-alt"></i> Takvim & İzinleri Gör</button>` : ''}
                         <div style="position:relative;margin-bottom:15px;">
                             <i class="fas fa-search" style="position:absolute;left:18px;top:50%;transform:translateY(-50%);color:var(--sub);font-size:0.9rem;"></i>
                             <input id="task-search-input" class="input-p" style="padding-left:45px;margin-bottom:0;border-radius:20px;" placeholder="Görev ara..." value="${app.sel.taskSearch}" oninput="app.sel.taskSearch=this.value; app.renderTaskList()">
@@ -995,6 +1008,15 @@
                                 <input type="checkbox" id="theme-toggle" ${document.body.classList.contains('light-mode') ? 'checked' : ''} onchange="app.toggleTheme(this.checked)">
                                 <span class="slider round"></span>
                             </label>
+                        </div>
+
+                        <div class="card" style="margin-bottom:20px;">
+                            <h3 style="margin-top:0;">Özelleştirilebilir Profil</h3>
+                            <label style="font-size:0.8rem;color:var(--sub);display:block;margin-bottom:5px;">Avatar Arka Plan Rengi</label>
+                            <input type="color" id="profile-bg-input" value="${localStorage.getItem('lsdt_profile_bg_' + app.user.username) || '#8a2be2'}" style="width:100%;height:40px;border:none;border-radius:10px;margin-bottom:15px;background:none;cursor:pointer;" onchange="app.saveProfileSettings()">
+                            <label style="font-size:0.8rem;color:var(--sub);display:block;margin-bottom:5px;">Biyografi (Bio / Yetenekler)</label>
+                            <textarea id="profile-bio-input" class="input-p" placeholder="Kendinizden bahsedin..." style="height:70px;margin-bottom:10px;">${localStorage.getItem('lsdt_profile_bio_' + app.user.username) || ''}</textarea>
+                            <button class="btn-p" style="margin:0;" onclick="app.saveProfileSettings()">KAYDET</button>
                         </div>
 
                         <div class="card" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
