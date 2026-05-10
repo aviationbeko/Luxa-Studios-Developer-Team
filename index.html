@@ -380,7 +380,7 @@
                     const u = JSON.parse(rem);
                     app.show('loading-screen');
                     document.getElementById('l-code').style.opacity = 1;
-                    document.getElementById('l-logo').style.opacity = 1;
+                    document.getElementById('l-cube').style.opacity = 1;
                     document.getElementById('l-text').style.opacity = 1;
                     document.getElementById('l-code').innerText = ">_ sunucuya hizli baglaniliyor...";
                     await app.sync();
@@ -423,7 +423,7 @@
                 }
 
                 gsap.timeline()
-                  .to("#l-logo", { opacity: 1, scale: 1, duration: 1, ease: "back.out(1.7)" })
+                  .fromTo("#l-cube", { y: -50, opacity: 0 }, { y: 0, opacity: 1, duration: 1 })
                   .to("#l-code", { opacity: 1, width: "180px", duration: 1, ease: "steps(15)" })
                   .to("#l-text", { opacity: 1, duration: 1 })
                   .call(async () => {
