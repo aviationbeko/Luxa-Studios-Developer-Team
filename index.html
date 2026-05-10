@@ -99,6 +99,22 @@
 
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes msgIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        /* AI Asistan */
+        .ai-bubble { max-width:88%; padding:14px 18px; border-radius:22px; font-size:0.88rem; line-height:1.6; animation:msgIn 0.3s ease; }
+        .ai-bubble.user { align-self:flex-end; background:var(--p-grad); color:white; border-bottom-right-radius:5px; }
+        .ai-bubble.bot { align-self:flex-start; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.1); color:white; border-bottom-left-radius:5px; }
+        .ai-chip { display:inline-block; background:rgba(138,43,226,0.2); border:1px solid rgba(138,43,226,0.4); color:var(--p); padding:8px 14px; border-radius:20px; font-size:0.8rem; cursor:pointer; margin:4px; transition:0.2s; font-weight:700; }
+        .ai-chip:hover { background:rgba(138,43,226,0.4); transform:translateY(-2px); }
+        .ai-typing { display:flex; gap:5px; align-items:center; padding:14px 18px; }
+        .ai-typing span { width:8px; height:8px; background:var(--p); border-radius:50%; animation:typingDot 1.2s infinite; }
+        .ai-typing span:nth-child(2) { animation-delay:0.2s; }
+        .ai-typing span:nth-child(3) { animation-delay:0.4s; }
+        @keyframes typingDot { 0%,60%,100% { transform:translateY(0); opacity:0.4; } 30% { transform:translateY(-6px); opacity:1; } }
+        /* Deadline badge */
+        .deadline-badge { display:inline-block; padding:4px 10px; border-radius:20px; font-size:0.72rem; font-weight:800; margin-top:8px; }
+        .deadline-ok { background:rgba(0,200,100,0.15); color:var(--green); border:1px solid rgba(0,200,100,0.3); }
+        .deadline-soon { background:rgba(255,165,0,0.15); color:#f0a500; border:1px solid rgba(255,165,0,0.3); }
+        .deadline-over { background:rgba(255,60,60,0.15); color:var(--red); border:1px solid rgba(255,60,60,0.3); }
         .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
         .stat-card { background: var(--glass); border: 1px solid rgba(255,255,255,0.1); border-radius: 24px; padding: 20px 15px; text-align: center; position: relative; overflow: hidden; }
         .stat-card::before { content: ''; position: absolute; top: -20px; right: -20px; width: 70px; height: 70px; border-radius: 50%; opacity: 0.15; }
@@ -211,7 +227,7 @@
         <nav class="bottom-nav">
             <div id="nav-dash" class="nav-item active" onclick="app.nav('dash')"><i class="fas fa-home"></i><span>Panel</span></div>
             <div id="nav-tasks" class="nav-item" onclick="app.nav('tasks')"><i class="fas fa-clipboard-list"></i><span>Kayıtlar</span></div>
-            <div id="nav-ann" class="nav-item" onclick="app.nav('ann')"><i class="fas fa-bullhorn"></i><span>Duyuru</span></div>
+            <div id="nav-ai" class="nav-item" onclick="app.nav('ai')"><i class="fas fa-robot"></i><span>AI</span></div>
             <div id="nav-admin" class="nav-item" onclick="app.nav('admin')" style="position:relative;"><i class="fas fa-headset"></i><span>İletişim</span><div id="msg-dot" class="nav-badge"></div></div>
             <div id="nav-set" class="nav-item" onclick="app.nav('set')"><i class="fas fa-cog"></i><span>Ekip</span></div>
         </nav>
@@ -252,6 +268,8 @@
             <div id="t-to-wrap" class="p-select"></div>
             <input type="text" id="t-title" class="input-p" placeholder="Başlık" required>
             <textarea id="t-desc" class="input-p" placeholder="Detaylar" style="height:100px;" required></textarea>
+            <label style="color:var(--sub);font-size:0.8rem;font-weight:700;display:block;margin-bottom:6px;">⏰ Son Teslim Tarihi (İsteğe Bağlı)</label>
+            <input type="date" id="t-deadline" class="input-p" style="margin-bottom:15px;">
             <button type="submit" class="btn-p">GÖREVİ VER</button>
             <button type="button" class="btn-p" style="background:none; margin-top:10px;" onclick="app.close()">KAPAT</button>
         </form>
@@ -399,6 +417,127 @@
                 });
             },
 
+            renderTaskList() {
+                const c = document.getElementById('page-content');
+                const q = (app.sel.taskSearch || '').toLowerCase();
+                const tasks = [...app.db.tasks].reverse().filter(t => {
+                    if(app.user.role !== 'admin' && t.assignee !== app.user.username) return false;
+                    if(q && !t.title.toLowerCase().includes(q) && !t.assignee.toLowerCase().includes(q)) return false;
+                    return true;
+                });
+                // Mevcut kart container'ı temizle
+                let container = document.getElementById('task-list-container');
+                if(!container) {
+                    container = document.createElement('div');
+                    container.id = 'task-list-container';
+                    c.appendChild(container);
+                }
+                container.innerHTML = '';
+                if(tasks.length === 0) {
+                    container.innerHTML = `<div class="card" style="text-align:center;color:var(--sub);">🔍 Sonuç bulunamadı</div>`;
+                    return;
+                }
+                tasks.forEach(t => {
+                    let rHtml = '';
+                    if(t.description && t.description.includes('[REPORT_START]')) {
+                        try {
+                            const r = JSON.parse(t.description.split('[REPORT_START]')[1].split('[REPORT_END]')[0]);
+                            rHtml = `<div class="report-section" style="border-left:4px solid var(--green);background:rgba(0,255,0,0.05);">
+                                <h4 style="color:var(--green)">GÖNDERİLEN RAPOR</h4>
+                                <p style="margin:10px 0;">${r.report}</p>
+                                ${r.bug ? `<p style="color:var(--red);background:rgba(255,0,0,0.1);padding:8px;border-radius:10px;"><b>HATA:</b> ${r.bug}</p>` : ''}
+                                ${r.imgs && r.imgs.length ? `<button class="btn-mini" style="background:var(--p);width:100%;margin:10px 0;" onclick="app.toggleImgs('${t.id}')">GÖRSELLER (${r.imgs.length})</button><div id="imgs-${t.id}" class="img-grid" style="display:none;">${r.imgs.map(i=>`<img src="${i}" class="img-item" onclick="app.viewImg('${i}')">`).join('')}</div>` : ''}
+                                ${app.user.role==='admin' && t.status==='İnceleniyor' ? `<div style="display:flex;gap:10px;margin-top:10px;"><button class="btn-mini" style="background:var(--green);color:black;" onclick="app.updateTaskStatus('${t.id}','Onaylandı')">ONAYLA</button><button class="btn-mini" style="background:var(--red);color:white;" onclick="app.openRejectModal('${t.id}')">REDDET</button></div>` : ''}
+                            </div>`;
+                        } catch(e) {}
+                    }
+                    // Deadline badge
+                    let deadlineBadge = '';
+                    if(t.deadline) {
+                        const dl = new Date(t.deadline); const now = new Date(); const diffDays = Math.ceil((dl-now)/(1000*60*60*24));
+                        if(diffDays < 0) deadlineBadge = `<span class="deadline-badge deadline-over">⏰ ${Math.abs(diffDays)} gün gecikti!</span>`;
+                        else if(diffDays <= 2) deadlineBadge = `<span class="deadline-badge deadline-soon">⏰ ${diffDays === 0 ? 'Bugün!' : diffDays+' gün kaldı'}</span>`;
+                        else deadlineBadge = `<span class="deadline-badge deadline-ok">⏰ ${diffDays} gün kaldı</span>`;
+                    }
+                    const cleanDesc = t.description ? t.description.split('[REPORT_START]')[0].split('[REJECT_REASON]')[0].trim() : '';
+                    const rej = (t.status==='Reddedildi' && t.description?.includes('[REJECT_REASON]')) ? `<div style="color:var(--red);padding:10px;background:rgba(255,118,117,0.1);border-radius:10px;margin:10px 0;"><b>RED:</b> ${t.description.split('[REJECT_REASON]')[1].split('[END_REASON]')[0]}</div>` : '';
+                    container.innerHTML += `<div class="card">
+                        <div style="display:flex;align-items:flex-start;justify-content:space-between;">
+                            <div class="badge" style="background:${t.status==='Onaylandı'?'var(--green)':(t.status==='Reddedildi'?'var(--red)':'var(--p-grad)')};">${t.status}</div>
+                            ${app.user.role==='admin'?`<i class="fas fa-trash del-btn" style="position:static;margin:0;" onclick="app.delItem('tasks','${t.id}')"></i>`:''}
+                        </div>
+                        <h3 style="margin:10px 0 5px;">${t.title}</h3>
+                        ${deadlineBadge}
+                        ${rej}<p style="opacity:0.8;margin:10px 0;">${cleanDesc}</p>
+                        ${rHtml}
+                        <div class="info-row" style="margin-top:12px;border-top:1px solid rgba(255,255,255,0.05);padding-top:10px;">
+                            <span><i class="fas fa-user" style="margin-right:5px;color:var(--p)"></i>${t.assignee}</span>
+                            <span><i class="fas fa-calendar-alt" style="margin-right:5px;color:var(--p)"></i>${new Date(t.date).toLocaleDateString('tr')}</span>
+                        </div>
+                    </div>`;
+                });
+            },
+
+            aiAsk(preset) {
+                const input = document.getElementById('ai-input');
+                const q = (preset || input?.value || '').trim();
+                if(!q) return;
+                if(input) input.value = '';
+                const box = document.getElementById('ai-box');
+                if(!box) return;
+                app._aiHistory = app._aiHistory || [];
+
+                // Kullanıcı mesajı
+                const uDiv = document.createElement('div');
+                uDiv.className = 'ai-bubble user'; uDiv.textContent = q;
+                box.appendChild(uDiv);
+                app._aiHistory.push({role:'user', text: q});
+
+                // Typing indicator
+                const typingDiv = document.createElement('div');
+                typingDiv.className = 'ai-bubble bot ai-typing';
+                typingDiv.innerHTML = '<span></span><span></span><span></span>';
+                box.appendChild(typingDiv);
+                box.scrollTop = box.scrollHeight;
+
+                setTimeout(() => {
+                    typingDiv.remove();
+                    const answer = app.aiThink(q);
+                    const bDiv = document.createElement('div');
+                    bDiv.className = 'ai-bubble bot'; bDiv.innerHTML = answer;
+                    box.appendChild(bDiv);
+                    app._aiHistory.push({role:'bot', text: answer});
+                    box.scrollTop = box.scrollHeight;
+                }, 900 + Math.random() * 600);
+            },
+
+            aiThink(q) {
+                const ql = q.toLowerCase();
+                const kb = [
+                    { keys:['luau','script','kod','yazılır','scripting'], ans:`<b>🎮 Luau Script Temelleri</b><br><br>Luau, Roblox'un özel Lua tabanlı dilidir.<br><br><b>Temel yapı:</b><br><code>local part = workspace.Part<br>part.BrickColor = BrickColor.new("Bright red")<br>part.Touched:Connect(function(hit)<br>&nbsp;&nbsp;print("Dokunuldu:", hit.Name)<br>end)</code><br><br>💡 <b>İpuçları:</b> Her zaman <code>local</code> kullan, global değişkenden kaçın. Script'i ServerScriptService'e, LocalScript'i StarterPlayerScripts'e koy.` },
+                    { keys:['remoteevent','remote event','client','server','iletişim'], ans:`<b>🔗 RemoteEvent Kullanımı</b><br><br>Client → Server veya Server → Client iletişimi için kullanılır.<br><br><b>ReplicatedStorage'a RemoteEvent ekle, sonra:</b><br><code>-- SERVER (Script):<br>local re = game.ReplicatedStorage.MyEvent<br>re.OnServerEvent:Connect(function(player, data)<br>&nbsp;&nbsp;print(player.Name, data)<br>end)<br><br>-- CLIENT (LocalScript):<br>local re = game.ReplicatedStorage.MyEvent<br>re:FireServer("Merhaba!")</code><br><br>⚠️ Güvenlik: Server'da her zaman gelen veriyi doğrula!` },
+                    { keys:['datastore','data store','veri','kaydet','save'], ans:`<b>💾 DataStore Kullanımı</b><br><br><code>local DS = game:GetService("DataStoreService")<br>local store = DS:GetDataStore("OyuncuData")<br><br>-- Kaydet:<br>store:SetAsync(player.UserId, {coins=100})<br><br>-- Yükle:<br>local data = store:GetAsync(player.UserId)<br>if data then print(data.coins) end</code><br><br>⚠️ <b>Önemli:</b> pcall() ile hataları yakala! DataStore bazen başarısız olabilir.` },
+                    { keys:['tween','animasyon','hareket','lerp','geçiş'], ans:`<b>🎞️ TweenService Animasyonu</b><br><br><code>local TS = game:GetService("TweenService")<br>local part = workspace.Part<br>local info = TweenInfo.new(<br>&nbsp;&nbsp;1, -- süre (saniye)<br>&nbsp;&nbsp;Enum.EasingStyle.Quad,<br>&nbsp;&nbsp;Enum.EasingDirection.Out<br>)<br>local tween = TS:Create(part, info, {<br>&nbsp;&nbsp;Position = Vector3.new(0,10,0),<br>&nbsp;&nbsp;Transparency = 0.5<br>})<br>tween:Play()</code><br><br>💡 TweenService birden fazla özelliği aynı anda animate edebilir!` },
+                    { keys:['gui','ui','frame','button','textlabel','arayüz','tasarım'], ans:`<b>🎨 GUI Tasarım İpuçları</b><br><br>✅ <b>Profesyonel GUI için:</b><br>• UICorner ile köşeleri yuvarla (CornerRadius: 0.1)<br>• UIStroke ile outline ekle<br>• UIGradient ile renk geçişi yap<br>• AnchorPoint = Vector2.new(0.5, 0.5) ile ortaya hizala<br>• UIAspectRatioConstraint ile farklı ekranlarda düzgün görünür<br><br>💡 <b>Animasyon:</b> TweenService ile butonlara hover efekti ekle<br><code>btn.MouseEnter:Connect(function()<br>&nbsp;&nbsp;-- scale up tween<br>end)</code>` },
+                    { keys:['vfx','efekt','particle','parçacık','efekti'], ans:`<b>✨ VFX - Görsel Efektler</b><br><br>🔥 <b>ParticleEmitter:</b> Ateş, duman, ışıltı efektleri<br>• Texture: "rbxassetid://..." ile özel doku<br>• Rate: saniyede kaç parçacık<br>• Lifetime: kaç saniye yaşar<br>• Speed: hız<br><br>💡 <b>Beam:</b> İki parça arasında ışın efekti<br>💡 <b>Trail:</b> Hareket eden objede iz bırakır<br>💡 <b>SelectionBox + Highlight:</b> Objeyi parlat<br><br>⚡ <b>İpucu:</b> Birden fazla ParticleEmitter katmanla, daha zengin görünüm elde et!` },
+                    { keys:['modelleme','model','mesh','blender','3d'], ans:`<b>🧊 3D Modelleme İpuçları</b><br><br>📌 <b>Roblox Studio'da:</b><br>• Part'ları Union/Negate ile karmaşık şekiller oluştur<br>• MeshPart: Blender'dan .obj/.fbx import<br>• SpecialMesh ile temel mesh şekilleri<br><br>📌 <b>Blender'dan Import:</b><br>1. Modeli Blender'da oluştur<br>2. .fbx olarak export et<br>3. Studio'ya Asset olarak yükle<br>4. MeshPart olarak import et<br><br>💡 <b>Polygon sayısını düşük tut!</b> Mobil için 1000-3000 tri ideal.` },
+                    { keys:['rapor','report','nasıl yaz'], ans:`<b>📋 Rapor Yazma Kılavuzu</b><br><br>İyi bir LSDT raporu şunları içermeli:<br><br>✅ <b>Yapılanlar:</b> Bu süreçte ne yaptın?<br>✅ <b>Tamamlanan özellikler:</b> Somut çıktılar<br>✅ <b>Karşılaşılan sorunlar:</b> Varsa hatalar<br>✅ <b>Sonraki adım:</b> Devam planı<br><br>📌 <b>Örnek:</b><br>"Bu hafta ana menü GUI'sini tasarladım. Login ekranı ve karakter seçim sayfası tamamlandı. Font import sorunu yaşadım, çözüldü. Sıradaki görev: inventory sistemi."<br><br>💡 Görseller ekle — Admin değerlendirmeyi daha kolay yapar!` },
+                    { keys:['sfx','ses','sound','müzik','audio'], ans:`<b>🔊 SFX & Ses Sistemi</b><br><br><code>-- Ses çalmak:\nlocal sound = Instance.new("Sound")\nsound.SoundId = "rbxassetid://142376088"\nsound.Volume = 0.8\nsound.Parent = workspace\nsound:Play()\n\n-- 3D Ses (objede):\nlocal s = Instance.new("Sound")\ns.Parent = workspace.Part -- objeye bağla\ns.RollOffMaxDistance = 50\ns:Play()</code><br><br>💡 <b>İpuçları:</b><br>• SoundService → MusicVolume ile müzik ses seviyesi<br>• Looped = true ile döngüsel müzik<br>• PlayOnRemove için EffectService kullan` },
+                    { keys:['hata','error','bug','sorun','düzelt'], ans:`<b>🐛 Hata Ayıklama (Debug) İpuçları</b><br><br>🔍 <b>Output penceresini izle</b> — Her hata satır numarası verir<br><br>📌 <b>Yaygın hatalar:</b><br>• <code>attempt to index nil</code> → Obje bulunamadı. WaitForChild() kullan<br>• <code>Script timeout</code> → Sonsuz döngü var, wait() ekle<br>• <code>bad argument</code> → Yanlış parametre tipi<br><br>💡 <b>print() kullan!</b><br><code>print("Değer:", degisken) -- konsolda göster<br>warn("Uyarı mesajı") -- sarı renkte çıkar</code><br><br>⚡ Plugin öneri: <b>Roblox LSP</b> ile otomatik hata tespiti` },
+                    { keys:['lsdt','görev','ekip','kural','politika'], ans:`<b>📌 LSDT Kuralları & Politikaları</b><br><br>✅ <b>Görev kuralları:</b><br>• Görev tamamlandığında rapor gönder<br>• Teslim tarihine dikkat et<br>• Sorun varsa admin ile iletişime geç<br><br>✅ <b>İletişim:</b><br>• İletişim sekmesinden mesajlaşabilirsin<br>• Resim gönderme desteği mevcut<br><br>✅ <b>Raporlar:</b><br>• Görev → Rapor Gönder butonu<br>• Detaylı açıklama + görsel ekle<br>• Hata varsa hata bölümünü doldur<br><br>❓ Başka bir konuda yardım lazımsa sor!` },
+                ];
+                for(const entry of kb) {
+                    if(entry.keys.some(k => ql.includes(k))) return entry.ans;
+                }
+                // Genel fallback
+                const fallbacks = [
+                    `🤔 "<b>${q}</b>" konusunda şu an bilgim sınırlı. Daha spesifik sorabilirsin veya şu konuları deneyebilirsin: Luau Script, GUI, VFX, DataStore, RemoteEvent, Modelleme, Rapor yazımı.`,
+                    `💡 Bu konu hakkında daha fazla bilgi için <b>Roblox Developer Docs</b>'u öneririm: <i>create.roblox.com/docs</i>. Başka bir konuda yardımcı olabilir miyim?`,
+                    `🎯 Soruyu biraz daha açar mısın? Örneğin hangi sistem için: Script, GUI, VFX, DataStore, Server/Client mı?`
+                ];
+                return fallbacks[Math.floor(Math.random() * fallbacks.length)];
+            },
+
             show(id) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.getElementById(id).classList.add('active'); },
             open(id) { document.getElementById(id).classList.add('active'); },
             close() { document.querySelectorAll('.modal').forEach(m => m.classList.remove('active')); app.tempImages = []; document.getElementById('r-preview').innerHTML = ''; },
@@ -480,51 +619,42 @@
                         else c.innerHTML += `<div class="card"><p>Atanmış görev yok.</p></div>`;
                     }
                 } else if(p === 'tasks') {
-                    c.innerHTML = `<h2>${app.user.role === 'admin' ? 'Kayıt Denetimi' : 'Görevlerim'}</h2>`;
-                    [...app.db.tasks].reverse().forEach(t => {
-                        if(app.user.role === 'admin' || t.assignee === app.user.username) {
-                            let rHtml = '';
-                            // Rapor ayrıştırma mantığı güçlendirildi
-                            if(t.description && t.description.includes('[REPORT_START]')) {
-                                try {
-                                    const parts = t.description.split('[REPORT_START]');
-                                    const reportContent = parts[1].split('[REPORT_END]')[0];
-                                    const r = JSON.parse(reportContent);
-                                    
-                                    rHtml = `<div class="report-section" style="border-left: 4px solid var(--green); background: rgba(0,255,0,0.05);">
-                                        <h4 style="color:var(--green)">GÖNDERİLEN RAPOR</h4>
-                                        <p style="margin: 10px 0;">${r.report}</p>
-                                        ${r.bug ? `<p style="color:var(--red); background:rgba(255,0,0,0.1); padding:8px; border-radius:10px;"><b>HATA BİLDİRİMİ:</b> ${r.bug}</p>`:''}
-                                        ${r.imgs && r.imgs.length ? `
-                                            <button class="btn-mini" style="background:var(--p); width:100%; margin:10px 0;" onclick="app.toggleImgs('${t.id}')">GÖRSELLERİ AÇ/KAPAT (${r.imgs.length})</button>
-                                            <div id="imgs-${t.id}" class="img-grid" style="display:none;">
-                                                ${r.imgs.map(i=>`<img src="${i}" class="img-item" onclick="app.viewImg('${i}')">`).join('')}
-                                            </div>
-                                        `:''}
-                                        ${app.user.role==='admin' && t.status==='İnceleniyor' ? `
-                                            <div style="display:flex; gap:10px; margin-top:10px;">
-                                                <button class="btn-mini" style="background:var(--green); color:black;" onclick="app.updateTaskStatus('${t.id}', 'Onaylandı')">ONAYLA</button>
-                                                <button class="btn-mini" style="background:var(--red); color:white;" onclick="app.openRejectModal('${t.id}')">REDDET</button>
-                                            </div>
-                                        `:''}
-                                    </div>`;
-                                } catch(e) { console.error("Report parse error:", e); }
-                            }
-                            
-                            const cleanDesc = t.description ? t.description.split('[REPORT_START]')[0].split('[REJECT_REASON]')[0].trim() : '';
-                            c.innerHTML += `<div class="card">
-                                <div class="badge" style="background:${t.status==='Onaylandı'?'var(--green)':(t.status==='Reddedildi'?'var(--red)':'var(--p-grad)')}">${t.status}</div>
-                                <h3>${t.title}</h3>
-                                <p style="opacity:0.8; margin-bottom:15px;">${cleanDesc}</p>
-                                ${rHtml}
-                                <div class="info-row" style="margin-top:15px; border-top:1px solid rgba(255,255,255,0.05); padding-top:10px;">
-                                    <span><i class="fas fa-user" style="margin-right:5px; color:var(--p)"></i>${t.assignee}</span>
-                                    <span><i class="fas fa-calendar-alt" style="margin-right:5px; color:var(--p)"></i>${new Date(t.date).toLocaleDateString('tr')}</span>
-                                </div>
-                                ${app.user.role==='admin'?`<i class="fas fa-trash del-btn" onclick="app.delItem('tasks', '${t.id}')"></i>`:''}
-                            </div>`;
-                        }
-                    });
+                    app.sel.taskSearch = app.sel.taskSearch || '';
+                    c.innerHTML = `<h2>${app.user.role === 'admin' ? 'Kayıt Denetimi' : 'Görevlerim'}</h2>
+                        <div style="position:relative;margin-bottom:15px;">
+                            <i class="fas fa-search" style="position:absolute;left:18px;top:50%;transform:translateY(-50%);color:var(--sub);font-size:0.9rem;"></i>
+                            <input id="task-search-input" class="input-p" style="padding-left:45px;margin-bottom:0;border-radius:20px;" placeholder="Görev ara..." value="${app.sel.taskSearch}" oninput="app.sel.taskSearch=this.value; app.renderTaskList()">
+                        </div>`;
+                    app.renderTaskList();
+                } else if(p === 'ai') {
+                    app._aiHistory = app._aiHistory || [];
+                    c.innerHTML = `
+                        <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
+                            <div style="width:46px;height:46px;background:var(--p-grad);border-radius:14px;display:flex;justify-content:center;align-items:center;font-size:1.4rem;">🤖</div>
+                            <div><h2 style="margin:0;">LSDT AI Asistan</h2><p style="color:var(--sub);font-size:0.8rem;margin:2px 0 0;">Roblox & LSDT konularında yardımcı olurum</p></div>
+                        </div>
+                        <div id="ai-box" style="background:var(--glass);border:1px solid rgba(255,255,255,0.08);border-radius:24px;padding:20px;min-height:300px;max-height:calc(100vh - 380px);overflow-y:auto;display:flex;flex-direction:column;gap:12px;margin-bottom:15px;">
+                            <div class="ai-bubble bot">👋 Merhaba <b>${app.user.name}</b>! Ben LSDT AI Asistan. Roblox scripting, görev yönetimi, rapor yazımı ve daha fazlasında yardımcı olabilirim.</div>
+                            <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px;">
+                                <span class="ai-chip" onclick="app.aiAsk('Luau script nasıl yazılır?')">📜 Luau Script</span>
+                                <span class="ai-chip" onclick="app.aiAsk('GUI tasarımı ipuçları')">🎨 GUI</span>
+                                <span class="ai-chip" onclick="app.aiAsk('VFX efekti nasıl yapılır?')">✨ VFX</span>
+                                <span class="ai-chip" onclick="app.aiAsk('Rapor nasıl yazılır?')">📋 Rapor Yaz</span>
+                                <span class="ai-chip" onclick="app.aiAsk('3D modelleme ipuçları')">🧊 Modelleme</span>
+                                <span class="ai-chip" onclick="app.aiAsk('RemoteEvent nasıl kullanılır?')">🔗 RemoteEvent</span>
+                                <span class="ai-chip" onclick="app.aiAsk('DataStore nasıl kullanılır?')">💾 DataStore</span>
+                                <span class="ai-chip" onclick="app.aiAsk('Tween animasyonu nasıl yapılır?')">🎞️ Tween</span>
+                            </div>
+                        </div>
+                        <div style="display:flex;gap:10px;align-items:center;">
+                            <input id="ai-input" class="input-p" style="margin-bottom:0;flex:1;border-radius:20px;padding:15px 20px;background:rgba(0,0,0,0.3);" placeholder="Bir şey sor..." onkeypress="if(event.key==='Enter') app.aiAsk()">
+                            <button class="btn-p" style="width:52px;height:52px;border-radius:50%;padding:0;flex-shrink:0;display:flex;justify-content:center;align-items:center;" onclick="app.aiAsk()"><i class="fas fa-paper-plane"></i></button>
+                        </div>`;
+                    if(app._aiHistory.length > 0) {
+                        const box = document.getElementById('ai-box');
+                        app._aiHistory.forEach(h => { const d=document.createElement('div'); d.className=`ai-bubble ${h.role}`; d.innerHTML=h.text; box.appendChild(d); });
+                        box.scrollTop = box.scrollHeight;
+                    }
                 } else if(p === 'ann') {
                     c.innerHTML = `<h2>Duyurular</h2>${app.user.role==='admin'?`<div class="card"><input id="an-title" class="input-p" placeholder="Başlık"><textarea id="an-text" class="input-p" placeholder="Mesaj"></textarea><button class="btn-p" onclick="app.handleNewAnn()">YAYINLA</button></div>`:''}`;
                     [...app.db.announcements].reverse().forEach(a => {
@@ -544,11 +674,31 @@
                             </div>
                             <div style="padding:10px;">
                                 ${targets.map(u => {
+                                    // Son görülme: o kullanıcıyla son mesaj zamanı
+                                    const conv = (app.db.messages || []).filter(m =>
+                                        (m.sender === u.username && m.receiver === app.user.username) ||
+                                        (m.sender === app.user.username && m.receiver === u.username)
+                                    );
+                                    const lastMsg = conv.length ? conv[conv.length - 1] : null;
+                                    const unreadCount = (app.db.messages || []).filter(m => m.sender === u.username && m.receiver === app.user.username && new Date(m.date).getTime() > parseInt(localStorage.getItem('lsdt_msgs_seen') || '0')).length;
+                                    let lastSeenStr = u.category;
+                                    if(lastMsg) {
+                                        const d = new Date(lastMsg.date);
+                                        const now = new Date();
+                                        const diffMin = Math.floor((now - d) / 60000);
+                                        if(diffMin < 1) lastSeenStr = '🟢 Az önce';
+                                        else if(diffMin < 60) lastSeenStr = `🟡 ${diffMin} dk önce`;
+                                        else if(diffMin < 1440) lastSeenStr = `⚪ ${Math.floor(diffMin/60)} saat önce`;
+                                        else lastSeenStr = `⚪ ${Math.floor(diffMin/1440)} gün önce`;
+                                    }
                                     return `<div class="chat-user-item" onclick="app.sel.chatTarget='${u.username}'; app.nav('admin')">
-                                        <div style="width:45px; height:45px; background:var(--p-grad); border-radius:50%; display:flex; justify-content:center; align-items:center; font-weight:900; font-size:1.2rem;">${u.name[0]}</div>
+                                        <div style="position:relative;">
+                                            <div style="width:48px; height:48px; background:var(--p-grad); border-radius:50%; display:flex; justify-content:center; align-items:center; font-weight:900; font-size:1.2rem;">${u.name[0]}</div>
+                                            ${unreadCount > 0 ? `<div style="position:absolute;top:-4px;right:-4px;background:var(--red);color:white;border-radius:50%;width:18px;height:18px;font-size:0.65rem;font-weight:900;display:flex;justify-content:center;align-items:center;">${unreadCount}</div>` : ''}
+                                        </div>
                                         <div style="flex:1;">
-                                            <div style="font-weight:900; font-size:1.1rem;">${u.name}</div>
-                                            <div style="font-size:0.8rem; color:var(--sub);">${u.category}</div>
+                                            <div style="font-weight:900; font-size:1rem;">${u.name}</div>
+                                            <div style="font-size:0.78rem; color:var(--sub); margin-top:2px;">${lastSeenStr}</div>
                                         </div>
                                         <i class="fas fa-chevron-right" style="color:var(--p); opacity:0.5;"></i>
                                     </div>`;
@@ -591,14 +741,6 @@
                         </div>
 
                         <div class="stat-grid">
-                            <div class="stat-card purple">
-                                <span class="stat-num" style="color:var(--p);">${activeTasks}</span>
-                                <span class="stat-label">⚡ Aktif Görev</span>
-                            </div>
-                            <div class="stat-card green">
-                                <span class="stat-num" style="color:var(--green);">${doneTasks}</span>
-                                <span class="stat-label">✅ Tamamlanan</span>
-                            </div>
                             <div class="stat-card red" style="grid-column: span 2;">
                                 <span class="stat-num" style="color:var(--red); font-size:1.5rem;">${myMsgs}</span>
                                 <span class="stat-label">💬 Toplam Mesajlaşma</span>
@@ -669,7 +811,8 @@
 
             async handleNewTask(e) {
                 e.preventDefault(); if(!app.sel.tTo) return app.toast('Kişi seç!', true);
-                const t = { assignee: app.sel.tTo, title: document.getElementById('t-title').value, description: document.getElementById('t-desc').value + `\n\n[ADMIN: ${app.user.name}]`, status: 'Aktif', date: new Date().toISOString() };
+                const deadline = document.getElementById('t-deadline').value || null;
+                const t = { assignee: app.sel.tTo, title: document.getElementById('t-title').value, description: document.getElementById('t-desc').value + `\n\n[ADMIN: ${app.user.name}]`, status: 'Aktif', date: new Date().toISOString(), deadline: deadline };
                 const r = await fetch(`${RENDER_URL}/api/tasks`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(t)});
                 if(r.ok) { app.toast('Atandı'); app.close(); await app.sync(); app.nav('tasks'); } else app.toast('Hata: ' + (await r.json()).error, true);
             },
