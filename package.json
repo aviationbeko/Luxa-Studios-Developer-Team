@@ -4,11 +4,15 @@
   "description": "LSDT Management App",
   "main": "index.html",
   "scripts": {
-    "build": "mkdir -p dist && cp index.html dist/ && cp main.js dist/ && cp manifest.json dist/ && (cp -rv public/* dist/ 2>/dev/null || true)"
+    "build": "mkdir -p dist && cp index.html dist/ && cp main.js dist/ && cp manifest.json dist/ && (cp -rv public/* dist/ 2>/dev/null || true)",
+    "dev": "serve ."
   },
   "dependencies": {
     "@capacitor/android": "^5.0.0",
     "@capacitor/cli": "^5.0.0",
     "@capacitor/core": "^5.0.0"
+  },
+  "devDependencies": {
+    "serve": "^14.2.6"
   }
 }

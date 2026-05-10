@@ -31,9 +31,10 @@ app.get('/api/state', async (req, res) => {
         const { data: users, error: e1 } = await supabase.from('users').select('*');
         const { data: tasks, error: e2 } = await supabase.from('tasks').select('*');
         const { data: announcements, error: e3 } = await supabase.from('announcements').select('*');
+        const { data: messages, error: e4 } = await supabase.from('messages').select('*');
         
-        if (e1 || e2 || e3) throw (e1 || e2 || e3);
-        res.json({ users, tasks, announcements });
+        if (e1 || e2 || e3 || e4) throw (e1 || e2 || e3 || e4);
+        res.json({ users, tasks, announcements, messages });
     } catch (error) {
         console.error("State Fetch Error:", error);
         res.status(500).json({ error: error.message });
