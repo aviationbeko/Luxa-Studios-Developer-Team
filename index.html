@@ -237,9 +237,10 @@
     <!-- WELCOME SCREEN -->
     <div id="welcome-screen" class="screen" style="z-index: 1500; background: var(--bg); justify-content: center; align-items: center; display: none;">
         <div id="w-content" style="text-align: center; transform: scale(0.9); opacity: 0;">
-            <div id="w-avatar" style="width:120px; height:120px; background:var(--p-grad); color:white; border-radius:50%; display:flex; justify-content:center; align-items:center; font-weight:900; font-size:4rem; margin: 0 auto 30px;">L</div>
+            <div id="w-avatar" style="width:120px; height:120px; background:var(--p-grad); color:white; border-radius:50%; display:flex; justify-content:center; align-items:center; font-weight:900; font-size:4rem; margin: 0 auto 30px; overflow:hidden;">L</div>
             <h1 id="w-title" style="font-size: 3rem; font-weight: 900; color: white;">HOŞGELDİN</h1>
             <p id="w-sub" style="color: var(--p); font-size: 1.2rem; font-weight: 700; text-transform: uppercase;"></p>
+            <p id="w-motd" style="color: rgba(255,255,255,0.7); font-size: 0.95rem; font-style: italic; margin-top: 25px; padding: 0 20px;"></p>
         </div>
     </div>
 
@@ -374,9 +375,55 @@
             tempImages: [],
 
             async init() {
-                if(localStorage.getItem('lsdt_theme') === 'light') document.body.classList.add('light-mode');
-                const tl = gsap.timeline();
-                tl.fromTo("#l-cube", { y: -50, opacity: 0 }, { y: 0, opacity: 1, duration: 1 })
+                const rem = localStorage.getItem('lsdt_rem');
+                if(rem && localStorage.getItem('lsdt_setup')) {
+                    const u = JSON.parse(rem);
+                    app.show('loading-screen');
+                    document.getElementById('l-code').style.opacity = 1;
+                    document.getElementById('l-logo').style.opacity = 1;
+                    document.getElementById('l-text').style.opacity = 1;
+                    document.getElementById('l-code').innerText = ">_ sunucuya hizli baglaniliyor...";
+                    await app.sync();
+                    const f = app.db.users.find(x => x.username === u.username && x.password === u.password);
+                    if(f) {
+                        document.getElementById('loading-screen').classList.remove('active');
+                        app.user = f;
+                        const pfpMsg = (app.db.messages||[]).filter(m => m.sender === f.username && m.receiver === 'SYSTEM_PFP').pop();
+                        if(pfpMsg) document.getElementById('avatar').innerHTML = `<img src="${pfpMsg.text}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
+                        else document.getElementById('avatar').innerText = f.name[0];
+                        const savedBg = localStorage.getItem('lsdt_profile_bg_' + f.username);
+                        if(savedBg) document.getElementById('avatar').style.background = savedBg;
+                        const uLeave = app.db.tasks.some(t => t.assignee === f.username && t.status === 'İzinde');
+                        const statusDot = `<div style="width:10px;height:10px;border-radius:50%;background:${uLeave?'var(--red)':'var(--green)'};display:inline-block;margin-right:6px;box-shadow:0 0 5px ${uLeave?'var(--red)':'var(--green)'};"></div>`;
+                        document.getElementById('u-name').innerHTML = statusDot + f.name;
+                        document.getElementById('u-role').innerText = f.category;
+                        
+                        const motds = [
+                            "Büyük oyunlar küçük kod satırlarıyla başlar.",
+                            "Buglar sadece çözülmeyi bekleyen bulmacalardır.",
+                            "Bugün yazdığın kod, yarın milyonların oynayacağı oyun olabilir.",
+                            "Her hata, daha iyi bir geliştirici olman için bir fırsattır.",
+                            "Stüdyoda sihir yaratmaya hazır mısın?",
+                            "İlham gelmesini bekleme, kodu yazmaya başla ilham arkadan gelir."
+                        ];
+                        document.getElementById('w-motd').innerText = '"' + motds[Math.floor(Math.random() * motds.length)] + '"';
+                        
+                        app.show('welcome-screen');
+                        document.getElementById('w-sub').innerText = f.name;
+
+                        const fab = document.getElementById('ai-fab');
+                        if(fab) fab.style.display = 'flex';
+                        app.show('main-app'); app.nav('dash');
+                    } else {
+                        app.show('login-screen');
+                    }
+                    app.renderCats();
+                    setInterval(() => app.sync(), 6000);
+                    return;
+                }
+
+                gsap.timeline()
+                  .to("#l-logo", { opacity: 1, scale: 1, duration: 1, ease: "back.out(1.7)" })
                   .to("#l-code", { opacity: 1, width: "180px", duration: 1, ease: "steps(15)" })
                   .to("#l-text", { opacity: 1, duration: 1 })
                   .call(async () => {
@@ -384,13 +431,8 @@
                       await app.sync();
                       gsap.to("#loading-screen", { opacity: 0, duration: 0.5, onComplete: () => {
                           document.getElementById('loading-screen').classList.remove('active');
-                          const rem = localStorage.getItem('lsdt_rem');
                           if(!localStorage.getItem('lsdt_setup')) app.show('setup-screen');
-                          else if(rem) {
-                              const u = JSON.parse(rem);
-                              const f = app.db.users.find(x => x.username === u.username && x.password === u.password);
-                              if(f) app.loginAs(f); else app.show('login-screen');
-                          } else app.show('login-screen');
+                          else app.show('login-screen');
                       }});
                   });
                 app.renderCats();
@@ -854,7 +896,23 @@
             loginAs(u) {
                 app.user = u;
                 document.getElementById('welcome-screen').style.display = 'flex';
-                document.getElementById('w-avatar').innerText = u.name[0];
+                
+                const pfpMsg = (app.db.messages||[]).filter(m => m.sender === u.username && m.receiver === 'SYSTEM_PFP').pop();
+                if(pfpMsg) document.getElementById('w-avatar').innerHTML = `<img src="${pfpMsg.text}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
+                else document.getElementById('w-avatar').innerText = u.name[0];
+                const savedBg = localStorage.getItem('lsdt_profile_bg_' + u.username);
+                if(savedBg) document.getElementById('w-avatar').style.background = savedBg;
+                
+                const motds = [
+                    "Büyük oyunlar küçük kod satırlarıyla başlar.",
+                    "Buglar sadece çözülmeyi bekleyen bulmacalardır.",
+                    "Bugün yazdığın kod, yarın milyonların oynayacağı oyun olabilir.",
+                    "Her hata, daha iyi bir geliştirici olman için bir fırsattır.",
+                    "Stüdyoda sihir yaratmaya hazır mısın?",
+                    "İlham gelmesini bekleme, kodu yazmaya başla ilham arkadan gelir."
+                ];
+                document.getElementById('w-motd').innerText = '"' + motds[Math.floor(Math.random() * motds.length)] + '"';
+
                 document.getElementById('w-title').innerText = "SELAM, " + u.name.split(' ')[0].toUpperCase();
                 document.getElementById('w-sub').innerText = u.category;
                 gsap.to("#w-content", { opacity: 1, scale: 1, duration: 0.8 });
