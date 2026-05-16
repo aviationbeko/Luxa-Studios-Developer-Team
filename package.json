@@ -4,7 +4,7 @@
   "description": "LSDT Management App",
   "main": "index.html",
   "scripts": {
-    "build": "mkdir -p dist && cp index.html dist/ && cp main.js dist/ && cp manifest.json dist/ && (cp -rv public/* dist/ 2>/dev/null || true)",
+    "build": "mkdir -p www && cp index.html www/ && cp main.js www/ && cp manifest.json www/ && (cp -rv public/* www/ 2>/dev/null || true)",
     "dev": "serve ."
   },
   "dependencies": {

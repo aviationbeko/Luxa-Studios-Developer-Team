@@ -28,11 +28,12 @@ jobs:
             author: "Luxa Studios",
             main: "electron-main.js",
             scripts: {
-              start: "electron ."
+              start: "electron .",
+              build: "node -e \"const fs = require('fs'); if (!fs.existsSync('www')) fs.mkdirSync('www'); ['index.html', 'main.js', 'manifest.json'].forEach(f => { if(fs.existsSync(f)) fs.copyFileSync(f, 'www/' + f) });\""
             },
             build: {
               appId: "com.luxastudios.lsdt",
-              productName: "LSDT App",
+              productName: "LSDT",
               win: {
                 target: "nsis",
                 icon: "www/icon.png"
@@ -56,11 +57,14 @@ jobs:
       - name: Install Electron Dependencies
         run: npm install
 
+      - name: Build Web Assets
+        run: npm run build
+
       - name: Build Windows EXE
         run: npx electron-builder --win --publish never
 
       - name: Upload Windows EXE
         uses: actions/upload-artifact@v4
         with:
-          name: LSDT-App-Windows-EXE
+          name: LSDT-Windows-EXE
           path: build_output/*.exe
