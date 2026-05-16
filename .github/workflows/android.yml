@@ -22,11 +22,12 @@ jobs:
           npm install
           npm install @capacitor/core @capacitor/cli @capacitor/android
 
+      - name: Build Web Assets
+        run: npm run build
+
       - name: Setup Android Project
         run: |
-          rm -rf android
-          npx cap add android
-          npx cap copy android
+          npx cap add android || true
           npx cap sync android
 
       - name: Set up Java 17
