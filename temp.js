@@ -1,595 +1,5 @@
-<!DOCTYPE html>
-<html lang="tr">
-<head>
-    <meta charset="UTF-8">
-    <link rel="icon" type="image/png" href="https://img.icons8.com/fluency/48/lightning-bolt.png" />
-    <link rel="shortcut icon" type="image/png" href="https://img.icons8.com/fluency/48/lightning-bolt.png" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>LSDT</title>
-    <link rel="manifest" href="manifest.json">
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-    <style>
-        :root { 
-            --p: #a29bfe; --p-dark: #6c5ce7;
-            --bg: radial-gradient(circle at top right, #2d1454, #0f051d); 
-            --bg-dark: #0f051d;
-            --card: rgba(255, 255, 255, 0.03); 
-            --text: #ffffff; --sub: #d1d8e0; 
-            --red: #ff7675; --green: #55efc4; --gold: #f1c40f;
-            --glass: rgba(162, 155, 254, 0.15);
-            --p-grad: linear-gradient(135deg, #6c5ce7, #a29bfe);
-        }
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Outfit', sans-serif; -webkit-tap-highlight-color: transparent; }
-        body { background: var(--bg-dark); color: var(--text); height: 100vh; width: 100vw; overflow: hidden; }
-        
-        body.light-mode {
-            --bg-dark: #f5f6fa;
-            --bg: radial-gradient(circle at top right, #e2dff5, #f5f6fa);
-            --card: rgba(0, 0, 0, 0.05);
-            --text: #2d3436;
-            --sub: #636e72;
-            --glass: rgba(108, 92, 231, 0.15);
-        }
-        body.light-mode .card, body.light-mode .glass-card, body.light-mode .modal-content, body.light-mode .ai-popup { background: #ffffff; border: 1px solid rgba(0,0,0,0.1); box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
-        body.light-mode .input-p { background: rgba(0,0,0,0.05); color: #2d3436; border: 2px solid rgba(0,0,0,0.1); }
-        body.light-mode .input-p:focus { background: rgba(0,0,0,0.02); border-color: var(--p); }
-        body.light-mode .input-p::placeholder { color: #b2bec3; }
-        body.light-mode .top-nav, body.light-mode .bottom-nav { background: rgba(255, 255, 255, 0.9); border-color: rgba(0,0,0,0.05); }
-        body.light-mode .nav-item { color: #636e72; }
-        body.light-mode .nav-item.active { color: var(--p); }
-        body.light-mode .ai-bubble.bot { background: rgba(0,0,0,0.05); }
-        body.light-mode .msg.received { background: #ffffff; border: 1px solid rgba(0,0,0,0.1); }
-        body.light-mode .msg-info { color: #b2bec3; }
 
-        .screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: none; flex-direction: column; z-index: 10; background: var(--bg); }
-        .screen.active { display: flex !important; }
-        .setup-step { display: none; width: 100%; height: 100%; justify-content: center; align-items: center; flex-direction: column; }
-        .setup-step.active { display: flex !important; }
-
-        #loading-screen { justify-content: center; align-items: center; z-index: 9999; background: #05020a; }
-        .load-container { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; width: 100%; gap: 40px; }
-        #l-cube { width: 50px; height: 50px; background: var(--p-grad); border-radius: 15px; box-shadow: 0 0 50px rgba(108,92,231,0.6); }
-        #l-code { font-family: monospace; color: var(--green); font-size: 1.1rem; opacity: 0; white-space: nowrap; overflow: hidden; width: 0; border-right: 2px solid var(--green); }
-        #l-text { font-size: 4.5rem; font-weight: 900; background: var(--p-grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; opacity: 0; letter-spacing: 10px; }
-
-        .glass-card { background: rgba(255,255,255,0.08); backdrop-filter: blur(40px); border: 1px solid rgba(255,255,255,0.15); padding: 40px 30px; border-radius: 45px; width: 92%; max-width: 400px; text-align: center; }
-        .input-p { width: 100%; padding: 18px; margin-bottom: 15px; background: rgba(255,255,255,0.1); border: 2px solid transparent; border-radius: 25px; color: white; outline: none; }
-        .input-p:focus { border-color: var(--p); background: rgba(255,255,255,0.15); }
-        
-        .p-select { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; justify-content: center; max-height: 200px; overflow-y: auto; padding: 10px; }
-        .p-opt { padding: 10px 18px; border-radius: 30px; background: rgba(108,92,231,0.1); border: 1px solid rgba(108,92,231,0.3); color: white; cursor: pointer; font-size: 0.8rem; font-weight: 700; transition: 0.3s; }
-        .p-opt.active { background: var(--p-grad); transform: translateY(-2px); }
-
-        .btn-p { width: 100%; padding: 18px; background: var(--p-grad); color: white; border: none; border-radius: 25px; font-weight: 900; cursor: pointer; transition: 0.3s; }
-        .btn-p:hover { transform: translateY(-3px); }
-        
-        .top-nav { padding: 25px 20px; display: flex; justify-content: space-between; align-items: center; z-index: 50; }
-        .bottom-nav { position: fixed; bottom: 0; width: 100%; height: 90px; background: rgba(15,5,29,0.7); backdrop-filter: blur(25px); display: flex; justify-content: space-around; align-items: center; border-top: 1px solid rgba(255,255,255,0.05); padding-bottom: 20px; z-index: 100; }
-        .nav-item { color: rgba(255,255,255,0.8); font-size: 0.8rem; text-align: center; cursor: pointer; transition: 0.4s; }
-        .nav-item.active { color: var(--p); transform: translateY(-8px); font-weight: 900; }
-        .nav-item i { font-size: 1.8rem; margin-bottom: 6px; }
-        
-        #page-content { flex: 1; padding: 20px; overflow-y: auto; padding-bottom: 120px; }
-        .card { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); padding: 25px; border-radius: 35px; margin-bottom: 20px; position: relative; }
-        .card h3 { color: var(--p); margin-bottom: 10px; font-weight: 900; }
-        .badge { display: inline-block; padding: 6px 14px; border-radius: 12px; font-size: 0.7rem; font-weight: 900; margin-bottom: 12px; text-transform: uppercase; background: var(--glass); color: var(--p); }
-        .info-row { font-size: 0.75rem; color: var(--sub); margin-top: 10px; display: flex; flex-direction: column; gap: 4px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px; }
-
-        .action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
-        .action-card { background: var(--card); border: 1px solid rgba(255,255,255,0.1); border-radius: 30px; padding: 25px 15px; text-align: center; cursor: pointer; }
-        .action-card i { font-size: 2.2rem; display: block; margin-bottom: 12px; }
-
-        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: none; justify-content: center; align-items: center; z-index: 2000; backdrop-filter: blur(20px); }
-        .modal.active { display: flex !important; }
-        .modal-content { background: #1a0b2e; width: 92%; max-width: 450px; padding: 35px; border-radius: 40px; border: 1px solid rgba(255,255,255,0.1); max-height: 90vh; overflow-y: auto; }
-        
-        .toast { position: fixed; top: 30px; left: 50%; transform: translateX(-50%) translateY(-200%); background: var(--p-grad); color: white; padding: 18px 35px; border-radius: 25px; font-weight: 900; z-index: 3000; transition: 0.5s; opacity: 0; }
-        .del-btn { position: absolute; top: 20px; right: 20px; color: var(--red); opacity: 0.6; cursor: pointer; padding: 10px; }
-
-        .img-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 15px; }
-        .img-item { width: 100%; aspect-ratio: 1; border-radius: 15px; object-fit: cover; border: 1px solid rgba(255,255,255,0.2); }
-        .img-picker { border: 2px dashed var(--p); padding: 20px; border-radius: 25px; cursor: pointer; color: var(--p); text-align: center; margin-bottom: 20px; }
-
-        .report-section { background: rgba(0,0,0,0.3); padding: 15px; border-radius: 20px; margin-top: 15px; border-left: 4px solid var(--p); }
-        .report-section h4 { font-size: 0.8rem; color: var(--p); font-weight: 900; }
-        .btn-mini { padding: 10px 15px; border-radius: 15px; border: none; font-weight: 900; cursor: pointer; font-size: 0.8rem; }
-
-        /* Mesajlaşma Sistemi CSS */
-        .chat-container { display: flex; flex-direction: column; height: calc(100vh - 250px); }
-        .chat-messages { flex: 1; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 10px; }
-        .msg { max-width: 80%; padding: 12px 18px; border-radius: 20px; font-size: 0.9rem; position: relative; animation: msgIn 0.3s ease; }
-        .msg.sent { align-self: flex-end; background: var(--p-grad); color: white; border-bottom-right-radius: 5px; }
-        .msg.received { align-self: flex-start; background: rgba(255,255,255,0.1); color: white; border-bottom-left-radius: 5px; }
-        .msg-info { font-size: 0.65rem; opacity: 0.7; margin-bottom: 4px; display: block; font-weight: 800; }
-        .chat-input-area { display: flex; gap: 10px; padding: 15px 0; border-top: 1px solid rgba(255,255,255,0.1); }
-        .chat-user-item { display: flex; align-items: center; gap: 15px; padding: 15px; background: rgba(255,255,255,0.05); border-radius: 20px; margin-bottom: 10px; cursor: pointer; transition: 0.3s; }
-        .chat-user-item:hover { background: rgba(255,255,255,0.1); transform: translateX(5px); }
-        .dot { width: 10px; height: 10px; background: var(--green); border-radius: 50%; display: inline-block; margin-left: 5px; }
-        .nav-badge { position: absolute; top: -5px; right: 5%; background: var(--red); min-width: 22px; height: 22px; padding: 0 6px; border-radius: 50px; display: none; justify-content: center; align-items: center; font-size: 0.72rem; font-weight: 900; color: white; border: 2.5px solid #05020a; box-shadow: 0 0 12px rgba(255,60,60,0.7); animation: badgePulse 1.5s ease-in-out infinite; }
-        @keyframes badgePulse { 0%,100% { box-shadow: 0 0 8px rgba(255,60,60,0.5); } 50% { box-shadow: 0 0 18px rgba(255,60,60,0.9); } }
-        /* Switch CSS */
-        .switch { position: relative; display: inline-block; width: 50px; height: 24px; }
-        .switch input { opacity: 0; width: 0; height: 0; }
-        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(255,255,255,0.1); transition: .4s; border-radius: 24px; }
-        .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
-        input:checked + .slider { background-color: var(--p); }
-        input:checked + .slider:before { transform: translateX(26px); }
-
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes msgIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        /* AI FAB + Modal */
-        #ai-fab { position:fixed; bottom:88px; right:18px; width:58px; height:58px; background:var(--p-grad); border-radius:50%; display:none; justify-content:center; align-items:center; font-size:1.6rem; cursor:pointer; z-index:3000; box-shadow:0 6px 25px rgba(138,43,226,0.6); transition:transform 0.2s; border:none; color:white; }
-        #ai-fab:hover { transform:scale(1.1); }
-        #ai-fab.open { transform:rotate(20deg) scale(1.05); }
-        #ai-popup { position:fixed; bottom:160px; right:15px; width:min(340px, calc(100vw - 30px)); max-height:70vh; background:#13002b; border:1px solid rgba(138,43,226,0.35); border-radius:24px; z-index:3500; display:none; flex-direction:column; box-shadow:0 24px 60px rgba(0,0,0,0.8); overflow:hidden; transform:scale(0.9) translateY(20px); opacity:0; transition:transform 0.25s cubic-bezier(0.34,1.56,0.64,1), opacity 0.2s ease; pointer-events:none; }
-        #ai-popup.show { display:flex; transform:scale(1) translateY(0); opacity:1; pointer-events:all; }
-        #ai-popup-header { padding:16px 20px; background:var(--p-grad); display:flex; align-items:center; gap:12px; flex-shrink:0; }
-        #ai-box-popup { flex:1; overflow-y:auto; padding:16px; display:flex; flex-direction:column; gap:10px; min-height:200px; }
-        #ai-input-row { padding:12px; border-top:1px solid rgba(255,255,255,0.06); display:flex; gap:8px; flex-shrink:0; }
-        /* AI bubbles */
-        .ai-bubble { max-width:88%; padding:12px 16px; border-radius:20px; font-size:0.85rem; line-height:1.5; animation:msgIn 0.3s ease; word-break:break-word; }
-        .ai-bubble.user { align-self:flex-end; background:var(--p-grad); color:white; border-bottom-right-radius:4px; }
-        .ai-bubble.bot { align-self:flex-start; background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.1); color:white; border-bottom-left-radius:4px; }
-        .ai-chip { display:inline-block; background:rgba(138,43,226,0.2); border:1px solid rgba(138,43,226,0.4); color:var(--p); padding:7px 13px; border-radius:18px; font-size:0.78rem; cursor:pointer; margin:3px; transition:0.2s; font-weight:700; }
-        .ai-chip:hover { background:rgba(138,43,226,0.4); transform:translateY(-2px); }
-        .ai-typing { display:flex; gap:5px; align-items:center; padding:12px 16px; }
-        .ai-typing span { width:7px; height:7px; background:var(--p); border-radius:50%; animation:typingDot 1.2s infinite; }
-        .ai-typing span:nth-child(2) { animation-delay:0.2s; }
-        .ai-typing span:nth-child(3) { animation-delay:0.4s; }
-        @keyframes typingDot { 0%,60%,100% { transform:translateY(0); opacity:0.4; } 30% { transform:translateY(-6px); opacity:1; } }
-        /* Deadline badge */
-        .deadline-badge { display:inline-block; padding:4px 10px; border-radius:20px; font-size:0.72rem; font-weight:800; margin-top:8px; }
-        .deadline-ok { background:rgba(0,200,100,0.15); color:var(--green); border:1px solid rgba(0,200,100,0.3); }
-        .deadline-soon { background:rgba(255,165,0,0.15); color:#f0a500; border:1px solid rgba(255,165,0,0.3); }
-        .deadline-over { background:rgba(255,60,60,0.15); color:var(--red); border:1px solid rgba(255,60,60,0.3); }
-        .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
-        .stat-card { background: var(--glass); border: 1px solid rgba(255,255,255,0.1); border-radius: 24px; padding: 20px 15px; text-align: center; position: relative; overflow: hidden; }
-        .stat-card::before { content: ''; position: absolute; top: -20px; right: -20px; width: 70px; height: 70px; border-radius: 50%; opacity: 0.15; }
-        .stat-card.purple::before { background: var(--p); }
-        .stat-card.gold::before { background: #f0a500; }
-        .stat-card.green::before { background: var(--green); }
-        .stat-card.red::before { background: var(--red); }
-        .stat-num { font-size: 2rem; font-weight: 900; display: block; line-height: 1; margin-bottom: 6px; }
-        .stat-label { font-size: 0.72rem; color: var(--sub); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
-        .online-dot { width: 11px; height: 11px; background: var(--green); border-radius: 50%; border: 2px solid #05020a; display: inline-block; flex-shrink: 0; box-shadow: 0 0 6px var(--green); }
-        .offline-dot { width: 11px; height: 11px; background: rgba(255,255,255,0.2); border-radius: 50%; border: 2px solid #05020a; display: inline-block; flex-shrink: 0; }
-        .msg-tick { font-size: 0.6rem; margin-left: 5px; opacity: 0.6; }
-        .msg-tick.read { color: #60b4ff; opacity: 1; }
-        .msg-img { max-width: 200px; border-radius: 14px; margin-top: 8px; cursor: pointer; display: block; }
-        #notif-banner { position: fixed; bottom: -120px; left: 50%; transform: translateX(-50%); background: linear-gradient(135deg,#6a0dad,#9b30ff); color: white; padding: 14px 22px; border-radius: 20px; font-size: 0.85rem; font-weight: 800; z-index: 4000; transition: bottom 0.4s cubic-bezier(0.34,1.56,0.64,1), opacity 0.3s ease; max-width: 88%; width: max-content; display: flex; align-items: center; gap: 12px; box-shadow: 0 8px 30px rgba(100,0,200,0.5); pointer-events: none; opacity: 0; cursor: pointer; }
-        #notif-banner.show { bottom: 90px; opacity: 1; pointer-events: all; }
-
-        /* Studios */
-        .studio-card { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); border-radius: 30px; margin-bottom: 20px; overflow: hidden; position: relative; }
-        .studio-cover { width: 100%; height: 160px; object-fit: cover; display: block; }
-        .studio-cover-ph { width: 100%; height: 160px; background: var(--p-grad); display: flex; justify-content: center; align-items: center; font-size: 3rem; }
-        .studio-body { padding: 20px; }
-        .studio-members-row { display: flex; align-items: center; margin-top: 12px; }
-        .studio-av { width: 40px; height: 40px; border-radius: 50%; border: 2.5px solid #0f051d; margin-left: -10px; overflow: hidden; display: flex; justify-content: center; align-items: center; background: var(--p-grad); font-weight: 900; font-size: 0.85rem; flex-shrink: 0; }
-        .studio-av:first-child { margin-left: 0; }
-        .studio-av img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
-        /* Messaging Features */
-        .msg-reply-preview { font-size:0.75rem; color:var(--sub); margin-bottom:4px; padding-bottom:4px; border-bottom:1px solid rgba(255,255,255,0.1); border-left:2px solid var(--p); padding-left:6px; display:flex; align-items:center; gap:6px; }
-        .jumbo-emoji { font-size:3.5rem; line-height:1.2; display:block; animation: msgIn 0.4s cubic-bezier(0.34,1.56,0.64,1); }
-        .quick-replies-wrap { display:flex; gap:8px; overflow-x:auto; padding:8px 15px; scrollbar-width:none; background:rgba(0,0,0,0.15); border-top:1px solid rgba(255,255,255,0.05); }
-        .quick-replies-wrap::-webkit-scrollbar { display:none; }
-        .msg-spoiler { background:rgba(255,255,255,0.2); color:transparent; border-radius:4px; padding:0 4px; cursor:pointer; transition:0.3s; user-select:none; }
-        .msg-spoiler.revealed { background:rgba(255,255,255,0.05); color:white; user-select:text; }
-        .msg-ghost { opacity:0.5; font-style:italic; }
-        .msg-formatted b { color:#e2e2e2; font-weight:800; }
-        .msg-formatted i { font-style:italic; }
-        .msg-formatted s { text-decoration:line-through; opacity:0.7; }
-        .msg-formatted code { background:rgba(0,0,0,0.3); padding:2px 5px; border-radius:4px; font-family:monospace; color:#a29bfe; font-size:0.85em; border:1px solid rgba(255,255,255,0.1); }
-        .msg-formatted a { color:#60b4ff; text-decoration:underline; cursor:pointer; }
-
-        /* 64: SES DALGA GÖRÜNTÜLEYİCİ */
-        .voice-msg { display:flex; align-items:center; gap:10px; background:rgba(255,255,255,0.08); padding:8px 15px; border-radius:20px; margin-top:5px; border:1px solid rgba(255,255,255,0.05); width: fit-content; }
-        .voice-play-btn { width:35px; height:35px; border-radius:50%; background:var(--p-grad); color:#fff; border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 10px rgba(0,0,0,0.3); transition:0.2s; }
-        .voice-play-btn:hover { transform:scale(1.1); }
-        .voice-waveform { display:flex; gap:3px; align-items:center; height:20px; margin-left:5px; }
-        .wave-bar { width:4px; height:4px; background:var(--p); border-radius:2px; transition: height 0.1s; }
-        .wave-bar.anim { animation: wave 1s infinite alternate; }
-        .wave-bar.anim:nth-child(even) { animation-duration: 0.5s; }
-        .wave-bar.anim:nth-child(3n) { animation-duration: 0.7s; }
-        .wave-bar.anim:nth-child(4n) { animation-duration: 0.9s; }
-        @keyframes wave { 0% { height: 4px; } 100% { height: 20px; } }
-
-        /* TEMA PAKETLERİ (69) */
-        body.theme-ocean{--p:#00cec9;--p-dark:#00b894;--bg-dark:#0d1b2a;--bg:radial-gradient(circle at top right,#1b3a4b,#0d1b2a);--p-grad:linear-gradient(135deg,#00b894,#00cec9);--glass:rgba(0,206,201,0.15);}
-        body.theme-fire{--p:#fd79a8;--p-dark:#e84393;--bg-dark:#1a0010;--bg:radial-gradient(circle at top right,#3d0020,#1a0010);--p-grad:linear-gradient(135deg,#e84393,#fd79a8);--glass:rgba(253,121,168,0.15);}
-        body.theme-matrix{--p:#00ff41;--p-dark:#00b32c;--bg-dark:#0d0d0d;--bg:radial-gradient(circle at top right,#001a00,#0d0d0d);--p-grad:linear-gradient(135deg,#00b32c,#00ff41);--glass:rgba(0,255,65,0.15);}
-        body.theme-gold{--p:#f0a500;--p-dark:#c47f00;--bg-dark:#1a1200;--bg:radial-gradient(circle at top right,#3d2e00,#1a1200);--p-grad:linear-gradient(135deg,#c47f00,#f0a500);--glass:rgba(240,165,0,0.15);}
-        /* FONT (72) */
-        body.font-lg *{font-size:110%!important;}
-        body.font-xl *{font-size:125%!important;}
-        /* KOMPAKİT MOD (73) */
-        body.compact .card{padding:15px;border-radius:20px;margin-bottom:12px;}
-        body.compact .btn-p{padding:14px;}
-        body.compact .nav-item i{font-size:1.4rem;}
-        /* ANİMASYON HIZI (70) */
-        body.anim-fast *{transition-duration:0.08s!important;animation-duration:0.15s!important;}
-        body.anim-slow *{transition-duration:0.9s!important;}
-        /* ALINTI YANIT (47) */
-        .reply-bar{background:rgba(162,155,254,0.12);border-left:3px solid var(--p);padding:8px 12px;border-radius:10px;margin-bottom:8px;font-size:0.78rem;color:var(--sub);display:flex;justify-content:space-between;align-items:center;}
-        .msg-quoted{background:rgba(255,255,255,0.06);border-left:3px solid var(--p);padding:5px 10px;border-radius:8px;font-size:0.75rem;color:var(--sub);margin-bottom:6px;}
-        /* SİL BUTONU (46) */
-        .msg-del{position:absolute;top:5px;right:5px;background:none;border:none;color:rgba(255,100,100,0.5);cursor:pointer;font-size:0.7rem;display:none;}
-        .msg:hover .msg-del{display:block;}
-        .msg{position:relative;}
-
-        /* === 41: EMOJİ TEPKİLERİ === */
-        .msg-reactions{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;}
-        .reaction-pill{background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);border-radius:20px;padding:3px 8px;font-size:0.82rem;cursor:pointer;transition:0.2s;display:inline-flex;align-items:center;gap:3px;user-select:none;}
-        .reaction-pill:hover,.reaction-pill.mine{background:var(--p-grad);color:white;border-color:transparent;box-shadow:0 4px 15px rgba(138,43,226,0.3);}
-        .emoji-picker-popup{position:absolute;bottom:calc(100% + 4px);left:0;background:rgba(20,10,40,0.85);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,0.15);border-radius:20px;padding:12px;display:none;flex-wrap:wrap;gap:6px;z-index:300;width:215px;box-shadow:0 15px 40px rgba(0,0,0,0.7);}
-        .emoji-picker-popup.show{display:flex;}
-        .ep-emoji{background:none;border:none;font-size:1.4rem;cursor:pointer;padding:4px;border-radius:10px;transition:all 0.2s cubic-bezier(0.34,1.56,0.64,1);line-height:1;}
-        .ep-emoji:hover{transform:scale(1.4);background:rgba(255,255,255,0.1);}
-        .msg-action-bar{position:absolute;top:-12px;right:8px;display:none;gap:4px;align-items:center;background:rgba(20,10,40,0.85);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,0.15);border-radius:16px;padding:4px 8px;z-index:10;box-shadow:0 5px 15px rgba(0,0,0,0.5);}
-        .msg:hover .msg-action-bar{display:flex;}
-        .msg-act-btn{background:none;border:none;color:rgba(255,255,255,0.7);cursor:pointer;font-size:0.85rem;padding:4px 6px;border-radius:8px;transition:0.2s;}
-        .msg-act-btn:hover{color:white;background:rgba(255,255,255,0.1);transform:translateY(-1px);}
-        .msg-act-btn.starred-on{color:var(--gold);}
-        .p-opt { padding:10px 18px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:25px; cursor:pointer; transition:0.3s; font-weight:700; color:var(--sub); display:inline-block; margin:4px; font-size:0.85rem; }
-        .p-opt.active { background:var(--p-grad); color:white; border-color:transparent; box-shadow:0 6px 20px rgba(138,43,226,0.4); transform:translateY(-2px); }
-        /* === 43: YAZI GÖSTERGESİ === */
-        .typing-ind{display:none;align-items:center;gap:6px;padding:5px 15px;color:var(--sub);font-size:0.77rem;font-style:italic;flex-shrink:0;}
-        .typing-ind.show{display:flex;}
-        .typing-ind b{font-style:normal;color:var(--p);font-weight:700;}
-        /* === 44: MESAJ ARAMA === */
-        .chat-search-bar{padding:8px 15px;border-bottom:1px solid rgba(255,255,255,0.05);flex-shrink:0;}
-        .chat-search-bar input{width:100%;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.08);border-radius:18px;padding:7px 14px;color:white;font-size:0.82rem;outline:none;font-family:'Outfit',sans-serif;}
-        .chat-search-bar input:focus{border-color:var(--p);}
-        .msg.highlighted{outline:2px solid var(--p);outline-offset:3px;border-radius:12px;}
-        /* === 52: MESAJ SABİTLEME === */
-        .pinned-bar{background:rgba(162,155,254,0.08);border-bottom:1px solid rgba(162,155,254,0.12);padding:8px 16px;display:none;align-items:center;gap:10px;cursor:pointer;flex-shrink:0;}
-        .pinned-bar.show{display:flex;}
-        .pinned-bar-text{font-size:0.78rem;color:var(--sub);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-        /* === 54: KANAL === */
-        .channel-btn{padding:10px 14px;border-radius:14px;cursor:pointer;display:flex;align-items:center;gap:10px;transition:0.2s;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.06);font-size:0.88rem;color:var(--text);margin-bottom:6px;}
-        .channel-btn:hover,.channel-btn.active-ch{background:var(--glass);border-color:var(--p);color:var(--p);}
-        .channel-btn i{width:18px;text-align:center;}
-        /* === 77: KART/LİSTE GÖRÜNÜM === */
-        .view-toggle-bar{display:flex;gap:6px;margin-bottom:15px;background:rgba(255,255,255,0.05);border-radius:16px;padding:4px;}
-        .view-toggle-btn{flex:1;padding:8px;border:none;border-radius:12px;background:none;color:var(--sub);cursor:pointer;font-size:0.82rem;font-weight:700;transition:0.2s;font-family:'Outfit',sans-serif;}
-        .view-toggle-btn.active{background:var(--p-grad);color:white;}
-        body.task-list-view .card{padding:12px 18px;border-radius:16px;margin-bottom:8px;}
-        body.task-list-view .card h3{font-size:0.9rem;margin:0 0 4px;}
-        /* === 78: RENK KÖRLÜĞÜ === */
-        body.cb-protanopia{filter:grayscale(0.5) sepia(0.3) hue-rotate(90deg);}
-        body.cb-deuteranopia{filter:grayscale(0.4) sepia(0.2) hue-rotate(30deg);}
-        body.cb-tritanopia{filter:grayscale(0.3) sepia(0.5) hue-rotate(180deg);}
-        /* === 79: YÜKSEK KONTRAST === */
-        body.high-contrast .card,body.high-contrast .glass-card{border:2px solid rgba(255,255,255,0.5)!important;}
-        body.high-contrast .btn-p{border:2px solid white!important;letter-spacing:1px;}
-        body.high-contrast .badge{border:1px solid currentColor!important;}
-        /* === 80: ÖZEL DURUM === */
-        .status-badge-custom{display:inline-block;background:rgba(85,239,196,0.12);border:1px solid rgba(85,239,196,0.3);color:var(--green);padding:2px 10px;border-radius:20px;font-size:0.68rem;margin-left:6px;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:middle;}
-        /* === 74: BİLDİRİM SESİ & 75: SWIPE FLASH === */
-        #swipe-flash{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(0.9);background:rgba(162,155,254,0.2);backdrop-filter:blur(10px);color:var(--p);padding:12px 28px;border-radius:20px;font-weight:900;opacity:0;pointer-events:none;z-index:5000;transition:opacity 0.25s,transform 0.25s;}
-        #swipe-flash.show{opacity:1;transform:translate(-50%,-50%) scale(1);}
-
-        /* YENİ 10 UI/UX Özellikleri (81-90) */
-        /* 81 Focus Mode */
-        body.focus-mode .nav-bar, body.focus-mode .sidebar { opacity:0; pointer-events:none; transition:0.4s cubic-bezier(0.34,1.56,0.64,1); transform:translateY(20px); }
-        /* 82 Zen Mode */
-        body.zen-mode { filter:saturate(0.4) contrast(0.95); }
-        /* 83 Dinamik Arkaplan */
-        body.dynamic-bg::before { content:''; position:fixed; top:0; left:0; width:100%; height:100%; background-image:radial-gradient(rgba(255,255,255,0.1) 1px, transparent 1px); background-size:30px 30px; pointer-events:none; opacity:0.3; animation:bgScroll 30s linear infinite; z-index:-1; }
-        @keyframes bgScroll { from{background-position:0 0;} to{background-position:100px 100px;} }
-        /* 84 Derin Glassmorphism */
-        body.deep-glass .glass-card, body.deep-glass .card, body.deep-glass .nav-bar, body.deep-glass .modal-content { backdrop-filter:blur(35px)!important; background:rgba(255,255,255,0.02)!important; border:1px solid rgba(255,255,255,0.08)!important; box-shadow:0 30px 60px rgba(0,0,0,0.6)!important; }
-        /* 85 Neon Modu */
-        body.neon-mode .btn-p, body.neon-mode .p-opt.active { box-shadow:0 0 15px var(--p), 0 0 35px var(--p); border:1px solid white; text-shadow:0 0 5px white; }
-        body.neon-mode .card { box-shadow:0 0 15px rgba(138,43,226,0.2); border-color:rgba(138,43,226,0.4); }
-        /* 86 Scroll Progress */
-        #scroll-prog { position:fixed; top:0; left:0; height:3px; background:var(--p-grad); z-index:9999; transition:width 0.1s; width:0; box-shadow:0 0 10px var(--p); display:none; }
-        body.scroll-prog-mode #scroll-prog { display:block; }
-        /* 87 Haptic Simulation */
-        @keyframes hapticShake { 0%{transform:translateX(0);} 25%{transform:translateX(-5px);} 50%{transform:translateX(5px);} 75%{transform:translateX(-5px);} 100%{transform:translateX(0);} }
-        .haptic-shake { animation:hapticShake 0.3s ease; }
-        /* 89 Yüzen Parçacıklar */
-        body.particles-mode::after { content:''; position:fixed; top:0; left:0; width:100%; height:100%; background:radial-gradient(circle, rgba(255,255,255,0.1) 2px, transparent 3px); background-size:50px 50px; opacity:0.15; animation:floatParticles 20s linear infinite; pointer-events:none; z-index:-1; }
-        @keyframes floatParticles { from{background-position:0 0;} to{background-position:50px 100px;} }
-    </style>
-</head>
-<body>
-    <div id="scroll-prog"></div>
-
-    <div id="toast" class="toast"><span id="toast-msg"></span></div>
-
-    <!-- LOADING SCREEN -->
-    <div id="loading-screen" class="screen active">
-        <div class="load-container">
-            <div id="l-cube"></div>
-            <div id="l-code">&gt;_ secure_init...</div>
-            <div id="l-text">LSDT</div>
-        </div>
-    </div>
-
-    <!-- SETUP SCREEN -->
-    <div id="setup-screen" class="screen" style="justify-content:center; align-items:center; background: #05020a;">
-        <div id="setup-1" class="setup-step active">
-            <div class="glass-card" style="width:100%;">
-                <i class="fas fa-rocket fa-4x" style="color:var(--p); margin-bottom:20px;"></i>
-                <h2>LSDT v11.0 Başlatılıyor</h2>
-                <p style="color:var(--sub); margin:20px 0; font-size:0.9rem;">Luxa Studios Developer Team yönetim paneline hoş geldiniz. Panel kurulumunu tamamlamak için ilerleyin.</p>
-                <button class="btn-p" onclick="app.setupStep(2)">KURULUMA BAŞLA</button>
-            </div>
-        </div>
-        <div id="setup-2" class="setup-step">
-            <div class="glass-card" style="width:100%;">
-                <i class="fas fa-bell fa-4x" style="color:var(--gold); margin-bottom:20px;"></i>
-                <h2>Bildirimleri Aç</h2>
-                <p style="color:var(--sub); margin:20px 0; font-size:0.9rem;">Yeni görevler ve duyurular için tarayıcı bildirimlerini aktif edin. Bu adım gerçek tarayıcı izni gerektirir.</p>
-                <button class="btn-p" onclick="app.enableNotif()">İZİN İSTE VE AKTİF ET</button>
-                <button class="btn-p" style="background:none; margin-top:10px;" onclick="app.setupStep(3)">BELKİ SONRA</button>
-            </div>
-        </div>
-        <div id="setup-3" class="setup-step">
-            <div class="glass-card" style="width:100%;">
-                <i class="fas fa-file-contract fa-4x" style="color:var(--red); margin-bottom:20px;"></i>
-                <h2>Gizlilik Sözleşmesi</h2>
-                <p style="color:var(--sub); margin:20px 0; font-size:0.8rem; text-align:left;">
-                    1. LSDT materyalleri gizlidir. İzinsiz paylaşılamaz.<br>
-                    2. Scam/Fraud faaliyetleri ihraç sebebidir.<br>
-                    3. Görev raporlamaları zamanında yapılmalıdır.
-                </p>
-                <button class="btn-p" onclick="app.setupStep(4)">SÖZLEŞMEYİ ONAYLIYORUM</button>
-            </div>
-        </div>
-        <div id="setup-4" class="setup-step">
-            <div class="glass-card" style="width:100%;">
-                <i class="fas fa-check-circle fa-4x" style="color:var(--green); margin-bottom:20px;"></i>
-                <h2>Kurulum Hazır</h2>
-                <p style="color:var(--sub); margin:20px 0; font-size:0.9rem;">Tüm adımlar tamamlandı. Artık giriş yapabilirsiniz.</p>
-                <button class="btn-p" onclick="app.finishSetup()">PANELİ AÇ</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- LOGIN SCREEN -->
-    <div id="login-screen" class="screen">
-        <div style="height:100%; display:flex; justify-content:center; align-items:center;">
-            <div class="glass-card">
-                <h1 style="font-size:3.5rem; font-weight:900;">LSDT</h1>
-                <p style="color:var(--p); margin-bottom:40px;">Yönetim Paneli</p>
-                <form onsubmit="app.handleLogin(event)">
-                    <input type="text" id="l-user" class="input-p" placeholder="Kullanıcı Adı" required>
-                    <input type="password" id="l-pass" class="input-p" placeholder="Şifre" required>
-                    <div style="margin-bottom:15px; color:var(--sub); font-size:0.9rem;">
-                        <input type="checkbox" id="l-rem" checked> Beni Hatırla
-                    </div>
-                    <button type="submit" class="btn-p">SİSTEME GİR</button>
-                </form>
-            </div>
-        </div>
-    </div>
-
-    <!-- WELCOME SCREEN -->
-    <div id="welcome-screen" class="screen" style="z-index: 1500; background: var(--bg); justify-content: center; align-items: center; display: none;">
-        <div id="w-content" style="text-align: center; transform: scale(0.9); opacity: 0;">
-            <div id="w-avatar" style="width:120px; height:120px; background:var(--p-grad); color:white; border-radius:50%; display:flex; justify-content:center; align-items:center; font-weight:900; font-size:4rem; margin: 0 auto 30px;">L</div>
-            <h1 id="w-title" style="font-size: 3rem; font-weight: 900; color: white;">HOŞGELDİN</h1>
-            <p id="w-sub" style="color: var(--p); font-size: 1.2rem; font-weight: 700; text-transform: uppercase;"></p>
-        </div>
-    </div>
-
-    <!-- MAIN APP SCREEN -->
-    <div id="main-app" class="screen">
-        <nav class="top-nav">
-            <div style="display:flex; gap:15px; align-items:center;">
-                <div id="avatar" style="width:50px; height:50px; background:var(--p-grad); color:white; border-radius:50%; display:flex; justify-content:center; align-items:center; font-weight:900;">L</div>
-                <div><div id="u-name" style="font-weight:900; color:var(--p);">...</div><div id="u-role" style="font-size:0.75rem; color:var(--sub); font-weight:800;">...</div></div>
-            </div>
-            <i class="fas fa-power-off" onclick="app.logout()" style="color:var(--red); font-size:1.5rem; cursor:pointer;"></i>
-        </nav>
-        <main id="page-content"></main>
-        <nav class="bottom-nav">
-            <div id="nav-dash" class="nav-item active" onclick="app.nav('dash')"><i class="fas fa-home"></i><span>Panel</span></div>
-            <div id="nav-tasks" class="nav-item" onclick="app.nav('tasks')"><i class="fas fa-clipboard-list"></i><span>Kayıtlar</span></div>
-            <div id="nav-projects" class="nav-item" onclick="app.nav('projects')"><i class="fas fa-layer-group"></i><span>Studios</span></div>
-            <div id="nav-ann" class="nav-item" onclick="app.nav('ann')" style="position:relative;"><i class="fas fa-bullhorn"></i><span>Duyuru</span><div id="ann-dot" class="nav-badge"></div></div>
-            <div id="nav-admin" class="nav-item" onclick="app.nav('admin')" style="position:relative;"><i class="fas fa-headset"></i><span>İletişim</span><div id="msg-dot" class="nav-badge"></div></div>
-            <div id="nav-gallery" class="nav-item" onclick="app.nav('gallery')"><i class="fas fa-images"></i><span>Galeri</span></div>
-            <div id="nav-set" class="nav-item" onclick="app.nav('set')"><i class="fas fa-cog"></i><span>Ekip</span></div>
-        </nav>
-
-        <!-- AI FAB Butonu -->
-        <button id="ai-fab" onclick="app.toggleAI()">🤖</button>
-
-        <!-- AI Popup Modal -->
-        <div id="ai-popup">
-            <div id="ai-popup-header">
-                <div style="width:38px;height:38px;background:rgba(255,255,255,0.2);border-radius:50%;display:flex;justify-content:center;align-items:center;font-size:1.3rem;flex-shrink:0;">🤖</div>
-                <div style="flex:1;"><div style="font-weight:900;font-size:1rem;">LSDT Asistan</div><div style="font-size:0.72rem;opacity:0.8;">Sana özel yanıtlar</div></div>
-                <button onclick="app.toggleAI()" style="background:rgba(255,255,255,0.15);border:none;color:white;width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:1rem;display:flex;justify-content:center;align-items:center;"><i class="fas fa-times"></i></button>
-            </div>
-            <div id="ai-box-popup"></div>
-            <div id="ai-input-row">
-                <input id="ai-popup-input" class="input-p" style="margin-bottom:0;flex:1;border-radius:18px;padding:12px 16px;background:rgba(0,0,0,0.4);font-size:0.85rem;" placeholder="Bir şey sor..." onkeypress="if(event.key==='Enter') app.aiAsk()">
-                <button class="btn-p" style="width:44px;height:44px;border-radius:50%;padding:0;flex-shrink:0;display:flex;justify-content:center;align-items:center;" onclick="app.aiAsk()"><i class="fas fa-paper-plane"></i></button>
-            </div>
-        </div>
-
-        <!-- Update Blocker Overlay -->
-        <div id="update-overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:var(--bg); z-index:9999; flex-direction:column; justify-content:center; align-items:center; text-align:center; padding:30px;">
-            <div style="background:var(--p-grad); width:80px; height:80px; border-radius:20px; display:flex; justify-content:center; align-items:center; margin-bottom:20px; font-size:2.5rem; box-shadow:0 10px 30px rgba(138,43,226,0.3);">
-                <i class="fas fa-download"></i>
-            </div>
-            <h1 style="font-size:1.8rem; margin-bottom:15px;">UYGULAMADA GÜNCELLEME MEVCUT</h1>
-            <p style="opacity:0.8; margin-bottom:25px; line-height:1.6;">Lütfen aşağıdaki linkten yeni sürümü indirin. Güncelleme yapmadan devam edemezsiniz.</p>
-            <div style="background:rgba(255,255,255,0.05); padding:15px; border-radius:12px; width:100%; border:1px solid rgba(255,255,255,0.1); margin-bottom:30px;">
-                <input id="update-link-display" readonly style="background:transparent; border:none; color:var(--p); text-align:center; width:100%; font-family:monospace; font-size:0.9rem;" value="">
-                <button onclick="app.copyUpdateLink()" class="btn-p" style="padding:5px 15px; margin-top:10px; font-size:0.7rem; width:auto;">KOPYALA</button>
-            </div>
-            <div id="admin-skip-btn" style="display:none;">
-                <button onclick="document.getElementById('update-overlay').style.display='none'" style="background:transparent; border:none; color:white; opacity:0.5; text-decoration:underline;">SİSTEME GİRİŞ YAP (GEÇ)</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODALS -->
-    <div id="modal-dev" class="modal"><div class="modal-content">
-        <h2>Yeni Üye</h2>
-        <form onsubmit="app.handleNewDev(event)">
-            <input type="text" id="d-name" class="input-p" placeholder="Ad Soyad" required>
-            <input type="text" id="d-user" class="input-p" placeholder="Kullanıcı Adı" required>
-            <input type="password" id="d-pass" class="input-p" placeholder="Şifre" required>
-            <div id="d-cat-wrap" class="p-select"></div>
-            <button type="submit" class="btn-p">ÜYEYİ EKLE</button>
-            <button type="button" class="btn-p" style="background:none; margin-top:10px;" onclick="app.close()">KAPAT</button>
-        </form>
-    </div></div>
-
-    <div id="modal-task" class="modal"><div class="modal-content">
-        <h2>Görev Atama</h2>
-        <form onsubmit="app.handleNewTask(event)">
-            <div id="t-to-wrap" class="p-select"></div>
-            <input type="text" id="t-title" class="input-p" placeholder="Başlık" required>
-            <textarea id="t-desc" class="input-p" placeholder="Detaylar" style="height:100px;" required></textarea>
-            <label style="color:var(--sub);font-size:0.8rem;font-weight:700;display:block;margin-bottom:6px;">⏰ Son Teslim Tarihi (İsteğe Bağlı)</label>
-            <input type="date" id="t-deadline" class="input-p" style="margin-bottom:15px;">
-            <button type="submit" class="btn-p">GÖREVİ VER</button>
-            <button type="button" class="btn-p" style="background:none; margin-top:10px;" onclick="app.close()">KAPAT</button>
-        </form>
-    </div></div>
-
-    <div id="modal-leave" class="modal"><div class="modal-content">
-        <h2>İzin Tanımla</h2>
-        <form onsubmit="app.handleNewLeave(event)">
-            <div id="l-to-wrap" class="p-select"></div>
-            <input type="number" id="l-days" class="input-p" placeholder="Gün" required>
-            <textarea id="l-reason" class="input-p" placeholder="Gerekçe" style="height:100px;" required></textarea>
-            <button type="submit" class="btn-p">İZNİ ONAYLA</button>
-            <button type="button" class="btn-p" style="background:none; margin-top:10px;" onclick="app.close()">KAPAT</button>
-        </form>
-    </div></div>
-
-    <div id="modal-report" class="modal"><div class="modal-content">
-        <h2>Rapor Gönder</h2>
-        <form onsubmit="app.handleNewReport(event)">
-            <input type="hidden" id="r-task-id">
-            <h3 id="r-task-title" style="margin-bottom:15px; color:var(--p);"></h3>
-            <textarea id="r-text" class="input-p" placeholder="Yapılanlar..." style="height:120px;" required></textarea>
-            <textarea id="r-bug" class="input-p" placeholder="Sorunlar..." style="height:80px;"></textarea>
-            <input type="url" id="r-link" class="input-p" placeholder="Dosya / Proje Linki (rbxl, Drive vb.) İsteğe Bağlı" style="margin-bottom:15px;">
-            <div class="img-picker" onclick="document.getElementById('r-file').click()"><i class="fas fa-camera"></i> GÖRSEL EKLE</div>
-            <input type="file" id="r-file" style="display:none;" multiple accept="image/*" onchange="app.handleFiles(this)">
-            <div id="r-preview" class="img-grid"></div>
-            <button type="submit" class="btn-p" style="margin-top:20px;">GÖNDER</button>
-        </form>
-    </div></div>
-
-    <div id="modal-calendar" class="modal"><div class="modal-content" style="max-width:800px; width:95%;">
-        <h2>Takvim & İzinler</h2>
-        <div id="calendar-view" style="margin-top:20px; display:flex; flex-direction:column; gap:10px; max-height: 60vh; overflow-y:auto;"></div>
-        <button type="button" class="btn-p" style="margin-top:20px;" onclick="app.close()">KAPAT</button>
-    </div></div>
-            <button type="button" class="btn-p" style="background:none; margin-top:10px;" onclick="app.close()">VAZGEÇ</button>
-        </form>
-    </div></div>
-
-    <div id="modal-project" class="modal"><div class="modal-content">
-        <h2>Yeni Proje Oluştur</h2>
-        <form onsubmit="app.handleNewProject(event)">
-            <input type="text" id="p-title" class="input-p" placeholder="Proje Adı" required>
-            <textarea id="p-desc" class="input-p" placeholder="Proje Detayları ve Hedefler" style="height:100px;" required></textarea>
-            <label style="color:var(--sub);font-size:0.8rem;font-weight:700;display:block;margin-bottom:6px;">👥 Proje Sorumlusu Ata</label>
-            <div id="p-to-wrap" class="p-select"></div>
-            <label style="color:var(--sub);font-size:0.8rem;font-weight:700;display:block;margin-bottom:6px;">⏰ Hedeflenen Bitiş Tarihi</label>
-            <input type="date" id="p-deadline" class="input-p" style="margin-bottom:15px;">
-            <button type="submit" class="btn-p">PROJEYİ BAŞLAT</button>
-            <button type="button" class="btn-p" style="background:none; margin-top:10px;" onclick="app.close()">İPTAL</button>
-        </form>
-    </div></div>
-
-    <div id="modal-studio" class="modal"><div class="modal-content">
-        <h2>Yeni Studio Projesi</h2>
-        <form onsubmit="app.handleNewStudio(event)">
-            <input type="text" id="st-title" class="input-p" placeholder="Proje Adı" required>
-            <textarea id="st-desc" class="input-p" placeholder="Proje Açıklaması" style="height:100px;" required></textarea>
-            <label style="color:var(--sub);font-size:0.8rem;font-weight:700;display:block;margin-bottom:6px;">🖼️ Proje Görseli (URL)</label>
-            <input type="text" id="st-img-url" class="input-p" placeholder="https://... veya boş bırak">
-            <div class="img-picker" onclick="document.getElementById('st-img-file').click()"><i class="fas fa-camera"></i> VEYA DOSYA YÜKLEYİN</div>
-            <input type="file" id="st-img-file" style="display:none;" accept="image/*" onchange="app.handleStudioImg(this)">
-            <div id="st-img-preview" style="margin-bottom:10px;"></div>
-            <label style="color:var(--sub);font-size:0.8rem;font-weight:700;display:block;margin-bottom:6px;">👥 Çalışanları Seç</label>
-            <div id="st-members-wrap" class="p-select"></div>
-            <button type="submit" class="btn-p">PROJEYİ OLUŞTUR</button>
-            <button type="button" class="btn-p" style="background:none; margin-top:10px;" onclick="app.close()">İPTAL</button>
-        </form>
-    </div></div>
-
-    <div id="modal-reject" class="modal"><div class="modal-content">
-        <h2>Görevi Reddet</h2>
-        <textarea id="rej-reason" class="input-p" placeholder="Sebep..." style="height:150px;"></textarea>
-        <button class="btn-p" onclick="app.confirmReject()">REDDİ GÖNDER</button>
-        <button type="button" class="btn-p" style="background:none; margin-top:10px;" onclick="app.close()">KAPAT</button>
-    </div></div>
-
-    <!-- 49: BROADCAST MODAL -->
-    <div id="modal-broadcast" class="modal"><div class="modal-content">
-        <h2>📢 Toplu Mesaj</h2>
-        <p style="color:var(--sub);font-size:0.85rem;margin-bottom:15px;">Birden fazla kişiye aynı anda mesaj gönder.</p>
-        <label style="color:var(--sub);font-size:0.8rem;font-weight:700;display:block;margin-bottom:6px;">Alıcılar</label>
-        <div id="bc-to-wrap" class="p-select"></div>
-        <textarea id="bc-text" class="input-p" placeholder="Mesajınız..." style="height:100px;"></textarea>
-        <button class="btn-p" style="background:linear-gradient(135deg,#e17055,#d63031);" onclick="app.sendBroadcast()">⚡ TOPLU GÖNDER</button>
-        <button type="button" class="btn-p" style="background:none;margin-top:10px;" onclick="app.close()">KAPAT</button>
-    </div></div>
-
-    <!-- 55: YILDIZLI MESAJLAR -->
-    <div id="modal-starred" class="modal"><div class="modal-content">
-        <h2>⭐ Yıldızlı Mesajlar</h2>
-        <div id="starred-list" style="max-height:55vh;overflow-y:auto;margin-top:15px;display:flex;flex-direction:column;gap:10px;"></div>
-        <button type="button" class="btn-p" style="margin-top:20px;" onclick="app.close()">KAPAT</button>
-    </div></div>
-
-    <!-- 54: KANAL OLUŞTUR -->
-    <div id="modal-channel" class="modal"><div class="modal-content">
-        <h2># Yeni Kanal Oluştur</h2>
-        <input type="text" id="ch-name" class="input-p" placeholder="Kanal adı (örn: genel, tasarım)">
-        <select id="ch-icon" class="input-p" style="margin-bottom:15px;background:rgba(255,255,255,0.1);color:white;border-radius:20px;padding:14px;border:none;width:100%;">
-            <option value="hashtag">💬 Genel</option>
-            <option value="code">💻 Kod</option>
-            <option value="bug">🐛 Bug</option>
-            <option value="paint-brush">🎨 Tasarım</option>
-            <option value="gamepad">🎮 Roblox</option>
-            <option value="star">⭐ Önemli</option>
-        </select>
-        <label style="color:var(--sub);font-size:0.8rem;font-weight:700;display:block;margin-bottom:6px;">👥 Üyeleri Seç</label>
-        <div id="ch-members-wrap" class="p-select" style="margin-bottom:15px;"></div>
-        <button class="btn-p" onclick="app.createChannel()"><i class="fas fa-plus"></i> KANALI OLUŞTUR</button>
-        <button type="button" class="btn-p" style="background:none;margin-top:10px;" onclick="app.close()">İPTAL</button>
-    </div></div>
-
-    <!-- 80: ÖZEL DURUM MESAJI -->
-    <div id="modal-status" class="modal"><div class="modal-content">
-        <h2>💬 Durum Mesajı</h2>
-        <p style="color:var(--sub);font-size:0.85rem;margin-bottom:12px;">Profilinizde görünen kısa mesaj</p>
-        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:15px;">
-            <span class="p-opt" onclick="document.getElementById('status-input').value=this.innerText">🔥 Çalışıyorum</span>
-            <span class="p-opt" onclick="document.getElementById('status-input').value=this.innerText">☕ Mola</span>
-            <span class="p-opt" onclick="document.getElementById('status-input').value=this.innerText">🤔 Düşünüyorum</span>
-            <span class="p-opt" onclick="document.getElementById('status-input').value=this.innerText">🎮 Roblox'ta</span>
-            <span class="p-opt" onclick="document.getElementById('status-input').value=this.innerText">🚀 Hızlanıyorum</span>
-            <span class="p-opt" onclick="document.getElementById('status-input').value=''" style="color:var(--red)">× Temizle</span>
-        </div>
-        <input type="text" id="status-input" class="input-p" placeholder="Özel durum yaz..." maxlength="40">
-        <button class="btn-p" onclick="app.saveStatus()">KAYDET</button>
-        <button type="button" class="btn-p" style="background:none;margin-top:10px;" onclick="app.close()">KAPAT</button>
-    </div></div>
-
-    <!-- SWIPE FLASH (75) -->
-    <div id="swipe-flash"></div>
-
-    <script>
-        const RENDER_URL = window.location.hostname.includes('render.com') 
-            ? `https://${window.location.hostname}` 
-            : "https://lsdt.onrender.com";
+        const RENDER_URL = "https://lsdt.onrender.com";
         const SUPA_URL = "https://iczzynikkupxlvrrdihv.supabase.co";
         const SUPA_KEY = "sb_publishable_neFoM9r6SQkKD7GF7zQ_jg_OyV-SBHd";
         const app = {
@@ -612,40 +22,35 @@
                   .to("#l-text", { opacity: 1, duration: 1 })
                   .call(async () => {
                       document.getElementById('l-code').innerText = ">_ sunucuya baglaniliyor...";
-                      
-                      // Emniyet kilidi: 8 saniye içinde yüklenmezse zorla devam et
-                      const safetyTimeout = setTimeout(() => {
-                          console.warn("Safety timeout triggered!");
-                          app.finishLoading();
-                      }, 8000);
-
-                      try {
-                          await app.sync();
-                          clearTimeout(safetyTimeout);
-                          app.finishLoading();
-                      } catch(e) {
-                          console.error("Init sync error:", e);
-                          clearTimeout(safetyTimeout);
-                          app.finishLoading();
-                      }
+                      await app.sync();
+                      gsap.to("#loading-screen", { opacity: 0, duration: 0.5, onComplete: () => {
+                          document.getElementById('loading-screen').classList.remove('active');
+                          const rem = localStorage.getItem('lsdt_rem');
+                          if(!localStorage.getItem('lsdt_setup')) app.show('setup-screen');
+                          else if(rem) {
+                              const u = JSON.parse(rem);
+                              const f = app.db.users.find(x => x.username === u.username && x.password === u.password);
+                              if(f) app.loginAs(f); else app.show('login-screen');
+                          } else app.show('login-screen');
+                      }});
                   });
                 app.applyPrefs();
                 app.renderCats();
-                setInterval(() => app.sync(), 10000); // Polling süresini 10sn'ye çıkardık (optimizasyon)
-            },
-
-            finishLoading() {
-                if(!document.getElementById('loading-screen').classList.contains('active')) return;
-                gsap.to("#loading-screen", { opacity: 0, duration: 0.5, onComplete: () => {
-                    document.getElementById('loading-screen').classList.remove('active');
-                    const rem = localStorage.getItem('lsdt_rem');
-                    if(!localStorage.getItem('lsdt_setup')) app.show('setup-screen');
-                    else if(rem) {
-                        const u = JSON.parse(rem);
-                        const f = app.db.users.find(x => x.username === u.username && x.password === u.password);
-                        if(f) app.loginAs(f); else app.show('login-screen');
-                    } else app.show('login-screen');
-                }});
+                setInterval(() => app.sync(), 6000);
+                setInterval(() => { if(app.sel.chatTarget) app.syncMessages(); }, 1500);
+                const releaseDate = new Date("2026-12-31T23:59:59").getTime();
+                setInterval(() => {
+                    const now = new Date().getTime();
+                    const d = releaseDate - now;
+                    if(d > 0) {
+                        const days = Math.floor(d / (1000 * 60 * 60 * 24));
+                        const hours = Math.floor((d % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                        const minutes = Math.floor((d % (1000 * 60 * 60)) / (1000 * 60));
+                        const seconds = Math.floor((d % (1000 * 60)) / 1000);
+                        const t = document.getElementById('countdown-timer');
+                        if(t) t.textContent = `${days}g ${hours}s ${minutes}d ${seconds}sn`;
+                    }
+                }, 1000);
             },
             
             sendFileMsg(input) {
@@ -718,31 +123,35 @@
 
             async sync() {
                 try {
-                    // Render ve Supabase'den eşzamanlı veri çekiyoruz
-                    const p1 = fetch(`${RENDER_URL}/api/state`).then(async r => {
-                        if(r.ok) {
-                            const d = await r.json();
-                            app.db.users = d.users || [];
-                            app.db.tasks = d.tasks || [];
-                            app.db.announcements = d.announcements || [];
-                            // Mesajlar state içinde varsa direkt alıyoruz (Supabase'e ayrıca sormamak için)
-                            if(d.messages) {
-                                app.db.messages = d.messages;
-                                app.renderChat();
-                            }
-                            app.db.projects = app.db.tasks.filter(t => t.description && t.description.includes('[IS_PROJECT: true]'));
-                            app.db.studios = app.db.tasks.filter(t => t.description && t.description.includes('[IS_STUDIO:true]'));
-                        }
-                    }).catch(e => console.warn('Render sync hatası:', e));
+                    // Kullanıcılar, görevler, duyurular Render'dan
+                    const r = await fetch(`${RENDER_URL}/api/state`);
+                    const d = await r.json();
+                    app.db.users = d.users || [];
+                    app.db.tasks = d.tasks || [];
+                    app.db.announcements = d.announcements || [];
+                    
+                    // Veritabanından gelen verilerdeki [IS_PROJECT: true] olanları ayırabiliriz veya render'da filtreleyebiliriz.
+                    app.db.projects = app.db.tasks.filter(t => t.description && t.description.includes('[IS_PROJECT: true]'));
+                    app.db.studios = app.db.tasks.filter(t => t.description && t.description.includes('[IS_STUDIO:true]'));
 
-                    // Eğer state içinde mesaj gelmezse veya zorunluysa Supabase'den çek
-                    const p2 = app.syncMessages();
-
-                    await Promise.all([p1, p2]);
+                    // Mesajlar doğrudan Supabase'den (Render bypass) - no-store cache ile anlık veri
+                    try {
+                        const mr = await fetch(`${SUPA_URL}/rest/v1/messages?select=*&order=date.asc&_t=${Date.now()}`, {
+                            headers: {
+                                'apikey': SUPA_KEY,
+                                'Authorization': `Bearer ${SUPA_KEY}`,
+                                'Pragma': 'no-cache',
+                                'Cache-Control': 'no-cache'
+                            },
+                            cache: 'no-store'
+                        });
+                        if(mr.ok) app.db.messages = await mr.json();
+                    } catch(me) { console.warn("Mesaj sync hatası:", me); }
 
                     app.checkUpdate();
                     app.checkNewMsgs();
                     app.checkNewAnns();
+                    if(app.sel.chatTarget) app.renderChat();
                 } catch(e) { console.error("Sync error:", e); }
             },
 
@@ -1113,8 +522,12 @@
             finishSetup() { localStorage.setItem('lsdt_setup', 'true'); app.show('login-screen'); },
 
             renderCats() {
+                const countdownHtml = `<div style="background:var(--p-grad); border-radius:15px; padding:15px; margin-bottom:15px; text-align:center; box-shadow:0 10px 25px rgba(138,43,226,0.3);">
+                    <div style="font-size:0.8rem; font-weight:800; opacity:0.9; text-transform:uppercase; letter-spacing:1px; margin-bottom:5px;">🚀 Yeni Oyun Çıkışına Kalan Süre</div>
+                    <div id="countdown-timer" style="font-size:2rem; font-weight:900; font-family:monospace; text-shadow:0 2px 10px rgba(0,0,0,0.5);">--:--:--:--</div>
+                </div>`;
                 const cats = ['Script','Modelleme','GUI Tasarımı','VFX','SFX','Admin','Bug Raporcusu'];
-                const w = document.getElementById('d-cat-wrap'); if(!w) return; w.innerHTML = '';
+                const w = document.getElementById('d-cat-wrap'); if(!w) return; w.innerHTML = countdownHtml;
                 cats.forEach(c => {
                     const o = document.createElement('div'); o.className = 'p-opt' + (c === app.sel.dCat ? ' active':'');
                     o.innerText = c; o.onclick = () => { app.sel.dCat = c; app.renderCats(); }; w.appendChild(o);
@@ -1319,8 +732,9 @@
                                 })()}</div>
                                 <div style="flex:1;">
                                     <div style="font-weight:900; font-size:1.1rem;">${targetUser?.name || 'Bilinmeyen'}</div>
-                                    <div style="font-size:0.75rem; color:${app.isOnline(app.sel.chatTarget)?'var(--green)':'var(--sub)'}">${app.isOnline(app.sel.chatTarget)?'\u26ab\ufe0f Çevrimiiçi':'\u26aa Çevrimdışı'}</div>
+                                    <div style="font-size:0.75rem; color:${app.isOnline(app.sel.chatTarget)?'var(--green)':'var(--sub)'}">${app.isOnline(app.sel.chatTarget)?'\u26ab\ufe0f Çevrimiçi':'\u26aa Çevrimdışı'}</div>
                                 </div>
+                                <button onclick="app.startCall('${targetUser?.username}')" class="msg-act-btn" style="background:rgba(85,239,196,0.15); color:var(--green); border-radius:50%; width:36px; height:36px; font-size:1.1rem; box-shadow:0 0 10px rgba(85,239,196,0.2);" title="Sesli Ara"><i class="fas fa-phone-alt"></i></button>
                                 <button class="msg-act-btn" style="font-size:1rem;" onclick="app.showStarred()" title="Yıldızlı Mesajlar">⭐</button>
                             </div>
                             <div class="chat-search-bar"><input placeholder="🔍 Mesajlarda ara..." oninput="app.searchMessages(this.value)"></div>
@@ -1354,14 +768,6 @@
                 } else if(p === 'studios' || p === 'projects') {
                     c.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;"><h2 style="margin:0;">🎬 Studios</h2>${app.user.role==='admin'?`<button class="btn-p" style="width:auto;padding:12px 20px;font-size:0.85rem;" onclick="app.openStudioModal()"><i class="fas fa-plus"></i> Yeni Proje</button>`:''}</div><div id="studios-list"></div>`;
                     app.renderStudios();
-                } else if(p === 'gallery') {
-                    c.innerHTML = `
-                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
-                        <h2 style="margin:0;"><i class="fas fa-images" style="color:var(--p);margin-right:10px;"></i>Galeri</h2>
-                        ${app.user.role==='admin'?`<button class="btn-p" style="width:auto;padding:10px 15px;font-size:0.8rem;margin:0;" onclick="app.addGalleryItem()">+ Medya Ekle</button>`:''}
-                    </div>
-                    <div id="gallery-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(140px, 1fr)); gap:15px; margin-bottom:80px;"></div>`;
-                    app.renderGallery();
                 } else if(p === 'set') {
                     const myTasks = app.db.tasks.filter(t => t.assignee === app.user.username);
                     const activeTasks = myTasks.filter(t => t.status === 'active' || t.status === 'pending').length;
@@ -1661,20 +1067,26 @@
 
                     let content;
                     const isEmoji = /^(\p{Emoji}|\s)+$/u.test(safeText) && safeText.replace(/\s/g,'').length <= 3;
-                    
-                    if(isVoice) { 
-                        const src=m.text.slice(7,-1); 
-                        content=`${replyBlock}
-                        <div class="voice-msg">
-                            <button onclick="app.toggleVoice(this, '${src}')" class="voice-play-btn"><i class="fas fa-play" style="margin-left:2px;"></i></button>
-                            <div class="voice-waveform">
-                                <div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div>
-                            </div>
-                        </div>`; 
-                    }
+                    const is3DModel = safeText.match(/https?:\/\/.*?\.(glb|gltf|obj)/i);
+                    const isCall = safeText.startsWith('[CALL_INVITE:');
+
+                    if(isVoice) { const src=m.text.slice(7,-1); content=`${replyBlock}<audio controls src="${src}" style="max-width:200px;margin-top:6px;"></audio>`; }
                     else if(isImage) { content=`${replyBlock}<img class="msg-img" src="${m.text}" onclick="app.viewImg('${m.text}')" />`; }
                     else if(isFile) { content=`${replyBlock}<a href="${m.text}" download="file" style="display:inline-block;padding:8px 12px;background:rgba(0,0,0,0.2);border-radius:8px;color:var(--p);text-decoration:none;"><i class="fas fa-file"></i> Dosyayı İndir</a>`; }
                     else if(isEmoji && !replyBlock) { content=`<span class="jumbo-emoji">${safeText}</span>`; }
+                    else if(is3DModel) {
+                        content = `${replyBlock}<model-viewer src="${safeText}" auto-rotate camera-controls style="width:100%;height:250px;background:rgba(0,0,0,0.5);border-radius:10px;margin-top:5px;"></model-viewer><div style="font-size:0.7rem;color:var(--sub);text-align:center;margin-top:4px;">3D Model Önizleme</div>`;
+                    }
+                    else if(isCall) {
+                        const callId = safeText.substring(13, safeText.indexOf(']'));
+                        content = `<div style="background:rgba(85,239,196,0.1); border:1px solid rgba(85,239,196,0.3); padding:15px; border-radius:15px; text-align:center; margin-top:5px; margin-bottom:5px;">
+                            <div style="width:50px;height:50px;border-radius:50%;background:rgba(85,239,196,0.2);display:flex;align-items:center;justify-content:center;margin:0 auto 10px;">
+                                <i class="fas fa-phone-alt" style="font-size:20px; color:var(--green);"></i>
+                            </div>
+                            <div style="font-weight:700; margin-bottom:12px; color:white;">LSDT Sesli Arama</div>
+                            <button class="btn-p" onclick="app.joinCall('${callId}')" style="width:100%; padding:10px; font-size:0.85rem;"><i class="fas fa-phone-volume"></i> Tıkla ve Katıl</button>
+                        </div>`;
+                    }
                     else { 
                         let formatted = safeText
                             .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>')
@@ -1706,114 +1118,6 @@
                 // Yeni mesaj sesi
                 if(msgs.length > (app._prevMsgCount||0)) { app.playNotifSound(); }
                 app._prevMsgCount = msgs.length;
-            },
-
-            renderGallery() {
-                const grid = document.getElementById('gallery-grid');
-                if(!grid) return;
-                const isAdmin = app.user && app.user.role === 'admin';
-                app.db.gallery = app.db.tasks.filter(t => t.description && t.description.includes('[IS_GALLERY:true]')).sort((a,b)=>b.id-a.id);
-                
-                grid.innerHTML = (app.db.gallery || []).map(g => {
-                    const url = g.title; 
-                    let type = 'link';
-                    if(url.match(/\.(jpeg|jpg|gif|png|webp)/i) || url.startsWith('data:image')) type = 'img';
-                    else if(url.match(/\.(mp4|webm|ogg)/i) || url.startsWith('data:video')) type = 'video';
-                    
-                    let media = '';
-                    if(type === 'img') media = `<img src="${url}" style="width:100%; height:130px; object-fit:cover; border-radius:12px; cursor:pointer;" onclick="app.viewImg('${url}')" />`;
-                    else if(type === 'video') media = `<video src="${url}" controls style="width:100%; height:130px; object-fit:cover; border-radius:12px;"></video>`;
-                    else media = `<a href="${url}" target="_blank" style="display:flex; height:130px; background:rgba(255,255,255,0.05); align-items:center; justify-content:center; text-decoration:none; color:var(--p); border-radius:12px;"><i class="fas fa-external-link-alt fa-2x"></i></a>`;
-                    
-                    return `<div class="card" style="position:relative; padding:8px; border-radius:16px;">
-                        ${media}
-                        <div style="font-size:0.75rem; margin-top:8px; color:var(--sub); text-align:center;">${new Date(g.id).toLocaleDateString('tr')}</div>
-                        ${isAdmin ? `<button class="btn-mini" style="position:absolute; top:12px; right:12px; background:rgba(0,0,0,0.6); color:var(--red); padding:5px 8px; border-radius:8px;" onclick="if(confirm('Silinecek?')) { app.delItem('tasks', '${g.id}'); }"><i class="fas fa-trash"></i></button>` : ''}
-                    </div>`;
-                }).join('');
-            },
-
-            addGalleryItem() {
-                const input = document.createElement('input');
-                input.type = 'file';
-                input.accept = 'image/*,video/*';
-                input.onchange = async (e) => {
-                    const file = e.target.files[0];
-                    if(!file) return;
-                    
-                    if(file.type.startsWith('video/')) {
-                        if(file.size > 8 * 1024 * 1024) return app.toast('Sunucu çökmemesi için Videolar maksimum 8MB olabilir!', true);
-                        app.toast('Video yükleniyor, lütfen bekleyin...');
-                        const reader = new FileReader();
-                        reader.onload = async (ev) => {
-                            const task = { title: ev.target.result, description: '[IS_GALLERY:true]', status: 'todo', assignee: app.user.username };
-                            try {
-                                const r = await fetch(`${RENDER_URL}/api/tasks`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(task)});
-                                if(r.ok) { app.toast('Video eklendi!'); await app.sync(); app.nav('gallery'); } else app.toast('Hata oluştu', true);
-                            } catch(err) { app.toast('Bağlantı hatası', true); }
-                        };
-                        reader.readAsDataURL(file);
-                        return;
-                    }
-                    
-                    app.toast('Fotoğraf işleniyor, lütfen bekleyin...');
-                    const reader = new FileReader();
-                    reader.onload = async (ev) => {
-                        const img = new Image();
-                        img.onload = async () => {
-                            const canvas = document.createElement('canvas');
-                            let w = img.width; let h = img.height;
-                            const max = 1200;
-                            if(w > max || h > max) {
-                                if(w > h) { h = Math.round((h * max) / w); w = max; }
-                                else { w = Math.round((w * max) / h); h = max; }
-                            }
-                            canvas.width = w; canvas.height = h;
-                            const ctx = canvas.getContext('2d');
-                            ctx.drawImage(img, 0, 0, w, h);
-                            const finalBase64 = canvas.toDataURL('image/jpeg', 0.7);
-                            
-                            const task = { title: finalBase64, description: '[IS_GALLERY:true]', status: 'todo', assignee: app.user.username };
-                            
-                            app.toast('Sunucuya yükleniyor...');
-                            try {
-                                const r = await fetch(`${RENDER_URL}/api/tasks`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(task)});
-                                if(r.ok) { app.toast('Galeriye eklendi!'); await app.sync(); app.nav('gallery'); } else app.toast('Hata oluştu', true);
-                            } catch(err) { app.toast('Bağlantı hatası', true); }
-                        };
-                        img.src = ev.target.result;
-                    };
-                    reader.readAsDataURL(file);
-                };
-                input.click();
-            },
-
-            toggleVoice(btn, src) {
-                if(!app.audioPlayer) {
-                    app.audioPlayer = new Audio();
-                    app.audioPlayer.addEventListener('ended', () => {
-                        if(app.activeVoiceBtn) {
-                            app.activeVoiceBtn.innerHTML = '<i class="fas fa-play" style="margin-left:2px;"></i>';
-                            app.activeVoiceBtn.nextElementSibling.querySelectorAll('.wave-bar').forEach(b => b.classList.remove('anim'));
-                        }
-                    });
-                }
-                const isPlaying = !app.audioPlayer.paused && app.audioPlayer.src.includes(src);
-                
-                if(app.activeVoiceBtn) {
-                    app.activeVoiceBtn.innerHTML = '<i class="fas fa-play" style="margin-left:2px;"></i>';
-                    app.activeVoiceBtn.nextElementSibling.querySelectorAll('.wave-bar').forEach(b => b.classList.remove('anim'));
-                }
-
-                if(isPlaying) {
-                    app.audioPlayer.pause();
-                } else {
-                    app.audioPlayer.src = src;
-                    app.audioPlayer.play();
-                    btn.innerHTML = '<i class="fas fa-pause"></i>';
-                    btn.nextElementSibling.querySelectorAll('.wave-bar').forEach(b => b.classList.add('anim'));
-                    app.activeVoiceBtn = btn;
-                }
             },
 
 
@@ -2417,8 +1721,8 @@
             /* SYNC MESSAGES helper */
             async syncMessages() {
                 try {
-                    // cache: 'no-store' ekleyerek tarayıcının response cache'lemesini engelliyoruz (anında gelmesi için)
-                    const mr=await fetch(`${SUPA_URL}/rest/v1/messages?select=*&order=date.asc`,{headers:{'apikey':SUPA_KEY,'Authorization':`Bearer ${SUPA_KEY}`}, cache:'no-store'});
+                    // cache: 'no-store' ve timestamp ile %100 canlı veri garantisi
+                    const mr=await fetch(`${SUPA_URL}/rest/v1/messages?select=*&order=date.asc&_t=${Date.now()}`,{headers:{'apikey':SUPA_KEY,'Authorization':`Bearer ${SUPA_KEY}`, 'Pragma': 'no-cache', 'Cache-Control': 'no-cache'}, cache:'no-store'});
                     if(mr.ok) { 
                         const data = await mr.json();
                         const oldLen = (app.db.messages||[]).length;
@@ -2434,6 +1738,58 @@
                         }
                     }
                 } catch(e){}
+            },
+
+            startCall(targetUser) {
+                const callId = `lsdt_call_${Date.now()}_${Math.floor(Math.random()*1000)}`;
+                const msg = { sender: app.user.username, receiver: targetUser, text: `[CALL_INVITE:${callId}]` };
+                fetch(`${SUPA_URL}/rest/v1/messages`, {
+                    method: 'POST',
+                    headers: {'apikey': SUPA_KEY, 'Authorization': `Bearer ${SUPA_KEY}`, 'Content-Type': 'application/json', 'Prefer': 'return=minimal'},
+                    body: JSON.stringify(msg)
+                }).then(() => {
+                    app.syncMessages();
+                    app.joinCall(callId);
+                });
+            },
+            joinCall(callId) {
+                const w = window.open(`https://meet.jit.si/${callId}#config.prejoinPageEnabled=false&interfaceConfig.SHOW_JITSI_WATERMARK=false`, '_blank', 'width=800,height=600');
+                if(!w) app.toast('Lütfen açılır pencerelere (pop-up) izin verin!', true);
+            },
+
+            toggleWidget() {
+                const w = document.getElementById('lsdt-widget');
+                if(w) { w.remove(); return; }
+                const div = document.createElement('div');
+                div.id = 'lsdt-widget';
+                div.style.cssText = 'position:fixed; bottom:20px; right:20px; width:300px; height:400px; background:rgba(15,5,29,0.95); backdrop-filter:blur(10px); border:1px solid rgba(255,255,255,0.1); border-radius:20px; z-index:9999; display:flex; flex-direction:column; overflow:hidden; box-shadow:0 15px 40px rgba(0,0,0,0.8); cursor:move; resize:both;';
+                div.innerHTML = `
+                    <div style="background:var(--p-grad); padding:10px 15px; font-weight:900; font-size:0.9rem; display:flex; justify-content:space-between; align-items:center;">
+                        <span><i class="fas fa-bolt"></i> LSDT WIDGET</span>
+                        <i class="fas fa-times" style="cursor:pointer;" onclick="this.parentElement.parentElement.remove()"></i>
+                    </div>
+                    <div id="widget-content" style="padding:15px; flex:1; overflow-y:auto; cursor:default;">
+                        <div style="font-size:0.8rem; color:var(--sub); margin-bottom:10px;">Yaklaşan Görevler</div>
+                        ${(app.db.tasks||[]).slice(0,5).map(t => `<div style="background:rgba(255,255,255,0.05); padding:8px; border-radius:8px; margin-bottom:5px; font-size:0.75rem;"><b>${t.assignee}:</b> ${t.title}</div>`).join('')}
+                        <hr style="border:0; border-top:1px solid rgba(255,255,255,0.05); margin:10px 0;">
+                        <div style="font-size:0.8rem; color:var(--sub); margin-bottom:10px;">Yeni Mesajlar</div>
+                        ${(app.db.messages||[]).slice(-3).map(m => `<div style="font-size:0.75rem; margin-bottom:4px;"><b>${m.sender}:</b> ${(m.text||'').substring(0,30)}</div>`).join('')}
+                    </div>
+                `;
+                document.body.appendChild(div);
+                // Simple drag
+                let isDragging = false, startX, startY, initialX, initialY;
+                div.children[0].addEventListener('mousedown', e => {
+                    isDragging = true; startX = e.clientX; startY = e.clientY;
+                    initialX = div.offsetLeft; initialY = div.offsetTop;
+                });
+                document.addEventListener('mousemove', e => {
+                    if(!isDragging) return;
+                    div.style.left = (initialX + e.clientX - startX) + 'px';
+                    div.style.top = (initialY + e.clientY - startY) + 'px';
+                    div.style.bottom = 'auto'; div.style.right = 'auto';
+                });
+                document.addEventListener('mouseup', () => isDragging = false);
             },
 
         };
@@ -2452,6 +1808,4 @@
             }
             app.init();
         };
-    </script>
-</body>
-</html>
+    
